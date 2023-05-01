@@ -1,9 +1,17 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { appWithTranslation } from 'next-i18next'
+import Layout from '../components/layout'
+import UserContext from '../context/user'
 
 function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+  return (
+    <UserContext>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </UserContext>
+  )
 }
 
 export default appWithTranslation(App)

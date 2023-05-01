@@ -1,18 +1,16 @@
-use actix_files as fs;
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello, World!")
-}
-
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        App::new()
-            .service(web::scope("/api").route("/login", web::get().to(hello)))
-            .service(fs::Files::new("/", "_static").index_file("index.html"))
-    })
-    .bind(("127.0.0.1", 3000))?
-    .run()
-    .await
+    dotenv::dotenv().ok();
+
+    let settings = backend::settings::get_settings().expect("Failed to read settings.");
+
+    let subscriber = backend::telemetry::get_subscriber(settings.clone().debug);
+    backend::telemetry::init_subscriber(subscriber);
+
+    let application = backend::startup::Application::build(settings, None).await?;
+
+    tracing::event!(target: "backend", tracing::Level::INFO, "Listening on http://127.0.0.1:{}/", application.port());
+
+    application.run_until_stopped().await?;
+    Ok(())
 }

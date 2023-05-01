@@ -1,0 +1,12 @@
+{
+  "register": "validation.confirm-password-required",
+  "server": "registration.generic-problem",
+  "validation": {
+    "first-name-required": "",
+    "last-name-required": ""
+  },
+  "form-labels": {
+    "first-name": "",
+    "last-name": ""
+  }
+}

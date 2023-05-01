@@ -1,0 +1,17 @@
+{
+  "validation": {
+    "email-required": "Email address is required",
+    "email-invalid": "Email address is invalid",
+    "password-min-6-chars": "Password must be at least 6 characters",
+    "password-required": "Password is required",
+    "passwords-not-matching": "Passwords do not match",
+    "confirm-password-required": "Confirm password is required"
+  },
+  "page-title": "Create Account",
+  "form-labels": {
+    "email-address": "Email Address",
+    "password": "Password",
+    "confirm-password": "Confirm Password",
+    "register-button": "Register"
+  }
+}

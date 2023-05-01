@@ -1,0 +1,7 @@
+{
+  "registration": {
+    "generic-problem": "Something unexpected happened. Please try again later.",
+    "user-already-exists": "A user with that email address already exists",
+    "no-email-permission": "No permission to read email address from authentication provider"
+  }
+}
