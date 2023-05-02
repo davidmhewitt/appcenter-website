@@ -5,5 +5,27 @@
   "workspaceFolder": "/workspace",
   "features": {
     "ghcr.io/devcontainers/features/rust:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg"
+      ],
+      "settings": {
+        "sqltools.connections": [
+          {
+            "name": "Container database",
+            "driver": "PostgreSQL",
+            "previewLimit": 50,
+            "server": "db",
+            "port": 5432,
+            "database": "appcenter_website",
+            "username": "appcenter",
+            "password": "appcenter"
+          }
+        ]
+      }
+    }
   }
 }
