@@ -4,6 +4,12 @@ application:
 database:
   port: 5432
   database_name: "appcenter_website"
+  username: ""
+  password: ""
+
+github:
+  client_id: ""
+  client_secret: ""
 
 email:
   host: "smtp.gmail.com"
