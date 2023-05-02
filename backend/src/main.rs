@@ -1,7 +1,8 @@
 use flate2::read::GzDecoder;
-use libxml::parser::ParserOptions;
 use reqwest::StatusCode;
-use std::{io::Read, time::Duration};
+use roxmltree::Document;
+use serde::Serialize;
+use std::{collections::HashMap, io::Read, time::Duration};
 use tokio::task::spawn_blocking;
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
@@ -74,23 +75,23 @@ async fn main() -> std::io::Result<()> {
                 let mut decoder = GzDecoder::new(file);
                 decoder.read_to_end(&mut xml_data)?;
 
-                let parser = libxml::parser::Parser::default();
-                let appstream_xml = parser
-                    .parse_string(
-                        String::from_utf8(xml_data)
-                            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?,
-                    )
+                let doc_text = String::from_utf8(xml_data)
                     .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
-                let root = match appstream_xml.get_root_element() {
-                    Some(r) => r,
-                    None => {
-                        return Err(std::io::Error::new(
-                            std::io::ErrorKind::Other,
-                            "Couldn't get root element from AppStream XML",
-                        ))
-                    }
-                };
+                let doc = Document::parse(&doc_text)
+                    .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+
+                let root = doc.root_element();
+                let first_component = root.first_element_child().unwrap();
+
+                println!(
+                    "{:?}",
+                    first_component
+                        .children()
+                        .filter(|e| e.tag_name().name() == "summary")
+                        .map(|e| (e.attribute(("http://www.w3.org/XML/1998/namespace", "lang")), e.first_child().unwrap().range()))
+                        .map(|(e, r)| (e, doc_text.get(r).unwrap()))
+                        .collect::<HashMap<_, _>>());
 
                 Ok(())
             })
