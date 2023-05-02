@@ -114,7 +114,7 @@ function Register({ router }: RegisterProps) {
                         </div>
                         <div className="ml-8 mr-12">
                             <h5 className="block font-sans text-xl font-semibold leading-snug tracking-normal text-white antialiased">
-                                Success
+                                Account Creation Failed
                             </h5>
                             <p className="mt-2 block font-sans text-base font-normal leading-relaxed text-white antialiased">
                                 {registerResult.translation_key ? t(registerResult.translation_key, { ns: 'server' }) : registerResult.error}
@@ -144,7 +144,7 @@ function Register({ router }: RegisterProps) {
                         </div>
                         <div className="ml-8 mr-12">
                             <h5 className="block font-sans text-xl font-semibold leading-snug tracking-normal text-white antialiased">
-                                Account Creation Failed
+                                Success
                             </h5>
                             <p className="mt-2 block font-sans text-base font-normal leading-relaxed text-white antialiased">
                                 {registerResult.translation_key ? t(registerResult.translation_key) : registerResult.message}
