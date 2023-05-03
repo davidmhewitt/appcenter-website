@@ -1,11 +1,61 @@
 use flate2::read::GzDecoder;
 use reqwest::StatusCode;
-use roxmltree::Document;
+use roxmltree::{Document, Node};
 use serde::Serialize;
-use std::{collections::HashMap, io::Read, time::Duration};
+use std::{io::Read, time::Duration};
 use tokio::task::spawn_blocking;
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
+
+struct ComponentBuilder {
+    id: Option<String>,
+}
+
+impl ComponentBuilder {
+    pub fn new() -> Self {
+        Self { id: None }
+    }
+
+    pub fn id(&mut self, id: String) {
+        self.id = Some(id);
+    }
+
+    pub fn build(self) -> Result<Component, std::io::Error> {
+        let Self { id } = self;
+        let id = id.ok_or(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "Component id missing",
+        ))?;
+        Ok(Component { id: id })
+    }
+}
+
+#[derive(Serialize, Debug)]
+struct Component {
+    id: String,
+}
+
+impl Component {
+    pub fn from_node(node: &Node) -> Result<Self, std::io::Error> {
+        let mut builder = ComponentBuilder::new();
+        for e in node.children().filter(|e| e.is_element()) {
+            match e.tag_name().name() {
+                "id" => {
+                    builder.id(e
+                        .text()
+                        .ok_or(std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Component id missing",
+                        ))?
+                        .to_string());
+                }
+                _ => {}
+            };
+        }
+
+        builder.build()
+    }
+}
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -82,16 +132,10 @@ async fn main() -> std::io::Result<()> {
                     .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
                 let root = doc.root_element();
-                let first_component = root.first_element_child().unwrap();
-
                 println!(
                     "{:?}",
-                    first_component
-                        .children()
-                        .filter(|e| e.tag_name().name() == "summary")
-                        .map(|e| (e.attribute(("http://www.w3.org/XML/1998/namespace", "lang")), e.first_child().unwrap().range()))
-                        .map(|(e, r)| (e, doc_text.get(r).unwrap()))
-                        .collect::<HashMap<_, _>>());
+                    root.children().filter(Node::is_element).map(|e| Component::from_node(&e)).collect::<Vec<_>>()
+                );
 
                 Ok(())
             })
