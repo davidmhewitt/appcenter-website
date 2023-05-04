@@ -1,61 +1,8 @@
-use flate2::read::GzDecoder;
+use appstream::{enums::Icon, Collection};
 use reqwest::StatusCode;
-use roxmltree::{Document, Node};
-use serde::Serialize;
-use std::{io::Read, time::Duration};
-use tokio::task::spawn_blocking;
+use std::{io::ErrorKind, time::Duration};
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
-
-struct ComponentBuilder {
-    id: Option<String>,
-}
-
-impl ComponentBuilder {
-    pub fn new() -> Self {
-        Self { id: None }
-    }
-
-    pub fn id(&mut self, id: String) {
-        self.id = Some(id);
-    }
-
-    pub fn build(self) -> Result<Component, std::io::Error> {
-        let Self { id } = self;
-        let id = id.ok_or(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            "Component id missing",
-        ))?;
-        Ok(Component { id: id })
-    }
-}
-
-#[derive(Serialize, Debug)]
-struct Component {
-    id: String,
-}
-
-impl Component {
-    pub fn from_node(node: &Node) -> Result<Self, std::io::Error> {
-        let mut builder = ComponentBuilder::new();
-        for e in node.children().filter(|e| e.is_element()) {
-            match e.tag_name().name() {
-                "id" => {
-                    builder.id(e
-                        .text()
-                        .ok_or(std::io::Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            "Component id missing",
-                        ))?
-                        .to_string());
-                }
-                _ => {}
-            };
-        }
-
-        builder.build()
-    }
-}
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -118,38 +65,90 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
-            match spawn_blocking(|| -> Result<(), std::io::Error> {
-                let file = std::fs::File::open("/tmp/appstream.xml.gz")?;
-
-                let mut xml_data = Vec::new();
-                let mut decoder = GzDecoder::new(file);
-                decoder.read_to_end(&mut xml_data)?;
-
-                let doc_text = String::from_utf8(xml_data)
-                    .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-
-                let doc = Document::parse(&doc_text)
-                    .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-
-                let root = doc.root_element();
-                println!(
-                    "{:?}",
-                    root.children().filter(Node::is_element).map(|e| Component::from_node(&e)).collect::<Vec<_>>()
-                );
-
-                Ok(())
-            })
-            .await
-            {
-                Ok(r) => match r {
-                    Ok(_) => {}
-                    Err(e) => {
-                        tracing::error!("Error parsing appstream file: {:?}", e);
+            match tokio::fs::create_dir_all("_apps/icons").await {
+                Ok(_) => {}
+                Err(e) => {
+                    if e.kind() != ErrorKind::AlreadyExists {
+                        tracing::error!("Error creating directory for appstream jsons: {:?}", e);
                         continue;
                     }
-                },
-                Err(_) => continue,
-            };
+                }
+            }
+
+            let collection =
+                match tokio::task::spawn_blocking(|| -> Result<Collection, std::io::Error> {
+                    let collection = Collection::from_gzipped("/tmp/appstream.xml.gz".into())
+                        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+
+                    for c in &collection.components {
+                        let out = std::fs::File::create(format!("_apps/{}.json", c.id))?;
+                        serde_json::ser::to_writer(out, &c)?;
+                    }
+
+                    Ok(collection)
+                })
+                .await
+                {
+                    Ok(r) => match r {
+                        Ok(c) => c,
+                        Err(e) => {
+                            tracing::error!("Error parsing appstream file: {:?}", e);
+                            continue;
+                        }
+                    },
+                    Err(_) => continue,
+                };
+
+            for c in &collection.components {
+                for icon in &c.icons {
+                    match icon {
+                        Icon::Stock(_) => todo!(),
+                        Icon::Cached {
+                            path,
+                            width,
+                            height,
+                        } => {
+                            let mut dir = String::from("_apps/icons");
+                            if let (Some(width), Some(height)) = (width, height) {
+                                dir += &format!("/{}x{}", width, height);
+                            }
+
+                            match tokio::fs::create_dir_all(&dir).await {
+                                Ok(_) => {}
+                                Err(e) => {
+                                    if e.kind() != ErrorKind::AlreadyExists {
+                                        tracing::error!(
+                                            "Error creating directory for appstream icons: {:?}",
+                                            e
+                                        );
+                                        continue;
+                                    }
+                                }
+                            }
+
+                            match tokio::fs::File::create(format!(
+                                "{}/{}",
+                                dir,
+                                path.to_string_lossy()
+                            ))
+                            .await
+                            {
+                                Ok(_) => {}
+                                Err(e) => {
+                                    tracing::error!("Error creating appstream icon: {:?}", e);
+                                    continue;
+                                }
+                            }
+                        }
+                        Icon::Remote { url, width, height } => todo!(),
+                        Icon::Local {
+                            path,
+                            width,
+                            height,
+                        } => todo!(),
+                    }
+                }
+            }
         }
     });
 
