@@ -1,0 +1,12 @@
+on: [pull_request, push]
+
+jobs:
+  build:
+    name: Rust build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+      - name: Build
+        run: cd backend && cargo build --release --all-features
