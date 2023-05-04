@@ -1,13 +1,20 @@
-use appstream::{enums::Icon, Collection};
+use appstream::{enums::Icon, Collection, TranslatableString};
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::{Client, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use serde::Serialize;
 use std::{io::ErrorKind, time::Duration};
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
 
+#[derive(Serialize)]
+struct Component {
+    id: String,
+    name: TranslatableString,
+}
+
 pub async fn run_appstream_update() {
-    let mut interval = tokio::time::interval(Duration::from_secs(60 * 30));
+    let mut interval = tokio::time::interval(Duration::from_secs(30 * 60));
     let client = ClientBuilder::new(Client::new())
         .with(Cache(HttpCache {
             mode: CacheMode::Default,
@@ -36,8 +43,26 @@ pub async fn run_appstream_update() {
             }
         };
 
+        summarise_apps(&collection).await;
         download_icons(&collection, &client).await;
     }
+}
+
+async fn summarise_apps(collection: &Collection) {
+    let mut apps = vec![];
+    for c in collection
+        .components
+        .iter()
+        .filter(|c| !c.id.0.starts_with("io.elementary.") && !c.id.0.starts_with("org.gnome."))
+        .collect::<Vec<&appstream::Component>>()
+    {
+        apps.push(Component {
+            id: c.id.0.to_owned(),
+            name: c.name.to_owned(),
+        })
+    }
+
+    println!("{}", serde_json::ser::to_string_pretty(&apps).unwrap());
 }
 
 async fn download_icons(collection: &Collection, client: &ClientWithMiddleware) {
@@ -47,8 +72,9 @@ async fn download_icons(collection: &Collection, client: &ClientWithMiddleware) 
             if let Icon::Cached {
                 path,
                 width,
-                height
-            } = icon {
+                height,
+            } = icon
+            {
                 let mut dir = String::from("icons");
                 if let (Some(width), Some(height)) = (width, height) {
                     dir += &format!("/{}x{}", width, height);
@@ -68,10 +94,7 @@ async fn download_icons(collection: &Collection, client: &ClientWithMiddleware) 
                 };
 
                 if res.status() != StatusCode::OK {
-                    tracing::error!(
-                        "Flatpak remote returned {} for icon download",
-                        res.status(),
-                    );
+                    tracing::error!("Flatpak remote returned {} for icon download", res.status(),);
                     continue;
                 }
 

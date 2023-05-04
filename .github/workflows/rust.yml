@@ -15,4 +15,4 @@ jobs:
         with:
           workspaces: "backend"
       - name: Build
-        run: cd backend && cargo build --all-features
+        run: cd backend && cargo build --workspace --all-features
