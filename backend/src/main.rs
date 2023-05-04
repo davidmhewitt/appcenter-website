@@ -1,5 +1,7 @@
 use appstream::{enums::Icon, Collection};
-use reqwest::StatusCode;
+use http_cache_reqwest::{Cache, HttpCache, CacheMode, CACacheManager};
+use reqwest::{Client, StatusCode};
+use reqwest_middleware::ClientBuilder;
 use std::{io::ErrorKind, time::Duration};
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
@@ -19,7 +21,14 @@ async fn main() -> std::io::Result<()> {
 
     tokio::spawn(async {
         let mut interval = tokio::time::interval(Duration::from_secs(60 * 30));
-        let client = reqwest::Client::new();
+        let client = ClientBuilder::new(Client::new())
+            .with(Cache(HttpCache {
+                mode: CacheMode::Default,
+                manager: CACacheManager::default(),
+                options: None,
+            }))
+            .build();
+
         loop {
             interval.tick().await;
             tracing::info!("Updating AppStream info");
