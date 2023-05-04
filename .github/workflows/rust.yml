@@ -5,8 +5,10 @@ jobs:
     name: Rust build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - name: Install stable rust
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
       - name: Build
-        run: cd backend && cargo build --release --all-features
+        run: cd backend && cargo build --all-features
