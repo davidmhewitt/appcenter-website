@@ -17,7 +17,6 @@ actix-session = { version = "0.7.2", features = ["cookie-session"] }
 actix-web = "4"
 appstream = { version = "0.2.2", features = ["gzip"] }
 argon2 = "0.5.0"
-awc = { version = "3.1.1", features = ["rustls"] }
 chrono = { version = "0.4.24", features = ["serde"] }
 config = { version = "0.13", features = ["yaml"] }
 deadpool-redis = "0.12.0"

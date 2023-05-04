@@ -80,17 +80,17 @@ pub async fn github_callback(
             return error_redirect(ErrorTranslationKey::RegistrationNoEmailPermission);
         }
 
-        let client = awc::Client::default();
+        let client = reqwest::Client::default();
         let emails = client
             .get("https://api.github.com/user/emails")
-            .insert_header((ACCEPT, "application/vnd.github+json"))
-            .insert_header((USER_AGENT, "elementary AppCenter Website"))
-            .insert_header(("X-GitHub-Api-Version", "2022-11-28"))
+            .header(ACCEPT, "application/vnd.github+json")
+            .header(USER_AGENT, "elementary AppCenter Website")
+            .header("X-GitHub-Api-Version", "2022-11-28")
             .bearer_auth(token.access_token().secret())
             .send()
             .await;
 
-        let mut decoded_emails_response = match emails {
+        let decoded_emails_response = match emails {
             Ok(x) => x,
             Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
         };
