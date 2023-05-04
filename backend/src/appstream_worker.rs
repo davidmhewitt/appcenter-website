@@ -158,7 +158,7 @@ async fn parse_and_extract_appstream_collection() -> Result<Collection, std::io:
         }
     }?;
 
-    let collection = match tokio::task::spawn_blocking(|| -> Result<Collection, std::io::Error> {
+    match tokio::task::spawn_blocking(|| -> Result<Collection, std::io::Error> {
         let collection = Collection::from_gzipped("/tmp/appstream.xml.gz".into())
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
@@ -177,12 +177,7 @@ async fn parse_and_extract_appstream_collection() -> Result<Collection, std::io:
     })
     .await
     {
-        Ok(r) => match r {
-            Ok(c) => Ok(c),
-            Err(e) => Err(std::io::Error::new(std::io::ErrorKind::Other, e)),
-        },
+        Ok(r) => r,
         Err(e) => Err(std::io::Error::new(std::io::ErrorKind::Other, e)),
-    };
-
-    collection
+    }
 }

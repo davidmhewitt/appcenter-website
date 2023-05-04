@@ -126,7 +126,7 @@ pub async fn insert_created_user_into_db(
             .as_ref()
             .map(|p| p.expose_secret().to_owned()),
     )
-    .bind(&new_user.is_active)
+    .bind(new_user.is_active)
     .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
     .fetch_one(&mut *transaction)
     .await

@@ -72,7 +72,7 @@ async fn get_user_who_is_active(
         .map(|row: sqlx::postgres::PgRow| crate::types::User {
             id: row.get("id"),
             email: row.get("email"),
-            password_hash: row.get::<Option<String>, &str>("password").map(|p| SecretString::from(p)),
+            password_hash: row.get::<Option<String>, &str>("password").map(SecretString::from),
             is_active: true,
             is_admin: row.get("is_admin"),
             date_joined: row.get("date_joined"),
