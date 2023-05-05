@@ -1,4 +1,5 @@
-use appstream::{enums::Icon, Collection, Component};
+use appstream::{builders::ReleaseBuilder, enums::Icon, Collection, Component};
+use chrono::TimeZone;
 use deadpool_redis::Pool;
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::{Client, StatusCode};
@@ -10,8 +11,8 @@ use tokio_util::io::StreamReader;
 
 pub struct AppstreamWorker {
     latest_versions: HashMap<String, Version>,
-    recently_updated: Vec<Component>,
-    recently_added: Vec<Component>,
+    recently_updated: Vec<String>,
+    recently_added: Vec<String>,
     redis_pool: Pool,
 }
 
@@ -93,35 +94,102 @@ impl AppstreamWorker {
         let first_update = self.latest_versions.is_empty();
 
         let collection = collection.to_owned();
-        for c in collection
+        let mut collection = collection
             .components
             .iter()
             .filter(|c| !c.id.0.starts_with("org.gnome."))
-            .collect::<Vec<&Component>>()
-        {
+            .collect::<Vec<&Component>>();
+
+        if first_update {
+            // Sort recently released components first
+            collection.sort_unstable_by(|a, b| {
+                b.releases
+                    .first()
+                    .unwrap_or(
+                        &ReleaseBuilder::new("0.0.0")
+                            .date(chrono::Utc.timestamp_opt(0, 0).unwrap())
+                            .build(),
+                    )
+                    .date
+                    .unwrap_or(chrono::Utc.timestamp_opt(0, 0).unwrap())
+                    .cmp(
+                        &a.releases
+                            .first()
+                            .unwrap_or(
+                                &ReleaseBuilder::new("0.0.0")
+                                    .date(chrono::Utc.timestamp_opt(0, 0).unwrap())
+                                    .build(),
+                            )
+                            .date
+                            .unwrap_or(chrono::Utc.timestamp_opt(0, 0).unwrap()),
+                    )
+            });
+
+            for i in 0..20 {
+                if let Some(c) = collection.get(i) {
+                    self.recently_updated.push(c.id.0.to_owned());
+                } else {
+                    break;
+                }
+            }
+
+            // Sort recently released components first
+            collection.sort_unstable_by(|a, b| {
+                b.releases
+                    .last()
+                    .unwrap_or(
+                        &ReleaseBuilder::new("0.0.0")
+                            .date(chrono::Utc.timestamp_opt(0, 0).unwrap())
+                            .build(),
+                    )
+                    .date
+                    .unwrap_or(chrono::Utc.timestamp_opt(0, 0).unwrap())
+                    .cmp(
+                        &a.releases
+                            .last()
+                            .unwrap_or(
+                                &ReleaseBuilder::new("0.0.0")
+                                    .date(chrono::Utc.timestamp_opt(0, 0).unwrap())
+                                    .build(),
+                            )
+                            .date
+                            .unwrap_or(chrono::Utc.timestamp_opt(0, 0).unwrap()),
+                    )
+            });
+
+            for i in 0..20 {
+                if let Some(c) = collection.get(i) {
+                    self.recently_added.push(c.id.0.to_owned());
+                } else {
+                    break;
+                }
+            }
+        }
+
+        for c in collection {
             if !first_update {
                 match self.latest_versions.get(&c.id.0) {
                     Some(old_ver) => {
-                        if let Some(new_ver) = Self::get_latest_component_version(&c) {
+                        if let Some(new_ver) = Self::get_latest_component_version(c) {
                             if new_ver.gt(old_ver) {
                                 self.recently_updated.truncate(19);
-                                self.recently_updated.insert(0, c.clone());
+                                self.recently_updated.insert(0, c.id.0.to_owned());
                             }
                         }
                     }
                     None => {
                         self.recently_added.truncate(19);
-                        self.recently_added.insert(0, c.clone());
+                        self.recently_added.insert(0, c.id.0.to_owned());
                     }
                 }
             }
 
-            if let Some(v) = Self::get_latest_component_version(&c) {
+            if let Some(v) = Self::get_latest_component_version(c) {
                 self.latest_versions.insert(c.id.0.to_owned(), v);
             }
         }
 
-        println!("{:?}", self.latest_versions);
+        println!("{:?}", self.recently_added);
     }
 
     async fn download_icons(&self, collection: &Collection, client: &ClientWithMiddleware) {
@@ -273,12 +341,7 @@ impl AppstreamWorker {
 
 #[cfg(test)]
 mod tests {
-    use super::AppstreamWorker;
-    use appstream::{
-        builders::{ComponentBuilder, ReleaseBuilder},
-        TranslatableString,
-    };
-    use chrono::TimeZone;
+    use super::*;
 
     #[test]
     fn version_comparison() {
