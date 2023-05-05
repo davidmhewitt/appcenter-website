@@ -1,4 +1,5 @@
 use appstream::{enums::Icon, Collection, TranslatableString};
+use deadpool_redis::Pool;
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::{Client, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
@@ -7,10 +8,29 @@ use std::{io::ErrorKind, time::Duration};
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
 
+pub struct AppstreamWorker {
+    collection: Option<appstream::Collection>,
+    redis_pool: Pool,
+}
+
+impl AppstreamWorker {
+    pub fn new(redis_uri: String) -> Self {
+        let cfg = deadpool_redis::Config::from_url(redis_uri);
+        Self {
+            collection: None,
+            redis_pool: cfg
+                .create_pool(Some(deadpool_redis::Runtime::Tokio1))
+                .expect("Cannot create deadpool redis"),
+        }
+    }
+}
+
 #[derive(Serialize)]
 struct Component {
     id: String,
     name: TranslatableString,
+    summary: Option<TranslatableString>,
+    icons: Vec<Icon>,
 }
 
 pub async fn run_appstream_update() {
@@ -49,20 +69,39 @@ pub async fn run_appstream_update() {
 }
 
 async fn summarise_apps(collection: &Collection) {
-    let mut apps = vec![];
-    for c in collection
-        .components
-        .iter()
-        .filter(|c| !c.id.0.starts_with("io.elementary.") && !c.id.0.starts_with("org.gnome."))
-        .collect::<Vec<&appstream::Component>>()
-    {
-        apps.push(Component {
-            id: c.id.0.to_owned(),
-            name: c.name.to_owned(),
-        })
-    }
+    let collection = collection.to_owned();
+    match tokio::task::spawn_blocking(move || -> Result<(), std::io::Error> {
+        let mut apps = vec![];
+        for c in collection
+            .components
+            .iter()
+            .filter(|c| !c.id.0.starts_with("org.gnome."))
+            .collect::<Vec<&appstream::Component>>()
+        {
+            apps.push(Component {
+                id: c.id.0.to_owned(),
+                name: c.name.to_owned(),
+                summary: c.summary.to_owned(),
+                icons: c.icons.to_owned(),
+            });
+        }
 
-    println!("{}", serde_json::ser::to_string_pretty(&apps).unwrap());
+        let out = std::fs::File::create("_apps/summary.json")?;
+
+        serde_json::ser::to_writer(out, &apps)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+
+        Ok(())
+    })
+    .await
+    {
+        Ok(r) => {
+            if let Err(e) = r {
+                tracing::error!("Error writing apps summary: {:?}", e);
+            }
+        }
+        Err(e) => tracing::error!("Error writing apps summary: {:?}", e),
+    }
 }
 
 async fn download_icons(collection: &Collection, client: &ClientWithMiddleware) {
