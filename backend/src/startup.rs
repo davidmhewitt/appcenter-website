@@ -80,7 +80,9 @@ async fn run(
                     actix_session::storage::CookieSessionStore::default(),
                     secret_key.clone(),
                 )
-                .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_IN_WEEK)))
+                .session_lifecycle(
+                    PersistentSession::default().session_ttl(Duration::seconds(SECS_IN_WEEK)),
+                )
                 .cookie_secure(!settings.debug)
                 .build(),
             )

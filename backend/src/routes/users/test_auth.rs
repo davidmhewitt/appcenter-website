@@ -27,7 +27,7 @@ pub async fn test_auth(
 
     match get_active_user_by_email_and_id(&pool, &id, &email).await {
         Ok(_) => HttpResponse::Ok().finish(),
-        Err(_) => HttpResponse::Unauthorized().finish()
+        Err(_) => HttpResponse::Unauthorized().finish(),
     }
 }
 

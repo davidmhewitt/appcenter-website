@@ -114,9 +114,9 @@ pub async fn github_callback(
                 .insert(crate::types::USER_EMAIL_KEY, primary)
                 .expect("`user_email` cannot be inserted into session");
 
-                return actix_web::HttpResponse::SeeOther()
-                    .insert_header((actix_web::http::header::LOCATION, "/"))
-                    .finish()
+            return actix_web::HttpResponse::SeeOther()
+                .insert_header((actix_web::http::header::LOCATION, "/"))
+                .finish();
         }
 
         let user = CreateNewUser {
