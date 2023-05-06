@@ -16,11 +16,14 @@ interface Icon {
   height: Number,
 }
 
+interface TranslatableString {
+  readonly [key: string]: string;
+}
 
 interface Component {
   id: string,
-  name: Object,
-  summary: Object,
+  name: TranslatableString,
+  summary: TranslatableString,
   icons: Icon[]
 }
 
@@ -34,7 +37,7 @@ export default function Home() {
     <main
       className={`p-24 ${inter.className}`}
     >
-      <h1>{appdata ? Object.entries(appdata?.name)[Object.keys(appdata?.name).indexOf("C")][1] : null}</h1>
+      <h1>{appdata?.name[router.query.locale as string] ?? appdata?.name["C"]}</h1>
     </main>
   )
 }
