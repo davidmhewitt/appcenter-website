@@ -29,7 +29,7 @@ pub(crate) fn get_latest_component_version(component: &Component) -> Option<Vers
 
 pub(crate) fn get_new_and_updated_apps<'a>(
     cur_versions: &HashMap<String, Version>,
-    new_collection: &'a Vec<&Component>,
+    new_collection: &'a Vec<Component>,
 ) -> (Vec<&'a Component>, Vec<&'a Component>) {
     let mut new_apps: Vec<&'a Component> = vec![];
     let mut updated_apps: Vec<&'a Component> = vec![];
@@ -54,12 +54,48 @@ pub(crate) fn get_new_and_updated_apps<'a>(
 #[cfg(test)]
 mod tests {
     use appstream::{
-        builders::{ComponentBuilder, ReleaseBuilder},
+        builders::{CollectionBuilder, ComponentBuilder, ReleaseBuilder},
         TranslatableString,
     };
     use chrono::TimeZone;
 
     use super::*;
+
+    #[test]
+    fn diff_function() {
+        let cur_versions = HashMap::from([
+            (String::from("org.foo.bar"), Version::new(1, 0, 0)),
+            (String::from("org.bar.foo"), Version::new(0, 5, 0)),
+        ]);
+
+        let collection_update = CollectionBuilder::new("0.8")
+            .component(
+                ComponentBuilder::default()
+                    .id("org.foo.bar".into())
+                    .name(TranslatableString::with_default("Foo Bar"))
+                    .release(ReleaseBuilder::new("1.0.1").build())
+                    .build(),
+            )
+            .component(
+                ComponentBuilder::default()
+                    .id("org.new.app".into())
+                    .name(TranslatableString::with_default("New App"))
+                    .build(),
+            )
+            .build();
+
+        let components: Vec<Component> = collection_update.components;
+        let (new_apps, updated_apps) = get_new_and_updated_apps(
+            &cur_versions,
+            &components,
+        );
+
+        assert_eq!(new_apps.len(), 1);
+        assert_eq!(updated_apps.len(), 1);
+
+        assert_eq!(new_apps.first().unwrap().id.0, "org.new.app");
+        assert_eq!(updated_apps.first().unwrap().id.0, "org.foo.bar");
+    }
 
     #[test]
     fn sort_functions() {

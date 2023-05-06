@@ -4,12 +4,13 @@ use crate::{
     redis_utils,
 };
 
-use appstream::{enums::Icon, Collection, Component};
+use appstream::{enums::Icon, Collection, Component, TranslatableString, AppId};
 use deadpool_redis::Pool;
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::{Client, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use semver::Version;
+use serde::Serialize;
 use std::{
     collections::HashMap,
     io::{Error, ErrorKind},
@@ -18,6 +19,25 @@ use std::{
 };
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
+
+#[derive(Serialize)]
+pub struct ComponentSummary {
+    id: AppId,
+    name: TranslatableString,
+    summary: Option<TranslatableString>,
+    icons: Vec<Icon>,
+}
+
+impl From<Component> for ComponentSummary {
+    fn from(value: Component) -> Self {
+        Self {
+            id: value.id,
+            name: value.name,
+            summary: value.summary,
+            icons: value.icons,
+        }
+    }
+}
 
 pub struct AppstreamWorker {
     latest_versions: HashMap<String, Version>,
@@ -57,7 +77,7 @@ impl AppstreamWorker {
                 }
             };
 
-            let collection = match self.parse_and_extract_appstream_collection().await {
+            let mut collection = match self.parse_and_extract_appstream_collection().await {
                 Ok(c) => c,
                 Err(e) => {
                     tracing::error!("Error parsing appstream download: {:?}", e);
@@ -65,12 +85,12 @@ impl AppstreamWorker {
                 }
             };
 
-            self.summarise_apps(&collection).await;
+            self.summarise_apps(&mut collection).await;
             self.download_icons(&collection, &client).await;
         }
     }
 
-    async fn summarise_apps(&mut self, collection: &Collection) {
+    async fn summarise_apps(&mut self, collection: &mut Vec<Component>) {
         let first_update = self.latest_versions.is_empty();
 
         let mut redis_con = self
@@ -82,26 +102,20 @@ impl AppstreamWorker {
             })
             .expect("Redis connection cannot be gotten.");
 
-        let collection = collection.to_owned();
-        let mut collection: Vec<&Component> = collection
-            .components
-            .iter()
-            .filter(|c| !c.id.0.starts_with("org.gnome."))
-            .collect();
-
         if first_update {
             collection.sort_unstable_by(|a, b| {
-                appstream_collection_sorters::sort_newly_released_components_first(*a, *b)
+                appstream_collection_sorters::sort_newly_released_components_first(a, b)
             });
 
             redis_utils::del(&mut redis_con, "appstream_worker/recently_updated").await;
 
             for i in 0..20 {
                 if let Some(c) = collection.get(i) {
+                    let c: ComponentSummary = c.clone().into();
                     redis_utils::rpush(
                         &mut redis_con,
                         "appstream_worker/recently_updated",
-                        &serde_json::to_string(c).unwrap(),
+                        &serde_json::to_string(&c).unwrap(),
                     )
                     .await;
                 } else {
@@ -110,17 +124,18 @@ impl AppstreamWorker {
             }
 
             collection.sort_unstable_by(|a, b| {
-                appstream_collection_sorters::sort_recent_initial_release_components_first(*a, *b)
+                appstream_collection_sorters::sort_recent_initial_release_components_first(a, b)
             });
 
             redis_utils::del(&mut redis_con, "appstream_worker/recently_added").await;
 
             for i in 0..20 {
                 if let Some(c) = collection.get(i) {
+                    let c: ComponentSummary = c.clone().into();
                     redis_utils::rpush(
                         &mut redis_con,
                         "appstream_worker/recently_added",
-                        &serde_json::to_string(c).unwrap(),
+                        &serde_json::to_string(&c).unwrap(),
                     )
                     .await;
                 } else {
@@ -131,23 +146,25 @@ impl AppstreamWorker {
 
         if !first_update {
             let (new_apps, updated_apps) =
-                get_new_and_updated_apps(&self.latest_versions, &collection);
-            for a in new_apps {
+                get_new_and_updated_apps(&self.latest_versions, collection);
+            for c in new_apps {
+                let c: ComponentSummary = c.clone().into();
                 redis_utils::lpush(
                     &mut redis_con,
                     "appstream_worker/recently_added",
-                    &serde_json::to_string(a).unwrap(),
+                    &serde_json::to_string(&c).unwrap(),
                 )
                 .await;
 
                 redis_utils::ltrim(&mut redis_con, "appstream_worker/recently_added", 0, 19).await;
             }
 
-            for a in updated_apps {
+            for c in updated_apps {
+                let c: ComponentSummary = c.clone().into();
                 redis_utils::lpush(
                     &mut redis_con,
                     "appstream_worker/recently_updated",
-                    &serde_json::to_string(a).unwrap(),
+                    &serde_json::to_string(&c).unwrap(),
                 )
                 .await;
 
@@ -163,8 +180,8 @@ impl AppstreamWorker {
         }
     }
 
-    async fn download_icons(&self, collection: &Collection, client: &ClientWithMiddleware) {
-        for c in &collection.components {
+    async fn download_icons(&self, collection: &Vec<Component>, client: &ClientWithMiddleware) {
+        for c in collection {
             for icon in &c.icons {
                 // TODO: Do we need to handle other icon types?
                 if let Icon::Cached {
@@ -218,7 +235,7 @@ impl AppstreamWorker {
         Ok(())
     }
 
-    async fn parse_and_extract_appstream_collection(&self) -> Result<Collection, Error> {
+    async fn parse_and_extract_appstream_collection(&self) -> Result<Vec<Component>, Error> {
         match tokio::fs::create_dir("_apps").await {
             Ok(()) => Ok(()),
             Err(e) => {
@@ -230,11 +247,18 @@ impl AppstreamWorker {
             }
         }?;
 
-        match tokio::task::spawn_blocking(|| -> Result<Collection, Error> {
+        match tokio::task::spawn_blocking(|| -> Result<Vec<Component>, Error> {
             let collection = Collection::from_gzipped("/tmp/appstream.xml.gz".into())
                 .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-            for c in &collection.components {
+            let components: Vec<Component> = collection
+                .components
+                .to_owned()
+                .into_iter()
+                .filter(|c| !c.id.0.starts_with("org.gnome."))
+                .collect();
+
+            for c in &components {
                 let out = match std::fs::File::create(format!("_apps/{}.json", c.id)) {
                     Ok(f) => f,
                     Err(_) => continue,
@@ -245,7 +269,7 @@ impl AppstreamWorker {
                 }
             }
 
-            Ok(collection)
+            Ok(components)
         })
         .await
         {
