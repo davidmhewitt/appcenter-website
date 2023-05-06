@@ -89,7 +89,7 @@ async fn run(
             .service(crate::routes::health_check)
             .configure(crate::routes::auth_routes_config)
             .configure(crate::routes::apps_routes_config)
-            .service(fs::Files::new("/api/apps", "_apps"))
+            .service(fs::Files::new("/static/apps", "_apps"))
             .service(fs::Files::new("/", "_static").index_file("index.html"))
             .app_data(pool.clone())
             .app_data(redis_pool_data.clone())
