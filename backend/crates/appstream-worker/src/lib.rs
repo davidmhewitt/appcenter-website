@@ -1,5 +1,7 @@
 mod appstream_worker;
-mod component_versioning;
+mod appstream_collection_sorters;
+mod appstream_version_utils;
+mod redis_utils;
 
 pub use self::appstream_worker::AppstreamWorker;
 

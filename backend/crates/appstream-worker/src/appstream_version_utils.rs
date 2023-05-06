@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+
 use appstream::Component;
 use semver::Version;
 
-pub fn get_latest_component_version(component: &Component) -> Option<Version> {
+pub(crate) fn get_latest_component_version(component: &Component) -> Option<Version> {
     let mut versions = component.releases.to_owned();
     versions.sort_unstable_by(|a, b| {
         if let (Some(a), Some(b)) = (a.date, b.date) {
@@ -25,6 +27,30 @@ pub fn get_latest_component_version(component: &Component) -> Option<Version> {
     None
 }
 
+pub(crate) fn get_new_and_updated_apps<'a>(
+    cur_versions: &HashMap<String, Version>,
+    new_collection: &'a Vec<&Component>,
+) -> (Vec<&'a Component>, Vec<&'a Component>) {
+    let mut new_apps: Vec<&'a Component> = vec![];
+    let mut updated_apps: Vec<&'a Component> = vec![];
+    for c in new_collection {
+        match cur_versions.get(&c.id.0) {
+            Some(old_version) => {
+                if let Some(new_version) = get_latest_component_version(c) {
+                    if new_version.gt(old_version) {
+                        updated_apps.push(c);
+                    }
+                }
+            }
+            None => {
+                new_apps.push(c);
+            }
+        }
+    }
+
+    (new_apps, updated_apps)
+}
+
 #[cfg(test)]
 mod tests {
     use appstream::{
@@ -36,7 +62,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn version_comparison() {
+    fn sort_functions() {
         let c1: appstream::Component = ComponentBuilder::default()
             .id("com.example.foobar".into())
             .name(TranslatableString::with_default("Foo Bar"))

@@ -1,7 +1,10 @@
-use crate::component_versioning::get_latest_component_version;
+use crate::{
+    appstream_collection_sorters,
+    appstream_version_utils::{get_latest_component_version, get_new_and_updated_apps},
+    redis_utils,
+};
 
-use appstream::{builders::ReleaseBuilder, enums::Icon, Collection, Component};
-use chrono::TimeZone;
+use appstream::{enums::Icon, Collection, Component};
 use deadpool_redis::Pool;
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::{Client, StatusCode};
@@ -10,6 +13,7 @@ use semver::Version;
 use std::{
     collections::HashMap,
     io::{Error, ErrorKind},
+    path::Path,
     time::Duration,
 };
 use tokio_stream::StreamExt;
@@ -79,165 +83,80 @@ impl AppstreamWorker {
             .expect("Redis connection cannot be gotten.");
 
         let collection = collection.to_owned();
-        let mut collection = collection
+        let mut collection: Vec<&Component> = collection
             .components
             .iter()
             .filter(|c| !c.id.0.starts_with("org.gnome."))
-            .collect::<Vec<&Component>>();
+            .collect();
 
         if first_update {
-            // Sort recently released components first
             collection.sort_unstable_by(|a, b| {
-                b.releases
-                    .first()
-                    .unwrap_or(
-                        &ReleaseBuilder::new("0.0.0")
-                            .date(chrono::Utc.timestamp_opt(0, 0).unwrap())
-                            .build(),
-                    )
-                    .date
-                    .unwrap_or(chrono::Utc.timestamp_opt(0, 0).unwrap())
-                    .cmp(
-                        &a.releases
-                            .first()
-                            .unwrap_or(
-                                &ReleaseBuilder::new("0.0.0")
-                                    .date(chrono::Utc.timestamp_opt(0, 0).unwrap())
-                                    .build(),
-                            )
-                            .date
-                            .unwrap_or(chrono::Utc.timestamp_opt(0, 0).unwrap()),
-                    )
+                appstream_collection_sorters::sort_newly_released_components_first(*a, *b)
             });
 
-            if let Err(e) = deadpool_redis::redis::Cmd::del("appstream_worker/recently_updated")
-                .query_async::<_, i32>(&mut redis_con)
-                .await
-            {
-                tracing::warn!("Error removing recently updated from redis: {}", e);
-            }
+            redis_utils::del(&mut redis_con, "appstream_worker/recently_updated").await;
 
             for i in 0..20 {
                 if let Some(c) = collection.get(i) {
-                    if let Err(e) = deadpool_redis::redis::Cmd::rpush(
+                    redis_utils::rpush(
+                        &mut redis_con,
                         "appstream_worker/recently_updated",
-                        serde_json::to_string(c).unwrap(),
+                        &serde_json::to_string(c).unwrap(),
                     )
-                    .query_async::<_, i32>(&mut redis_con)
-                    .await
-                    {
-                        tracing::warn!("Error adding recently updated to redis: {}", e);
-                    }
+                    .await;
                 } else {
                     break;
                 }
             }
 
-            // Sort recently released components first
             collection.sort_unstable_by(|a, b| {
-                b.releases
-                    .last()
-                    .unwrap_or(
-                        &ReleaseBuilder::new("0.0.0")
-                            .date(chrono::Utc.timestamp_opt(0, 0).unwrap())
-                            .build(),
-                    )
-                    .date
-                    .unwrap_or(chrono::Utc.timestamp_opt(0, 0).unwrap())
-                    .cmp(
-                        &a.releases
-                            .last()
-                            .unwrap_or(
-                                &ReleaseBuilder::new("0.0.0")
-                                    .date(chrono::Utc.timestamp_opt(0, 0).unwrap())
-                                    .build(),
-                            )
-                            .date
-                            .unwrap_or(chrono::Utc.timestamp_opt(0, 0).unwrap()),
-                    )
+                appstream_collection_sorters::sort_recent_initial_release_components_first(*a, *b)
             });
 
-            if let Err(e) = deadpool_redis::redis::Cmd::del("appstream_worker/recently_added")
-                .query_async::<_, i32>(&mut redis_con)
-                .await
-            {
-                tracing::warn!("Error removing recently added from redis: {}", e);
-            }
+            redis_utils::del(&mut redis_con, "appstream_worker/recently_added").await;
 
             for i in 0..20 {
                 if let Some(c) = collection.get(i) {
-                    if let Err(e) = deadpool_redis::redis::Cmd::rpush(
+                    redis_utils::rpush(
+                        &mut redis_con,
                         "appstream_worker/recently_added",
-                        serde_json::to_string(c).unwrap(),
+                        &serde_json::to_string(c).unwrap(),
                     )
-                    .query_async::<_, i32>(&mut redis_con)
-                    .await
-                    {
-                        tracing::warn!("Error adding recently added to redis: {}", e);
-                    }
+                    .await;
                 } else {
                     break;
                 }
             }
         }
 
-        for c in collection {
-            if !first_update {
-                match self.latest_versions.get(&c.id.0) {
-                    Some(old_ver) => {
-                        if let Some(new_ver) = get_latest_component_version(c) {
-                            if new_ver.gt(old_ver) {
-                                if let Err(e) = deadpool_redis::redis::Cmd::lpush(
-                                    "appstream_worker/recently_updated",
-                                    serde_json::to_string(c).unwrap(),
-                                )
-                                .query_async::<_, i32>(&mut redis_con)
-                                .await
-                                {
-                                    tracing::warn!("Error adding recently updated to redis: {}", e);
-                                }
+        if !first_update {
+            let (new_apps, updated_apps) =
+                get_new_and_updated_apps(&self.latest_versions, &collection);
+            for a in new_apps {
+                redis_utils::lpush(
+                    &mut redis_con,
+                    "appstream_worker/recently_added",
+                    &serde_json::to_string(a).unwrap(),
+                )
+                .await;
 
-                                if let Err(e) = deadpool_redis::redis::Cmd::ltrim(
-                                    "appstream_worker/recently_updated",
-                                    0,
-                                    19,
-                                )
-                                .query_async::<_, String>(&mut redis_con)
-                                .await
-                                {
-                                    tracing::warn!(
-                                        "Error truncating recently updated in redis: {}",
-                                        e
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    None => {
-                        if let Err(e) = deadpool_redis::redis::Cmd::lpush(
-                            "appstream_worker/recently_added",
-                            serde_json::to_string(c).unwrap(),
-                        )
-                        .query_async::<_, i32>(&mut redis_con)
-                        .await
-                        {
-                            tracing::warn!("Error adding recently updated to redis: {}", e);
-                        }
-
-                        if let Err(e) = deadpool_redis::redis::Cmd::ltrim(
-                            "appstream_worker/recently_added",
-                            0,
-                            19,
-                        )
-                        .query_async::<_, String>(&mut redis_con)
-                        .await
-                        {
-                            tracing::warn!("Error truncating recently addedd in redis: {}", e);
-                        }
-                    }
-                }
+                redis_utils::ltrim(&mut redis_con, "appstream_worker/recently_added", 0, 19).await;
             }
 
+            for a in updated_apps {
+                redis_utils::lpush(
+                    &mut redis_con,
+                    "appstream_worker/recently_updated",
+                    &serde_json::to_string(a).unwrap(),
+                )
+                .await;
+
+                redis_utils::ltrim(&mut redis_con, "appstream_worker/recently_updated", 0, 19)
+                    .await;
+            }
+        }
+
+        for c in collection {
             if let Some(v) = get_latest_component_version(c) {
                 self.latest_versions.insert(c.id.0.to_owned(), v);
             }
@@ -340,7 +259,7 @@ async fn download_icon(
     width: &Option<u32>,
     height: &Option<u32>,
     client: &ClientWithMiddleware,
-    path: &std::path::PathBuf,
+    path: &Path,
 ) -> Result<(), Error> {
     let mut dir = String::from("icons");
     if let (Some(width), Some(height)) = (width, height) {
