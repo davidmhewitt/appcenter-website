@@ -38,6 +38,7 @@ pub(crate) fn get_new_and_updated_apps<'a>(
             Some(old_version) => {
                 if let Some(new_version) = get_latest_component_version(c) {
                     if new_version.gt(old_version) {
+                        tracing::info!("{}, {} > {}", c.id.0, new_version, old_version);
                         updated_apps.push(c);
                     }
                 }

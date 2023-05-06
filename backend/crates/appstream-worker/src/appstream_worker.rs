@@ -1,16 +1,19 @@
 use crate::{
     appstream_collection_sorters,
     appstream_version_utils::{get_latest_component_version, get_new_and_updated_apps},
-    redis_utils, RECENTLY_UPDATED_REDIS_KEY, RECENTLY_ADDED_REDIS_KEY,
+    redis_utils, RECENTLY_ADDED_REDIS_KEY, RECENTLY_UPDATED_REDIS_KEY,
 };
 
-use appstream::{enums::Icon, Collection, Component, TranslatableString, AppId};
+use appstream::{
+    enums::{Bundle, Icon},
+    AppId, Collection, Component, TranslatableString,
+};
 use deadpool_redis::Pool;
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::{Client, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use semver::Version;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     io::{Error, ErrorKind},
@@ -168,8 +171,7 @@ impl AppstreamWorker {
                 )
                 .await;
 
-                redis_utils::ltrim(&mut redis_con, RECENTLY_UPDATED_REDIS_KEY, 0, 19)
-                    .await;
+                redis_utils::ltrim(&mut redis_con, RECENTLY_UPDATED_REDIS_KEY, 0, 19).await;
             }
         }
 
@@ -256,6 +258,14 @@ impl AppstreamWorker {
                 .to_owned()
                 .into_iter()
                 .filter(|c| !c.id.0.starts_with("org.gnome."))
+                .filter(|c| match c.bundles.first().unwrap() {
+                    Bundle::Flatpak {
+                        runtime: _,
+                        sdk: _,
+                        reference,
+                    } => return reference.ends_with("/stable"),
+                    _ => return true,
+                })
                 .collect();
 
             for c in &components {
