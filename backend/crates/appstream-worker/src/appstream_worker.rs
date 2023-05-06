@@ -1,7 +1,7 @@
 use crate::{
     appstream_collection_sorters,
     appstream_version_utils::{get_latest_component_version, get_new_and_updated_apps},
-    redis_utils, RECENTLY_UPDATED_REDIS_KEY,
+    redis_utils, RECENTLY_UPDATED_REDIS_KEY, RECENTLY_ADDED_REDIS_KEY,
 };
 
 use appstream::{enums::Icon, Collection, Component, TranslatableString, AppId};
@@ -127,14 +127,14 @@ impl AppstreamWorker {
                 appstream_collection_sorters::sort_recent_initial_release_components_first(a, b)
             });
 
-            redis_utils::del(&mut redis_con, "appstream_worker/recently_added").await;
+            redis_utils::del(&mut redis_con, RECENTLY_ADDED_REDIS_KEY).await;
 
             for i in 0..20 {
                 if let Some(c) = collection.get(i) {
                     let c: ComponentSummary = c.clone().into();
                     redis_utils::rpush(
                         &mut redis_con,
-                        "appstream_worker/recently_added",
+                        RECENTLY_ADDED_REDIS_KEY,
                         &serde_json::to_string(&c).unwrap(),
                     )
                     .await;
@@ -151,12 +151,12 @@ impl AppstreamWorker {
                 let c: ComponentSummary = c.clone().into();
                 redis_utils::lpush(
                     &mut redis_con,
-                    "appstream_worker/recently_added",
+                    RECENTLY_ADDED_REDIS_KEY,
                     &serde_json::to_string(&c).unwrap(),
                 )
                 .await;
 
-                redis_utils::ltrim(&mut redis_con, "appstream_worker/recently_added", 0, 19).await;
+                redis_utils::ltrim(&mut redis_con, RECENTLY_ADDED_REDIS_KEY, 0, 19).await;
             }
 
             for c in updated_apps {
