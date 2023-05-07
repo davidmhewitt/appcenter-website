@@ -1,7 +1,7 @@
 import { rest } from 'msw'
 import recentlyAdded from './data/recently_added.json' assert {type: 'json'}
 import recentlyUpdated from './data/recently_updated.json' assert {type: 'json'}
-import app from './data/io.github.danirabbit.nimbus.json' assert {type: 'json'}
+import app from './data/com.github.phase1geo.minder.json' assert {type: 'json'}
 import image from './data/io.elementary.iconbrowser.png'
 
 export const handlers = [
