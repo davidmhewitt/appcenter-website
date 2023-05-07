@@ -1,0 +1,197 @@
+{
+    "type": "desktop-application",
+    "id": "io.github.danirabbit.nimbus",
+    "name": {
+        "C": "Nimbus"
+    },
+    "summary": {
+        "C": "See outside without going there",
+        "da": "Se udenfor uden at gå derud",
+        "fr": "Voir à l'extérieur sans y aller",
+        "ja": "外に出ずに天気を確認しましょう",
+        "pt": "Veja o que está la fora sem se deslocar"
+    },
+    "description": {
+        "C": "<p>See the current temperature and weather conditions for your location with this minimal color-changing applet.</p><ul><li>Click anywhere to fetch the latest weather</li><li>Stays out of your way by always sticking to the desktop</li><li>Move the window by dragging any part of it</li><li>Quit with the handy shortcut Ctrl + Q</li><li>Respects your system settings for temperature units</li></ul>",
+        "da": "<p>Se temperaturen og vejrforholdene for din lokation med denne minimalistiske farveskiftende applikation.</p><ul><li>Klik hvor som helst for at få de nyeste vejrmeldinger</li><li>Holder sig i baggrunden ved at være fastsat til skrivebordet</li><li>Ryk vinduet ved at trække hvor som helst i applikationen</li><li>Luk ved brug af genvejen Ctrl + Q</li><li>Respekterer dine systemindstillinger for temperaturenhed</li></ul>",
+        "fr": "<p>Voyez la température et les conditions météorologiques actuelles de votre région grâce à cette petite application aux couleurs changeantes.</p><ul><li>Cliquez n'importe où pour actualiser la météo</li><li>Reste à l'écart de votre chemin en restant toujours sur le bureau</li><li>Déplacez la fenêtre en faisant glisser n'importe quelle partie de celle-ci</li><li>Quittez avec le raccourci pratique Ctrl + Q</li><li>Respecte vos paramètres du système pour les unités de température</li></ul>",
+        "ja": "<p>現在地の今の気温と天気の状況を、色変わりするこの最小限のアプレットで確認しましょう。</p><ul><li>クリックすると最新の天気を取得します</li><li>常にデスクトップに表示されるので邪魔になりません</li><li>ウィンドウの好きな部分をドラッグするとウィンドウを移動できます</li><li>便利なショートカット Ctrl + Q で終了します</li><li>お使いのシステムの温度の単位を使用します</li></ul>",
+        "pt": "<p>Veja a temperatura atual e as condições meteorológicas para a sua localização com esta mini aplicação com mudança de cor.</p><ul><li>Clique em qualquer lado para pesquisar a informação mais recente sobre a meteorologia</li><li>Fica fora do seu caminho, mantém-se sempre colado ao seu ambiente de trabalho</li><li>Mova a janela arrastando o rato em qualquer parte dela</li><li>Saía com o atalho conveniente Ctrl + Q</li><li>Respeita as definições de unidades de temperatura do seu sistema</li></ul>"
+    },
+    "project_license": "GPL-3.0+",
+    "icons": [
+        {
+            "type": "cached",
+            "path": "io.github.danirabbit.nimbus.png",
+            "width": 64,
+            "height": 64
+        },
+        {
+            "type": "cached",
+            "path": "io.github.danirabbit.nimbus.png",
+            "width": 128,
+            "height": 128
+        }
+    ],
+    "screenshots": [
+        {
+            "is_default": true,
+            "images": [
+                {
+                    "type": "source",
+                    "url": "https://raw.githubusercontent.com/danirabbit/nimbus/1.0.0/data/screenshot.png"
+                }
+            ]
+        }
+    ],
+    "urls": [
+        {
+            "type": "bugtracker",
+            "url": "https://github.com/danirabbit/nimbus/issues"
+        },
+        {
+            "type": "donation",
+            "url": "https://github.com/sponsors/danirabbit/"
+        },
+        {
+            "type": "help",
+            "url": "https://github.com/danirabbit/nimbus/discussions"
+        },
+        {
+            "type": "homepage",
+            "url": "https://danirabbit.github.io/"
+        }
+    ],
+    "developer_name": {
+        "C": "Danielle Foré"
+    },
+    "categories": [
+        "Network",
+        "Utility"
+    ],
+    "launchables": [
+        {
+            "type": "desktop_id",
+            "name": "io.github.danirabbit.nimbus.desktop"
+        }
+    ],
+    "bundles": [
+        {
+            "type": "flatpak",
+            "reference": "app/io.github.danirabbit.nimbus/x86_64/stable",
+            "sdk": "io.elementary.Sdk/x86_64/7.2",
+            "runtime": "io.elementary.Platform/x86_64/7.2"
+        }
+    ],
+    "releases": [
+        {
+            "date": "2023-04-26T00:00:00Z",
+            "version": "1.0.0",
+            "description": {
+                "C": "<p>Updated for OS 7!</p><ul><li>New animated rain effect 🌧️</li><li>Redesigned app icon</li><li>Added Portuguese translation, thanks to @rottenpants466</li><li>Updated to the latest platform libraries, thanks to Ryo Nakano</li><li>Better error handling and messaging</li></ul>"
+            },
+            "type": "stable",
+            "urgency": "medium"
+        },
+        {
+            "date": "2021-05-14T00:00:00Z",
+            "version": "0.3.3",
+            "description": {
+                "C": "<p>Odin Updates!</p><ul><li>Add Danish and Dutch and update French and Japanese Translations</li><li>Bug fixes and stability improvements</li></ul>"
+            },
+            "type": "stable",
+            "urgency": "medium"
+        },
+        {
+            "date": "2018-06-30T00:00:00Z",
+            "version": "0.3.2",
+            "description": {
+                "C": "<p>Juno Updates!</p><ul><li>Add Catalan, French, German, and Japanese Translations</li><li>HiDPI icons support</li><li>Bug fixes and stability improvements</li></ul>"
+            },
+            "type": "stable",
+            "urgency": "medium"
+        }
+    ],
+    "languages": [
+        {
+            "percentage": 100,
+            "locale": "ca"
+        },
+        {
+            "percentage": 100,
+            "locale": "da"
+        },
+        {
+            "percentage": 100,
+            "locale": "de"
+        },
+        {
+            "percentage": 100,
+            "locale": "es"
+        },
+        {
+            "percentage": 100,
+            "locale": "fr"
+        },
+        {
+            "percentage": 100,
+            "locale": "ja"
+        },
+        {
+            "percentage": 100,
+            "locale": "nl_NL"
+        },
+        {
+            "percentage": 100,
+            "locale": "pt"
+        }
+    ],
+    "kudos": [
+        "HiDpiIcon"
+    ],
+    "keywords": {
+        "C": [
+            "temperature",
+            "weather"
+        ],
+        "da": [
+            "temperatur",
+            "vejr"
+        ],
+        "fr": [
+            "météo",
+            "température"
+        ],
+        "ja": [
+            "天気",
+            "気温"
+        ],
+        "pt": [
+            "meteorologia",
+            "temperatura"
+        ]
+    },
+    "content_rating": {
+        "type": "oars-1.1",
+        "attributes": [
+            {
+                "id": "social-info",
+                "$value": "mild"
+            }
+        ]
+    },
+    "provides": [
+        {
+            "binary": "io.github.danirabbit.nimbus"
+        }
+    ],
+    "translations": [
+        {
+            "type": "gettext",
+            "name": "io.github.danirabbit.nimbus"
+        }
+    ],
+    "metadata": {
+        "x-appcenter-color-primary": "#e9f4fc"
+    }
+}
