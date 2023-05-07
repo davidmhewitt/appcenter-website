@@ -14,7 +14,8 @@
     "vscode": {
       "extensions": [
         "mtxr.sqltools",
-        "mtxr.sqltools-driver-pg"
+        "mtxr.sqltools-driver-pg",
+        "bradlc.vscode-tailwindcss"
       ],
       "settings": {
         "sqltools.connections": [
