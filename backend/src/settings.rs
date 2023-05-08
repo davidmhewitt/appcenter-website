@@ -69,6 +69,7 @@ pub struct GithubSettings {
     pub reviews_url: String,
     pub username: String,
     pub access_token: SecretString,
+    pub local_repo_path: String,
 }
 
 impl DatabaseSettings {

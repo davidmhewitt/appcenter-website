@@ -1,6 +1,9 @@
+use std::io::ErrorKind;
+
 use actix_files as fs;
 use actix_session::config::PersistentSession;
 use actix_web::cookie::time::Duration;
+use git_worker::GitWorker;
 use secrecy::ExposeSecret;
 
 const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
@@ -71,6 +74,16 @@ async fn run(
 
     let redis_pool_data = actix_web::web::Data::new(redis_pool);
 
+    let git_worker = GitWorker::new(
+        settings.github.local_repo_path,
+        settings.github.reviews_url,
+        settings.github.username,
+        settings.github.access_token,
+    )
+    .map_err(|e| std::io::Error::new(ErrorKind::Other, e))?;
+
+    let git_worker_data = actix_web::web::Data::new(git_worker);
+
     let secret_key =
         actix_web::cookie::Key::from(settings.secret.hmac_secret.expose_secret().as_bytes());
     let server = actix_web::HttpServer::new(move || {
@@ -93,6 +106,7 @@ async fn run(
             .service(fs::Files::new("/", "_static").index_file("index.html"))
             .app_data(pool.clone())
             .app_data(redis_pool_data.clone())
+            .app_data(git_worker_data.clone())
     })
     .listen(listener)?
     .run();

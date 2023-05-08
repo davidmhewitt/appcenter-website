@@ -86,10 +86,7 @@ mod tests {
             .build();
 
         let components: Vec<Component> = collection_update.components;
-        let (new_apps, updated_apps) = get_new_and_updated_apps(
-            &cur_versions,
-            &components,
-        );
+        let (new_apps, updated_apps) = get_new_and_updated_apps(&cur_versions, &components);
 
         assert_eq!(new_apps.len(), 1);
         assert_eq!(updated_apps.len(), 1);

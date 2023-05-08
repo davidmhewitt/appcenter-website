@@ -39,7 +39,8 @@ pub async fn recently_updated(
                 None
             }
         },
-    ).collect();
+    )
+    .collect();
 
     HttpResponse::Ok().json(apps)
 }

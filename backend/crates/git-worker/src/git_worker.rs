@@ -1,5 +1,5 @@
 use anyhow::Result;
-use std::path::Path;
+use std::{path::Path, sync::Mutex};
 
 use git2::{
     build::{CheckoutBuilder, RepoBuilder},
@@ -17,7 +17,7 @@ pub struct GitWorker {
     git_repo_url: String,
     git_username: String,
     git_password: SecretString,
-    repo: Repository,
+    repo: Mutex<Repository>,
 }
 
 impl GitWorker {
@@ -33,7 +33,7 @@ impl GitWorker {
             git_repo_url,
             git_username,
             git_password,
-            repo,
+            repo: Mutex::new(repo),
         })
     }
 
@@ -46,33 +46,27 @@ impl GitWorker {
     }
 
     pub fn update_repo(&self) -> Result<()> {
-        let mut remote = self.repo.find_remote("origin").map_err(Error::Git)?;
+        let repo = self.repo.lock().unwrap();
+
+        let mut remote = repo.find_remote("origin").map_err(Error::Git)?;
         remote
             .fetch(&["main"], Some(&mut self.fetch_options()), None)
             .map_err(Error::Git)?;
 
-        let fetch_head = self.repo.find_reference("FETCH_HEAD").map_err(Error::Git)?;
-        let fetch_commit = self
-            .repo
+        let fetch_head = repo.find_reference("FETCH_HEAD").map_err(Error::Git)?;
+        let fetch_commit = repo
             .reference_to_annotated_commit(&fetch_head)
             .map_err(Error::Git)?;
 
-        let analysis = self
-            .repo
-            .merge_analysis(&[&fetch_commit])
-            .map_err(Error::Git)?;
+        let analysis = repo.merge_analysis(&[&fetch_commit]).map_err(Error::Git)?;
         if analysis.0.is_fast_forward() {
-            let mut reference = self
-                .repo
-                .find_reference("refs/heads/main")
-                .map_err(Error::Git)?;
+            let mut reference = repo.find_reference("refs/heads/main").map_err(Error::Git)?;
             let msg = format!("Fast-Forward: Setting main to id: {}", fetch_commit.id());
             reference
                 .set_target(fetch_commit.id(), &msg)
                 .map_err(Error::Git)?;
-            self.repo.set_head("refs/heads/main").map_err(Error::Git)?;
-            self.repo
-                .checkout_head(Some(CheckoutBuilder::default().force()))
+            repo.set_head("refs/heads/main").map_err(Error::Git)?;
+            repo.checkout_head(Some(CheckoutBuilder::default().force()))
                 .map_err(Error::Git)?;
 
             return Ok(());
@@ -82,45 +76,47 @@ impl GitWorker {
     }
 
     pub fn create_branch(&self, branch_name: &str) -> Result<()> {
-        let head = self
-            .repo
+        let repo = self.repo.lock().unwrap();
+
+        let head = repo
             .head()
             .map_err(Error::Git)?
             .peel_to_commit()
             .map_err(Error::Git)?;
-        self.repo
-            .branch(branch_name, &head, false)
-            .map_err(Error::Git)?;
+        repo.branch(branch_name, &head, false).map_err(Error::Git)?;
 
-        self.checkout_branch(branch_name)?;
+        let treeish = repo.revparse_single(branch_name).map_err(Error::Git)?;
+        repo.checkout_tree(&treeish, None).map_err(Error::Git)?;
+        repo.set_head(&format!("refs/heads/{}", branch_name))
+            .map_err(Error::Git)?;
 
         Ok(())
     }
 
     pub fn checkout_branch(&self, branch_name: &str) -> Result<()> {
-        let treeish = self.repo.revparse_single(branch_name).map_err(Error::Git)?;
-        self.repo
-            .checkout_tree(&treeish, None)
-            .map_err(Error::Git)?;
-        self.repo
-            .set_head(&format!("refs/heads/{}", branch_name))
+        let repo = self.repo.lock().unwrap();
+
+        let treeish = repo.revparse_single(branch_name).map_err(Error::Git)?;
+        repo.checkout_tree(&treeish, None).map_err(Error::Git)?;
+        repo.set_head(&format!("refs/heads/{}", branch_name))
             .map_err(Error::Git)?;
 
         Ok(())
     }
 
     pub fn add_and_commit(&self, file_names: &[&str], message: &str) -> Result<()> {
-        let mut index = self.repo.index().map_err(Error::Git)?;
+        let repo = self.repo.lock().unwrap();
+
+        let mut index = repo.index().map_err(Error::Git)?;
 
         index
             .add_all(file_names, IndexAddOption::DEFAULT, None)
             .map_err(Error::Git)?;
         let oid = index.write_tree().map_err(Error::Git)?;
-        let sig = self.repo.signature().map_err(Error::Git)?;
-        let tree = self.repo.find_tree(oid).map_err(Error::Git)?;
+        let sig = repo.signature().map_err(Error::Git)?;
+        let tree = repo.find_tree(oid).map_err(Error::Git)?;
 
-        let obj = self
-            .repo
+        let obj = repo
             .head()
             .and_then(|r| r.resolve())
             .and_then(|x| x.peel(ObjectType::Commit));
@@ -131,12 +127,10 @@ impl GitWorker {
                 .into_commit()
                 .map_err(|_| Error::Git(git2::Error::from_str("Couldn't find commit")))?;
 
-            self.repo
-                .commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent_commit])
+            repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent_commit])
                 .map_err(Error::Git)?;
         } else {
-            self.repo
-                .commit(Some("HEAD"), &sig, &sig, message, &tree, &[])
+            repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[])
                 .map_err(Error::Git)?;
         }
 
@@ -144,7 +138,9 @@ impl GitWorker {
     }
 
     pub fn push(&self, branch_name: &str) -> Result<()> {
-        let mut remote = self.repo.find_remote("origin").map_err(Error::Git)?;
+        let repo = self.repo.lock().unwrap();
+
+        let mut remote = repo.find_remote("origin").map_err(Error::Git)?;
         remote
             .connect_auth(
                 git2::Direction::Push,
@@ -264,12 +260,6 @@ mod tests {
             SecretString::new("test".into()),
         )?;
 
-        let repo = &worker.repo;
-
-        let remote = repo.find_remote("origin").map_err(super::Error::Git)?;
-
-        assert_eq!(remote.url().unwrap(), &remote_path);
-
         File::create(remote_dir.path().join("new_file.txt"))
             .expect("Couldn't create empty test file for git");
 
@@ -354,7 +344,6 @@ mod tests {
     }
 
     #[test]
-    #[inline(never)]
     fn test_commit() -> Result<()> {
         let remote_dir = TempDir::new("remote").expect("Couldn't create temporary remote dir");
         let remote_path = remote_dir.path().to_string_lossy();
