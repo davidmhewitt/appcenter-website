@@ -7,6 +7,7 @@ edition = "2021"
 [workspace]
 members = [
     "crates/appstream-worker",
+    "crates/git-worker",
 ]
 
 [lib]
@@ -20,12 +21,14 @@ name = "backend"
 actix-files = "0.6.2"
 actix-session = { version = "0.7.2", features = ["cookie-session"] }
 actix-web = "4"
+anyhow = "1.0.71"
 appstream-worker = { path = "crates/appstream-worker" }
 argon2 = "0.5.0"
 chrono = { version = "0.4.24", features = ["serde"] }
 config = { version = "0.13", features = ["yaml"] }
 deadpool-redis = "0.12.0"
 dotenv = "0.15"
+git-worker = { path = "crates/git-worker" }
 hex = "0.4.3"
 lettre = { version = "0.10.4", features = ["builder", "tokio1-native-tls"] }
 minijinja = { version = "0.32.1", features = ["source"] }

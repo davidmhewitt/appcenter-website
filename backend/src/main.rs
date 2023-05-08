@@ -1,5 +1,7 @@
+use anyhow::Result;
+
 #[tokio::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<()> {
     dotenv::dotenv().ok();
 
     let settings = backend::settings::get_settings().expect("Failed to read settings.");
@@ -11,9 +13,9 @@ async fn main() -> std::io::Result<()> {
 
     tracing::event!(target: "backend", tracing::Level::INFO, "Listening on http://127.0.0.1:{}/", application.port());
 
-    let worker = appstream_worker::AppstreamWorker::new(settings.redis.uri);
+    let appstream_worker = appstream_worker::AppstreamWorker::new(settings.redis.uri);
     tokio::spawn(async {
-        worker.run_appstream_update().await;
+        appstream_worker.run_appstream_update().await;
     });
 
     application.run_until_stopped().await?;

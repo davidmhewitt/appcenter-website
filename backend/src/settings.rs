@@ -66,6 +66,9 @@ pub struct EmailSettings {
 pub struct GithubSettings {
     pub client_id: String,
     pub client_secret: SecretString,
+    pub reviews_url: String,
+    pub username: String,
+    pub access_token: SecretString,
 }
 
 impl DatabaseSettings {

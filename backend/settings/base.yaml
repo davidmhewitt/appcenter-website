@@ -10,6 +10,9 @@ database:
 github:
   client_id: ""
   client_secret: ""
+  username: ""
+  access_token: ""
+  reviews_url: "https://github.com/elementary/appcenter-reviews.git"
 
 email:
   host: "smtp.gmail.com"

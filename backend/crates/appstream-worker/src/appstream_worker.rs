@@ -18,8 +18,8 @@ use std::{
     collections::HashMap,
     io::{Error, ErrorKind},
     path::Path,
-    time::Duration,
 };
+use tokio::time::Duration;
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
 
