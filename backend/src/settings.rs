@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::ConnectOptions;
 
@@ -69,7 +71,7 @@ pub struct GithubSettings {
     pub reviews_url: String,
     pub username: String,
     pub access_token: SecretString,
-    pub local_repo_path: String,
+    pub local_repo_path: PathBuf,
 }
 
 impl DatabaseSettings {

@@ -1,5 +1,8 @@
 use anyhow::Result;
-use std::{path::Path, sync::Mutex};
+use std::{
+    path::{Path, PathBuf},
+    sync::Mutex,
+};
 
 use git2::{
     build::{CheckoutBuilder, RepoBuilder},
@@ -14,6 +17,7 @@ pub enum Error {
 }
 
 pub struct GitWorker {
+    pub repo_path: PathBuf,
     git_repo_url: String,
     git_username: String,
     git_password: SecretString,
@@ -22,7 +26,7 @@ pub struct GitWorker {
 
 impl GitWorker {
     pub fn new(
-        repo_path: String,
+        repo_path: PathBuf,
         git_repo_url: String,
         git_username: String,
         git_password: SecretString,
@@ -30,6 +34,7 @@ impl GitWorker {
         let repo = open_repo(&repo_path, &git_repo_url, &git_username, &git_password)?;
 
         Ok(Self {
+            repo_path,
             git_repo_url,
             git_username,
             git_password,
@@ -59,6 +64,10 @@ impl GitWorker {
             .map_err(Error::Git)?;
 
         let analysis = repo.merge_analysis(&[&fetch_commit]).map_err(Error::Git)?;
+        if analysis.0.is_up_to_date() {
+            return Ok(());
+        }
+
         if analysis.0.is_fast_forward() {
             let mut reference = repo.find_reference("refs/heads/main").map_err(Error::Git)?;
             let msg = format!("Fast-Forward: Setting main to id: {}", fetch_commit.id());
@@ -195,7 +204,7 @@ fn get_remote_auth_callbacks<'a>(
 }
 
 fn open_repo(
-    repo_path: &str,
+    repo_path: &Path,
     git_repo_url: &str,
     git_username: &str,
     git_password: &SecretString,
@@ -207,7 +216,7 @@ fn open_repo(
 }
 
 fn clone_repo(
-    repo_path: &str,
+    repo_path: &Path,
     git_repo_url: &str,
     git_username: &str,
     git_password: &SecretString,
@@ -231,7 +240,7 @@ mod tests {
         let remote_path = remote_dir.path().to_string_lossy();
 
         let local_dir = TempDir::new("local").expect("Couldn't create temporary local dir");
-        let local_path = local_dir.path().to_string_lossy();
+        let local_path = local_dir.path().to_path_buf();
 
         Command::new("git")
             .args(["init", &remote_path])
@@ -254,7 +263,7 @@ mod tests {
             .expect("failed to commit git file");
 
         let worker = GitWorker::new(
-            local_path.into_owned(),
+            local_path,
             remote_path.clone().into_owned(),
             "test".into(),
             SecretString::new("test".into()),
@@ -279,6 +288,10 @@ mod tests {
 
         assert!(local_dir.path().join("new_file.txt").exists());
 
+        // Test pulling from the remote again to check that the no updates needed
+        // case works
+        worker.update_repo()?;
+
         Ok(())
     }
 
@@ -288,7 +301,7 @@ mod tests {
         let remote_path = remote_dir.path().to_string_lossy();
 
         let local_dir = TempDir::new("local").expect("Couldn't create temporary local dir");
-        let local_path = local_dir.path().to_string_lossy();
+        let local_path = local_dir.path().to_path_buf();
 
         Command::new("git")
             .args(["init", &remote_path])
@@ -311,7 +324,7 @@ mod tests {
             .expect("failed to commit git file");
 
         let worker = GitWorker::new(
-            local_path.into_owned(),
+            local_path,
             remote_path.clone().into_owned(),
             "test".into(),
             SecretString::new("test".into()),
@@ -349,7 +362,7 @@ mod tests {
         let remote_path = remote_dir.path().to_string_lossy();
 
         let local_dir = TempDir::new("local").expect("Couldn't create temporary local dir");
-        let local_path = local_dir.path().to_string_lossy();
+        let local_path = local_dir.path().to_path_buf();
 
         Command::new("git")
             .args(["init", "--bare", &remote_path])
@@ -357,7 +370,7 @@ mod tests {
             .expect("failed to init git repo");
 
         let worker = GitWorker::new(
-            local_path.into_owned(),
+            local_path,
             remote_path.clone().into_owned(),
             "test".into(),
             SecretString::new("test".into()),
@@ -370,10 +383,10 @@ mod tests {
         worker.push("main")?;
 
         let local_dir = TempDir::new("local").expect("Couldn't create temporary local dir");
-        let local_path = local_dir.path().to_string_lossy();
+        let local_path = local_dir.path().to_path_buf();
 
         GitWorker::new(
-            local_path.into_owned(),
+            local_path,
             remote_path.clone().into_owned(),
             "test".into(),
             SecretString::new("test".into()),
