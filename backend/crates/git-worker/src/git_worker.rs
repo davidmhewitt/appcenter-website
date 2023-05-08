@@ -3,7 +3,7 @@ use std::path::Path;
 
 use git2::{
     build::{CheckoutBuilder, RepoBuilder},
-    Cred, FetchOptions, IndexAddOption, ObjectType, Reference, RemoteCallbacks, Repository, PushOptions,
+    Cred, FetchOptions, IndexAddOption, ObjectType, PushOptions, RemoteCallbacks, Repository,
 };
 use secrecy::{ExposeSecret, SecretString};
 
@@ -30,10 +30,10 @@ impl GitWorker {
         let repo = open_repo(&repo_path, &git_repo_url, &git_username, &git_password)?;
 
         Ok(Self {
-            git_repo_url: git_repo_url,
-            git_username: git_username,
-            git_password: git_password,
-            repo: repo,
+            git_repo_url,
+            git_username,
+            git_password,
+            repo,
         })
     }
 
@@ -45,7 +45,7 @@ impl GitWorker {
         get_remote_auth_callbacks(&self.git_repo_url, &self.git_username, &self.git_password)
     }
 
-    fn update_repo(&self) -> Result<()> {
+    pub fn update_repo(&self) -> Result<()> {
         let mut remote = self.repo.find_remote("origin").map_err(Error::Git)?;
         remote
             .fetch(&["main"], Some(&mut self.fetch_options()), None)
@@ -157,7 +157,10 @@ impl GitWorker {
         push_options.remote_callbacks(self.remote_auth_callbacks());
 
         remote
-            .push(&[format!("refs/heads/{}", branch_name)], Some(&mut push_options))
+            .push(
+                &[format!("refs/heads/{}", branch_name)],
+                Some(&mut push_options),
+            )
             .map_err(Error::Git)?;
 
         Ok(())
@@ -202,7 +205,7 @@ fn open_repo(
     git_password: &SecretString,
 ) -> Result<Repository, Error> {
     match Repository::open(repo_path) {
-        Ok(r) => return Ok(r),
+        Ok(r) => Ok(r),
         Err(_) => clone_repo(repo_path, git_repo_url, git_username, git_password),
     }
 }
@@ -380,7 +383,7 @@ mod tests {
         let local_dir = TempDir::new("local").expect("Couldn't create temporary local dir");
         let local_path = local_dir.path().to_string_lossy();
 
-        let worker = GitWorker::new(
+        GitWorker::new(
             local_path.into_owned(),
             remote_path.clone().into_owned(),
             "test".into(),

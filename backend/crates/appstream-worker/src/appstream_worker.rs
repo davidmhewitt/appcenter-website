@@ -255,7 +255,6 @@ impl AppstreamWorker {
 
             let components: Vec<Component> = collection
                 .components
-                .to_owned()
                 .into_iter()
                 .filter(|c| !c.id.0.starts_with("org.gnome."))
                 .filter(|c| match c.bundles.first().unwrap() {
@@ -263,8 +262,8 @@ impl AppstreamWorker {
                         runtime: _,
                         sdk: _,
                         reference,
-                    } => return reference.ends_with("/stable"),
-                    _ => return true,
+                    } => reference.ends_with("/stable"),
+                    _ => true,
                 })
                 .collect();
 
