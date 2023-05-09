@@ -1,11 +1,12 @@
 use anyhow::Result;
+use octocrab::Octocrab;
 use std::{path::PathBuf, sync::Mutex};
 
 use git2::{
     build::CheckoutBuilder, FetchOptions, IndexAddOption, ObjectType, PushOptions, RemoteCallbacks,
     Repository,
 };
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 
 use crate::git_utils;
 use thiserror::Error;
@@ -14,6 +15,8 @@ use thiserror::Error;
 pub enum Error {
     #[error("Git error: {0}")]
     Git(git2::Error),
+    #[error("Github error: {0}")]
+    GitHub(octocrab::Error),
 }
 
 pub struct GitWorker {
@@ -22,6 +25,7 @@ pub struct GitWorker {
     git_username: String,
     git_password: SecretString,
     repo: Mutex<Repository>,
+    octo: Octocrab,
 }
 
 impl GitWorker {
@@ -32,6 +36,10 @@ impl GitWorker {
         git_password: SecretString,
     ) -> Result<Self> {
         let repo = git_utils::open_repo(&repo_path, &git_repo_url, &git_username, &git_password)?;
+        let octocrab = octocrab::OctocrabBuilder::new()
+            .personal_token(git_password.expose_secret().to_owned())
+            .build()
+            .map_err(Error::GitHub)?;
 
         Ok(Self {
             repo_path,
@@ -39,6 +47,7 @@ impl GitWorker {
             git_username,
             git_password,
             repo: Mutex::new(repo),
+            octo: octocrab,
         })
     }
 
@@ -52,6 +61,23 @@ impl GitWorker {
             &self.git_username,
             &self.git_password,
         )
+    }
+
+    pub async fn create_pull_request(
+        &self,
+        title: String,
+        src_branch: String,
+        dst_branch: String,
+        body: String,
+    ) -> Result<(), Error> {
+        self.octo
+            .pulls("davidmhewitt", "appcenter-reviews")
+            .create(title, src_branch, dst_branch)
+            .body(body)
+            .send()
+            .await
+            .map_err(Error::GitHub)?;
+        Ok(())
     }
 
     pub fn update_repo(&self) -> Result<()> {
@@ -154,13 +180,6 @@ impl GitWorker {
         let repo = self.repo.lock().unwrap();
 
         let mut remote = repo.find_remote("origin").map_err(Error::Git)?;
-        remote
-            .connect_auth(
-                git2::Direction::Push,
-                Some(self.remote_auth_callbacks()),
-                None,
-            )
-            .map_err(Error::Git)?;
 
         let mut push_options = PushOptions::default();
         push_options.remote_callbacks(self.remote_auth_callbacks());
