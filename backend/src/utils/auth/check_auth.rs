@@ -23,7 +23,10 @@ pub async fn check_auth(
         Err(_) => return false,
     };
 
-    if get_active_user_by_email_and_id(&pool, &id, &email).await.is_ok() {
+    if get_active_user_by_email_and_id(&pool, &id, &email)
+        .await
+        .is_ok()
+    {
         return true;
     }
 

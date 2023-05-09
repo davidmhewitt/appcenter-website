@@ -1,16 +1,16 @@
 use anyhow::Result;
-use std::{
-    path::{Path, PathBuf},
-    sync::Mutex,
-};
+use std::{path::PathBuf, sync::Mutex};
 
 use git2::{
-    build::{CheckoutBuilder, RepoBuilder},
-    Cred, FetchOptions, IndexAddOption, ObjectType, PushOptions, RemoteCallbacks, Repository,
+    build::CheckoutBuilder, FetchOptions, IndexAddOption, ObjectType, PushOptions, RemoteCallbacks,
+    Repository,
 };
-use secrecy::{ExposeSecret, SecretString};
+use secrecy::SecretString;
 
-#[derive(thiserror::Error, Debug)]
+use crate::git_utils;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
 pub enum Error {
     #[error("Git error: {0}")]
     Git(git2::Error),
@@ -31,7 +31,7 @@ impl GitWorker {
         git_username: String,
         git_password: SecretString,
     ) -> Result<Self> {
-        let repo = open_repo(&repo_path, &git_repo_url, &git_username, &git_password)?;
+        let repo = git_utils::open_repo(&repo_path, &git_repo_url, &git_username, &git_password)?;
 
         Ok(Self {
             repo_path,
@@ -43,11 +43,15 @@ impl GitWorker {
     }
 
     fn fetch_options(&self) -> FetchOptions {
-        get_fetch_options(&self.git_repo_url, &self.git_username, &self.git_password)
+        git_utils::get_fetch_options(&self.git_repo_url, &self.git_username, &self.git_password)
     }
 
     fn remote_auth_callbacks(&self) -> RemoteCallbacks {
-        get_remote_auth_callbacks(&self.git_repo_url, &self.git_username, &self.git_password)
+        git_utils::get_remote_auth_callbacks(
+            &self.git_repo_url,
+            &self.git_username,
+            &self.git_password,
+        )
     }
 
     pub fn update_repo(&self) -> Result<()> {
@@ -170,61 +174,6 @@ impl GitWorker {
 
         Ok(())
     }
-}
-
-fn get_fetch_options<'a>(
-    git_repo_url: &'a str,
-    git_username: &'a str,
-    git_password: &'a SecretString,
-) -> FetchOptions<'a> {
-    let remote_callbacks = get_remote_auth_callbacks(git_repo_url, git_username, git_password);
-
-    let mut options = FetchOptions::default();
-    options.remote_callbacks(remote_callbacks);
-
-    options
-}
-
-fn get_remote_auth_callbacks<'a>(
-    git_repo_url: &'a str,
-    git_username: &'a str,
-    git_password: &'a secrecy::Secret<String>,
-) -> RemoteCallbacks<'a> {
-    let mut remote_callbacks = RemoteCallbacks::default();
-
-    remote_callbacks.credentials(move |url, _username_from_url, _allowed_types| {
-        if url == git_repo_url {
-            return Cred::userpass_plaintext(git_username, git_password.expose_secret());
-        }
-
-        Err(git2::Error::from_str("Couldn't find credentials for URL"))
-    });
-
-    remote_callbacks
-}
-
-fn open_repo(
-    repo_path: &Path,
-    git_repo_url: &str,
-    git_username: &str,
-    git_password: &SecretString,
-) -> Result<Repository, Error> {
-    match Repository::open(repo_path) {
-        Ok(r) => Ok(r),
-        Err(_) => clone_repo(repo_path, git_repo_url, git_username, git_password),
-    }
-}
-
-fn clone_repo(
-    repo_path: &Path,
-    git_repo_url: &str,
-    git_username: &str,
-    git_password: &SecretString,
-) -> Result<Repository, Error> {
-    RepoBuilder::new()
-        .fetch_options(get_fetch_options(git_repo_url, git_username, git_password))
-        .clone(git_repo_url, Path::new(repo_path))
-        .map_err(Error::Git)
 }
 
 #[cfg(test)]
