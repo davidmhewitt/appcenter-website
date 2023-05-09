@@ -18,6 +18,10 @@ pub enum ErrorTranslationKey {
     GenericLogoutProblem,
     #[serde(rename = "app-register.generic-problem")]
     GenericAppRegisterProblem,
+    #[serde(rename = "app-register.non-matching-github-rdnn")]
+    AppRegisterNonMatchingGithubRDNN,
+    #[serde(rename = "app-register.invalid-repository-url")]
+    AppRegisterInvalidRepositoryUrl,
 }
 
 #[derive(serde::Serialize)]

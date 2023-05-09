@@ -17,6 +17,8 @@ pub enum Error {
     Git(git2::Error),
     #[error("Github error: {0}")]
     GitHub(octocrab::Error),
+    #[error("Repository owner not found")]
+    RepoOwnerNotFound,
 }
 
 pub struct GitWorker {
@@ -78,6 +80,22 @@ impl GitWorker {
             .await
             .map_err(Error::GitHub)?;
         Ok(())
+    }
+
+    pub async fn get_github_repo_owner_id(&self, org: String, repo: String) -> Result<u64, Error> {
+        let owner = self
+            .octo
+            .repos(org, repo)
+            .get()
+            .await
+            .and_then(|r| Ok(r.owner))
+            .map_err(Error::GitHub)?;
+
+        if let Some(owner) = owner {
+            return Ok(owner.id.0);
+        }
+
+        Err(Error::RepoOwnerNotFound)
     }
 
     pub fn update_repo(&self) -> Result<()> {
