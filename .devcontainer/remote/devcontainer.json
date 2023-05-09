@@ -11,7 +11,8 @@
   },
   "remoteEnv": {
     "APP_GITHUB__CLIENT_ID": "${localEnv:GH_CLIENT_ID}",
-    "APP_GITHUB__CLIENT_SECRET": "${localEnv:GH_CLIENT_SECRET}"
+    "APP_GITHUB__CLIENT_SECRET": "${localEnv:GH_CLIENT_SECRET}",
+    "APP_GITHUB__ACCESS_TOKEN": "${localEnv:GH_ACCESS_TOKEN}"
   },
   "customizations": {
     "vscode": {
