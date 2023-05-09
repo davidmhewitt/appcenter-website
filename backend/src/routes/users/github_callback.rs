@@ -8,6 +8,7 @@ use oauth2::{
 };
 use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
+use serde_json::Number;
 use serde_variant::to_variant_name;
 use sqlx::Row;
 
@@ -26,6 +27,11 @@ pub struct GithubEmail {
     verified: bool,
     primary: bool,
     _visibility: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GithubUser {
+    id: Number,
 }
 
 #[tracing::instrument(name = "Github Callback", skip(session, response))]
@@ -89,6 +95,15 @@ pub async fn github_callback(
             .send()
             .await;
 
+        let user = client
+            .get("https://api.github.com/user")
+            .header(ACCEPT, "application/vnd.github+json")
+            .header(USER_AGENT, "elementary AppCenter Website")
+            .header("X-GitHub-Api-Version", "2022-11-28")
+            .bearer_auth(token.access_token().secret())
+            .send()
+            .await;
+
         let decoded_emails_response = match emails {
             Ok(x) => x,
             Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
@@ -102,6 +117,16 @@ pub async fn github_callback(
         let primary = match email_array.iter().find(|&e| e.primary && e.verified) {
             Some(x) => &x.email,
             None => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
+        };
+
+        let decoded_user_response = match user {
+            Ok(x) => x,
+            Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
+        };
+
+        let user_info = match decoded_user_response.json::<GithubUser>().await {
+            Ok(x) => x,
+            Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
         };
 
         if let Ok(user) = get_user_who_is_active(&pool, primary).await {
@@ -123,6 +148,7 @@ pub async fn github_callback(
             email: primary.to_owned(),
             password: None,
             is_active: true,
+            github_id: user_info.id.as_i64(),
         };
 
         let mut transaction = match pool.begin().await {
@@ -186,7 +212,6 @@ async fn get_user_who_is_active(
     {
         Ok(user) => Ok(user),
         Err(e) => {
-            tracing::event!(target: "sqlx",tracing::Level::ERROR, "User not found in DB: {:#?}", e);
             Err(e)
         }
     }

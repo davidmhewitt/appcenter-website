@@ -16,6 +16,8 @@ pub enum ErrorTranslationKey {
     UserDoesntExist,
     #[serde(rename = "logout.generic-problem")]
     GenericLogoutProblem,
+    #[serde(rename = "app-register.generic-problem")]
+    GenericAppRegisterProblem,
 }
 
 #[derive(serde::Serialize)]

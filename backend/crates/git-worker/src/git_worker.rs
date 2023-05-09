@@ -132,6 +132,17 @@ impl GitWorker {
         Ok(())
     }
 
+    pub fn delete_local_branch(&self, branch_name: &str) -> Result<()> {
+        let repo = self.repo.lock().unwrap();
+
+        let mut branch = repo
+            .find_branch(branch_name, git2::BranchType::Local)
+            .map_err(Error::Git)?;
+        branch.delete().map_err(Error::Git)?;
+
+        Ok(())
+    }
+
     pub fn checkout_branch(&self, branch_name: &str) -> Result<()> {
         let repo = self.repo.lock().unwrap();
 
