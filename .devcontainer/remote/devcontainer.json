@@ -1,0 +1,39 @@
+{
+  "name": "Remote",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/rust:1": {}
+  },
+  "hostRequirements": {
+    "memory": "8gb"
+  },
+  "remoteEnv": {
+    "APP_GITHUB__CLIENT_ID": "${localEnv:GH_CLIENT_ID}",
+    "APP_GITHUB__CLIENT_SECRET": "${localEnv:GH_CLIENT_SECRET}"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "bradlc.vscode-tailwindcss"
+      ],
+      "settings": {
+        "sqltools.connections": [
+          {
+            "name": "Container database",
+            "driver": "PostgreSQL",
+            "previewLimit": 50,
+            "server": "db",
+            "port": 5432,
+            "database": "appcenter_website",
+            "username": "appcenter",
+            "password": "appcenter"
+          }
+        ]
+      }
+    }
+  }
+}
