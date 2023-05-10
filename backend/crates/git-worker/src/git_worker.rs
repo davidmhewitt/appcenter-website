@@ -21,6 +21,12 @@ pub enum Error {
     RepoOwnerNotFound,
 }
 
+#[derive(Debug)]
+pub enum GithubOwner {
+    User(String),
+    Org(String),
+}
+
 pub struct GitWorker {
     pub repo_path: PathBuf,
     git_repo_url: String,
@@ -82,7 +88,29 @@ impl GitWorker {
         Ok(())
     }
 
-    pub async fn get_github_repo_owner_id(&self, org: &str, repo: &str) -> Result<u64, Error> {
+    pub async fn is_user_admin_member_of_github_org(
+        &self,
+        access_token: &SecretString,
+        _org_id: &str,
+    ) -> Result<bool, Error> {
+        let _octo = octocrab::OctocrabBuilder::new()
+            .oauth(octocrab::auth::OAuth {
+                access_token: access_token.to_owned(),
+                token_type: "Bearer".into(),
+                scope: vec![],
+            })
+            .build().map_err(Error::GitHub)?;
+
+        // TODO: Awaiting https://github.com/XAMPPRocky/octocrab/pull/357
+
+        return Ok(false)
+    }
+
+    pub async fn get_github_repo_owner_id(
+        &self,
+        org: &str,
+        repo: &str,
+    ) -> Result<GithubOwner, Error> {
         let owner = self
             .octo
             .repos(org, repo)
@@ -92,7 +120,11 @@ impl GitWorker {
             .map_err(Error::GitHub)?;
 
         if let Some(owner) = owner {
-            return Ok(owner.id.0);
+            if owner.r#type == "Organization" {
+                return Ok(GithubOwner::Org(owner.id.0.to_string()));
+            } else {
+                return Ok(GithubOwner::User(owner.id.0.to_string()));
+            }
         }
 
         Err(Error::RepoOwnerNotFound)

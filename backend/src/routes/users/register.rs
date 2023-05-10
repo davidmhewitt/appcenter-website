@@ -47,6 +47,8 @@ pub async fn register_user(
         email: new_user.0.email,
         is_active: false,
         github_id: None,
+        github_access_token: None,
+        github_refresh_token: None,
     };
 
     let user_id = match insert_created_user_into_db(&mut transaction, &create_new_user).await {
@@ -118,17 +120,19 @@ pub async fn insert_created_user_into_db(
     new_user: &CreateNewUser,
 ) -> Result<uuid::Uuid, sqlx::Error> {
     let user_id = match sqlx::query(
-        "INSERT INTO users (email, password, is_active, github_id) VALUES ($1, $2, $3, $4) RETURNING id",
+        "INSERT INTO users (email, password, is_active, github_id, github_access_token, github_refresh_token) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
     )
     .bind(&new_user.email)
     .bind(
-        &new_user
+        new_user
             .password
             .as_ref()
-            .map(|p| p.expose_secret().to_owned()),
+            .map(|p| p.expose_secret()),
     )
     .bind(new_user.is_active)
     .bind(new_user.github_id)
+    .bind(new_user.github_access_token.as_ref().map(|t| t.expose_secret()))
+    .bind(new_user.github_refresh_token.as_ref().map(|t| t.expose_secret()))
     .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
     .fetch_one(&mut *transaction)
     .await

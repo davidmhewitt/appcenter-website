@@ -149,6 +149,10 @@ pub async fn github_callback(
             password: None,
             is_active: true,
             github_id: user_info.id.as_i64(),
+            github_access_token: Some(SecretString::new(token.access_token().secret().to_owned())),
+            github_refresh_token: token
+                .refresh_token()
+                .and_then(|t| Some(SecretString::new(t.secret().to_owned()))),
         };
 
         let mut transaction = match pool.begin().await {
