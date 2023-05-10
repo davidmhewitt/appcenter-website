@@ -1,7 +1,7 @@
 -- Add up migration script here
 CREATE TABLE IF NOT EXISTS apps(
     id TEXT NOT NULL PRIMARY KEY,
-    user_id UUID NOT NULL UNIQUE,
+    user_id UUID NOT NULL,
     repository TEXT NOT NULL,
     is_verified BOOLEAN DEFAULT FALSE,
     last_submitted_version TEXT,

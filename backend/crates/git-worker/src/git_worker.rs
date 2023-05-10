@@ -82,7 +82,7 @@ impl GitWorker {
         Ok(())
     }
 
-    pub async fn get_github_repo_owner_id(&self, org: String, repo: String) -> Result<u64, Error> {
+    pub async fn get_github_repo_owner_id(&self, org: &str, repo: &str) -> Result<u64, Error> {
         let owner = self
             .octo
             .repos(org, repo)
