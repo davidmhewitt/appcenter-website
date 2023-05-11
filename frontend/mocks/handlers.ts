@@ -30,5 +30,28 @@ export const handlers = [
     return res(
       ctx.json(app)
     )
+  }),
+  rest.get('/api/user/apps', async (req, res, ctx) => {
+    return res(
+      ctx.json(
+        [
+          {
+            "app_id": "com.github.davidmhewitt.torrential",
+            "verified": true,
+            "version": "3.0.0"
+          },
+          {
+            "app_id": "com.github.davidmhewitt.clipped",
+            "verified": true,
+            "version": "1.0.3"
+          },
+          {
+            "app_id": "io.elementary.calculator",
+            "verified": false,
+            "version": "7.1.3"
+          },
+        ]
+      )
+    )
   })
 ]
