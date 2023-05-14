@@ -279,8 +279,8 @@ mod tests {
     use super::*;
     use std::{fs::File, process::Command};
 
-    #[test]
-    fn test_clone_repo() -> Result<()> {
+    #[tokio::test]
+    async fn test_clone_repo() -> Result<()> {
         let remote_dir = TempDir::new("remote").expect("Couldn't create temporary remote dir");
         let remote_path = remote_dir.path().to_string_lossy();
 
@@ -340,8 +340,8 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn test_create_branch() -> Result<()> {
+    #[tokio::test]
+    async fn test_create_branch() -> Result<()> {
         let remote_dir = TempDir::new("remote").expect("Couldn't create temporary remote dir");
         let remote_path = remote_dir.path().to_string_lossy();
 
@@ -401,8 +401,8 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn test_commit() -> Result<()> {
+    #[tokio::test]
+    async fn test_commit() -> Result<()> {
         let remote_dir = TempDir::new("remote").expect("Couldn't create temporary remote dir");
         let remote_path = remote_dir.path().to_string_lossy();
 
