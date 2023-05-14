@@ -20,6 +20,6 @@ jobs:
         working-directory: frontend
       - name: Build
         run: |
-          npm run mocks &
-          npm run build
+          npm run mocks -- --no-plugins.inquirerCli.enabled &
+          NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:3100 npm run build
         working-directory: frontend
