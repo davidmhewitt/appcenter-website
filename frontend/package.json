@@ -6,7 +6,6 @@
     "mocks": "mocks-server",
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "cp -r ./_static ../backend/",
     "start": "next start",
     "lint": "next lint",
     "translations": "i18next 'app/**/*.tsx'"
