@@ -1,3 +1,4 @@
+pub mod dashboard;
 mod general;
 mod tokens;
 mod users;

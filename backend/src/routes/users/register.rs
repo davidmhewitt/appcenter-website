@@ -120,19 +120,11 @@ pub async fn insert_created_user_into_db(
     new_user: &CreateNewUser,
 ) -> Result<uuid::Uuid, sqlx::Error> {
     let user_id = match sqlx::query(
-        "INSERT INTO users (email, password, is_active, github_id, github_access_token, github_refresh_token) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+        "INSERT INTO users (email, password, is_active) VALUES ($1, $2, $3) RETURNING id",
     )
     .bind(&new_user.email)
-    .bind(
-        new_user
-            .password
-            .as_ref()
-            .map(|p| p.expose_secret()),
-    )
+    .bind(new_user.password.as_ref().map(|p| p.expose_secret()))
     .bind(new_user.is_active)
-    .bind(new_user.github_id)
-    .bind(new_user.github_access_token.as_ref().map(|t| t.expose_secret()))
-    .bind(new_user.github_refresh_token.as_ref().map(|t| t.expose_secret()))
     .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
     .fetch_one(&mut *transaction)
     .await
@@ -158,10 +150,31 @@ pub async fn insert_created_user_into_db(
     {
         Ok(id) => {
             tracing::event!(target: "sqlx",tracing::Level::INFO, "User profile created successfully {}.", id);
-            Ok(id)
         }
         Err(e) => {
             tracing::event!(target: "sqlx",tracing::Level::ERROR, "Failed to insert user's profile into DB: {:#?}", e);
+        }
+    }
+
+    match sqlx::query(
+        "INSERT INTO github_auth (user_id, github_user_id, github_access_token, github_refresh_token)
+            VALUES ($1, $2, $3, $4)
+            RETURNING user_id",
+    )
+    .bind(user_id)
+    .bind(new_user.github_id.to_owned())
+    .bind(new_user.github_access_token.as_ref().map(|t| t.expose_secret()))
+    .bind(new_user.github_refresh_token.as_ref().map(|t| t.expose_secret()))
+    .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("user_id") })
+    .fetch_one(&mut *transaction)
+    .await
+    {
+        Ok(id) => {
+            tracing::event!(target: "sqlx",tracing::Level::INFO, "User github auth info created successfully {}.", id);
+            Ok(id)
+        }
+        Err(e) => {
+            tracing::event!(target: "sqlx",tracing::Level::ERROR, "Failed to insert user's github auth info into DB: {:#?}", e);
             Err(e)
         }
     }

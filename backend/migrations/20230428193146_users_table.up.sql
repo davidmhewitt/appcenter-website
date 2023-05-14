@@ -12,6 +12,7 @@ CREATE INDEX IF NOT EXISTS users_id_email_password_is_active_indx ON users (id, 
 CREATE TABLE user_profile (
     id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL UNIQUE,
+    profile_picture_url TEXT NULL,
     github_link TEXT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

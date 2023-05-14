@@ -1,3 +1,4 @@
+pub mod extractors;
 pub mod routes;
 pub mod settings;
 pub mod startup;

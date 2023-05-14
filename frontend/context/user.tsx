@@ -1,4 +1,6 @@
-import { useRouter } from 'next/router';
+"use client"
+
+import { useRouter } from 'next/navigation';
 import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react'
 
 type authContextType = {
@@ -28,7 +30,7 @@ export default function Provider({ children }: Props) {
 
     useEffect(() => {
         const getUserProfile = async () => {
-            let res = await fetch("/api/users/test_auth")
+            let res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/test_auth`, {credentials: 'include'})
             setUser(res.status == 200)
         }
 
@@ -36,7 +38,7 @@ export default function Provider({ children }: Props) {
     })
 
     const logout = async () => {
-        await fetch("/api/users/logout", {method: 'POST'})
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/logout`, {method: 'POST'})
         setUser(false);
         router.push("/");
     };

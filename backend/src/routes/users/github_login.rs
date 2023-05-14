@@ -3,7 +3,7 @@ use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, CsrfToken, Sco
 use secrecy::ExposeSecret;
 
 #[tracing::instrument(name = "Github Login", skip(session))]
-#[actix_web::get("/github/login/")]
+#[actix_web::get("/github/login")]
 pub async fn github_login(session: Session) -> actix_web::HttpResponse {
     let settings = crate::settings::get_settings().expect("Failed to read settings.");
 

@@ -1,16 +1,16 @@
-use actix_session::Session;
-use actix_web::HttpResponse;
+use actix_web::{get, HttpResponse};
 
-use crate::utils;
+use crate::extractors::AuthedUser;
 
-#[tracing::instrument(name = "Test Auth", skip(session, pool))]
-#[actix_web::get("/test_auth")]
-pub async fn test_auth(
-    session: Session,
-    pool: actix_web::web::Data<sqlx::postgres::PgPool>,
-) -> actix_web::HttpResponse {
-    match utils::auth::check_auth(session, &pool).await {
-        Some(_) => HttpResponse::Ok().finish(),
-        None => HttpResponse::Unauthorized().finish(),
-    }
+#[tracing::instrument(name = "Test Auth")]
+#[utoipa::path(
+    path = "/users/test_auth",
+    responses(
+        (status = 200, description = "User is authenticated"),
+        (status = 403, description = "User is not authenticated")
+    )
+)]
+#[get("/test_auth")]
+async fn test_auth(_: AuthedUser) -> actix_web::HttpResponse {
+    HttpResponse::Ok().finish()
 }

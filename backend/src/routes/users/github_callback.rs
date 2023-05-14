@@ -62,9 +62,28 @@ pub async fn github_callback(
     let state = CsrfToken::new(response.state.to_owned());
     let code = AuthorizationCode::new(response.code.expose_secret().to_owned());
 
-    let csrf_cookie = session.get::<String>("_github_oauth_csrf");
-    if csrf_cookie.is_err() || !csrf_cookie.unwrap().unwrap().eq(state.secret()) {
-        return error_redirect(ErrorTranslationKey::GenericRegistrationProblem);
+    let csrf_cookie = match session.get::<String>("_github_oauth_csrf") {
+        Err(_) => {
+            return error_redirect(
+                &settings.frontend_url,
+                ErrorTranslationKey::GenericRegistrationProblem,
+            )
+        }
+        Ok(c) => c,
+    };
+
+    if let Some(c) = csrf_cookie {
+        if &c != state.secret() {
+            return error_redirect(
+                &settings.frontend_url,
+                ErrorTranslationKey::GenericRegistrationProblem,
+            );
+        }
+    } else {
+        return error_redirect(
+            &settings.frontend_url,
+            ErrorTranslationKey::GenericRegistrationProblem,
+        );
     }
 
     let token_res = client
@@ -82,7 +101,10 @@ pub async fn github_callback(
         };
 
         if !scopes.contains(&"user:email") {
-            return error_redirect(ErrorTranslationKey::RegistrationNoEmailPermission);
+            return error_redirect(
+                &settings.frontend_url,
+                ErrorTranslationKey::RegistrationNoEmailPermission,
+            );
         }
 
         let client = reqwest::Client::default();
@@ -106,27 +128,52 @@ pub async fn github_callback(
 
         let decoded_emails_response = match emails {
             Ok(x) => x,
-            Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
+            Err(_) => {
+                return error_redirect(
+                    &settings.frontend_url,
+                    ErrorTranslationKey::GenericRegistrationProblem,
+                )
+            }
         };
 
         let email_array = match decoded_emails_response.json::<Vec<GithubEmail>>().await {
             Ok(x) => x,
-            Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
+            Err(_) => {
+                return error_redirect(
+                    &settings.frontend_url,
+                    ErrorTranslationKey::GenericRegistrationProblem,
+                )
+            }
         };
 
         let primary = match email_array.iter().find(|&e| e.primary && e.verified) {
             Some(x) => &x.email,
-            None => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
+            None => {
+                return error_redirect(
+                    &settings.frontend_url,
+                    ErrorTranslationKey::GenericRegistrationProblem,
+                )
+            }
         };
 
         let decoded_user_response = match user {
             Ok(x) => x,
-            Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
+            Err(_) => {
+                return error_redirect(
+                    &settings.frontend_url,
+                    ErrorTranslationKey::GenericRegistrationProblem,
+                )
+            }
         };
 
         let user_info = match decoded_user_response.json::<GithubUser>().await {
             Ok(x) => x,
-            Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
+            Err(_) => {
+                return error_redirect(
+                    &settings.frontend_url,
+                    ErrorTranslationKey::GenericRegistrationProblem,
+                )
+            }
         };
 
         if let Ok(user) = get_user_who_is_active(&pool, primary).await {
@@ -140,7 +187,7 @@ pub async fn github_callback(
                 .expect("`user_email` cannot be inserted into session");
 
             return actix_web::HttpResponse::SeeOther()
-                .insert_header((actix_web::http::header::LOCATION, "/"))
+                .insert_header((actix_web::http::header::LOCATION, settings.frontend_url))
                 .finish();
         }
 
@@ -148,7 +195,7 @@ pub async fn github_callback(
             email: primary.to_owned(),
             password: None,
             is_active: true,
-            github_id: user_info.id.as_i64(),
+            github_id: Some(user_info.id.to_string()),
             github_access_token: Some(SecretString::new(token.access_token().secret().to_owned())),
             github_refresh_token: token
                 .refresh_token()
@@ -157,16 +204,29 @@ pub async fn github_callback(
 
         let mut transaction = match pool.begin().await {
             Ok(transaction) => transaction,
-            Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
+            Err(_) => {
+                return error_redirect(
+                    &settings.frontend_url,
+                    ErrorTranslationKey::GenericRegistrationProblem,
+                )
+            }
         };
 
         let user_id = match insert_created_user_into_db(&mut transaction, &user).await {
             Ok(u) => u,
-            Err(_) => return error_redirect(ErrorTranslationKey::GenericRegistrationProblem),
+            Err(_) => {
+                return error_redirect(
+                    &settings.frontend_url,
+                    ErrorTranslationKey::GenericRegistrationProblem,
+                )
+            }
         };
 
         if transaction.commit().await.is_err() {
-            return error_redirect(ErrorTranslationKey::GenericRegistrationProblem);
+            return error_redirect(
+                &settings.frontend_url,
+                ErrorTranslationKey::GenericRegistrationProblem,
+            );
         }
 
         session.remove("_github_oauth_csrf");
@@ -180,16 +240,20 @@ pub async fn github_callback(
     }
 
     actix_web::HttpResponse::SeeOther()
-        .insert_header((actix_web::http::header::LOCATION, "/"))
+        .insert_header((actix_web::http::header::LOCATION, settings.frontend_url))
         .finish()
 }
 
-fn error_redirect(translation_key: ErrorTranslationKey) -> actix_web::HttpResponse {
+fn error_redirect(
+    frontend_url: &str,
+    translation_key: ErrorTranslationKey,
+) -> actix_web::HttpResponse {
     actix_web::HttpResponse::SeeOther()
         .insert_header((
             actix_web::http::header::LOCATION,
             format!(
-                "/register?error={}",
+                "{}/register?error={}",
+                frontend_url,
                 to_variant_name(&translation_key).unwrap()
             ),
         ))

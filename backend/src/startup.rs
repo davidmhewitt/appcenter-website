@@ -1,5 +1,6 @@
 use std::io::ErrorKind;
 
+use actix_cors::Cors;
 use actix_files as fs;
 use actix_session::config::PersistentSession;
 use actix_web::cookie::time::Duration;
@@ -86,7 +87,15 @@ async fn run(
 
     let secret_key =
         actix_web::cookie::Key::from(settings.secret.hmac_secret.expose_secret().as_bytes());
+
     let server = actix_web::HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:3000")
+            .allowed_methods(vec!["GET", "POST"])
+            .supports_credentials()
+            .allow_any_header()
+            .max_age(3600);
+
         actix_web::App::new()
             .wrap(
                 actix_session::SessionMiddleware::builder(
@@ -99,11 +108,12 @@ async fn run(
                 .cookie_secure(!settings.debug)
                 .build(),
             )
+            .wrap(cors)
             .service(crate::routes::health_check)
             .configure(crate::routes::auth_routes_config)
             .configure(crate::routes::apps_routes_config)
+            .configure(crate::routes::dashboard_routes_config)
             .service(fs::Files::new("/static/apps", "_apps"))
-            .service(fs::Files::new("/", "_static").index_file("index.html"))
             .app_data(pool.clone())
             .app_data(redis_pool_data.clone())
             .app_data(git_worker_data.clone())

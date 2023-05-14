@@ -1,8 +1,23 @@
-use actix_web::HttpResponse;
+use actix_web::{get, HttpResponse};
 use appstream_worker::ComponentSummary;
 
+const EXAMPLE_JSON: &str = include_str!("examples/recently_added.json");
+
+#[utoipa::path(
+    path = "/apps/recently_added",
+    responses(
+        (
+            status = 200,
+            description = "List of recently added applications",
+            body = Vec<ComponentSummary>,
+            examples(
+                ("example" = (value = json!(serde_json::from_str::<Vec<ComponentSummary>>(EXAMPLE_JSON).unwrap())))
+            )
+        ),
+    )
+)]
 #[tracing::instrument(name = "Getting recently updated apps", skip(redis_pool))]
-#[actix_web::get("/recently_added")]
+#[get("/recently_added")]
 pub async fn recently_added(
     redis_pool: actix_web::web::Data<deadpool_redis::Pool>,
 ) -> actix_web::HttpResponse {

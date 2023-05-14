@@ -29,7 +29,7 @@ pub struct CreateNewUser {
     pub email: String,
     pub password: Option<SecretString>,
     pub is_active: bool,
-    pub github_id: Option<i64>,
+    pub github_id: Option<String>,
     pub github_access_token: Option<SecretString>,
     pub github_refresh_token: Option<SecretString>,
 }

@@ -22,6 +22,8 @@ pub enum ErrorTranslationKey {
     AppRegisterNonMatchingGithubRDNN,
     #[serde(rename = "app-register.invalid-repository-url")]
     AppRegisterInvalidRepositoryUrl,
+    #[serde(rename = "app-submit-update.unable-to-get-url")]
+    AppSubmitUpdateCannotGetUrl,
 }
 
 #[derive(serde::Serialize)]

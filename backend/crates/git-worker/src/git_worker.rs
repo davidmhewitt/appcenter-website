@@ -1,6 +1,7 @@
 use anyhow::Result;
 use octocrab::Octocrab;
 use std::{path::PathBuf, sync::Mutex};
+use tempdir::TempDir;
 
 use git2::{
     build::CheckoutBuilder, FetchOptions, IndexAddOption, ObjectType, PushOptions, RemoteCallbacks,
@@ -99,11 +100,12 @@ impl GitWorker {
                 token_type: "Bearer".into(),
                 scope: vec![],
             })
-            .build().map_err(Error::GitHub)?;
+            .build()
+            .map_err(Error::GitHub)?;
 
         // TODO: Awaiting https://github.com/XAMPPRocky/octocrab/pull/357
 
-        return Ok(false)
+        return Ok(false);
     }
 
     pub async fn get_github_repo_owner_id(
@@ -254,14 +256,28 @@ impl GitWorker {
 
         Ok(())
     }
+
+    pub fn get_remote_commit_id_from_tag(&self, repo_url: &str, tag_name: &str) -> Result<String> {
+        let temp_repo_dir = TempDir::new("remote")?;
+        let temp_repo = git2::Repository::init(temp_repo_dir.path())?;
+        let mut remote = temp_repo.remote("origin", repo_url)?;
+        remote.connect(git2::Direction::Fetch)?;
+
+        let refs = remote.list()?;
+        for r in refs {
+            if r.name() == format!("refs/tags/{}", tag_name) {
+                return Ok(r.oid().to_string());
+            }
+        }
+
+        Err(anyhow::format_err!("Couldn't find commit id"))
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::{fs::File, process::Command};
-
-    use tempdir::TempDir;
 
     #[test]
     fn test_clone_repo() -> Result<()> {

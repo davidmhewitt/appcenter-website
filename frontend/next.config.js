@@ -1,12 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'export',
-  distDir: '_static',
-  trailingSlash: true,
   images: {
-    unoptimized: true
-  },
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "3100",
+        pathname: "/static/**"
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3100",
+        pathname: "/static/**"
+      },
+    ]
+  }
 }
 
 module.exports = nextConfig

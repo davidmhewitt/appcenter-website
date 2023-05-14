@@ -4,7 +4,7 @@ mod github_login;
 mod login;
 mod logout;
 mod register;
-mod test_auth;
+pub(crate) mod test_auth;
 
 pub fn auth_routes_config(cfg: &mut actix_web::web::ServiceConfig) {
     cfg.service(

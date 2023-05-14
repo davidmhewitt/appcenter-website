@@ -1,13 +1,10 @@
 use crate::{
     appstream_collection_sorters,
     appstream_version_utils::{get_latest_component_version, get_new_and_updated_apps},
-    redis_utils, RECENTLY_ADDED_REDIS_KEY, RECENTLY_UPDATED_REDIS_KEY,
+    redis_utils, ALL_APP_IDS_REDIS_KEY, RECENTLY_ADDED_REDIS_KEY, RECENTLY_UPDATED_REDIS_KEY,
 };
 
-use appstream::{
-    enums::{Bundle, Icon},
-    AppId, Collection, Component, TranslatableString,
-};
+use appstream::{enums::Bundle, Collection, Component};
 use deadpool_redis::Pool;
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::{Client, StatusCode};
@@ -15,17 +12,40 @@ use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     io::{Error, ErrorKind},
     path::Path,
 };
 use tokio::time::Duration;
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
+use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, ToSchema)]
+#[schema(example = json!({"C": "Welcome", "ja": "いらっしゃいませ"}))]
+pub struct TranslatableString(pub BTreeMap<String, String>);
+
+impl TranslatableString {
+    pub fn from(original: appstream::TranslatableString) -> Self {
+        Self { 0: original.0 }
+    }
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
+
+pub struct Icon {
+    #[schema(example = "com.github.alexkdeveloper.bmi.png")]
+    path: String,
+    #[schema(example = 64)]
+    width: Option<u32>,
+    #[schema(example = 64)]
+    height: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
 pub struct ComponentSummary {
-    id: AppId,
+    #[schema(example = "com.github.davidmhewitt.torrential")]
+    id: String,
     name: TranslatableString,
     summary: Option<TranslatableString>,
     icons: Vec<Icon>,
@@ -34,10 +54,25 @@ pub struct ComponentSummary {
 impl From<Component> for ComponentSummary {
     fn from(value: Component) -> Self {
         Self {
-            id: value.id,
-            name: value.name,
-            summary: value.summary,
-            icons: value.icons,
+            id: value.id.0,
+            name: TranslatableString::from(value.name),
+            summary: value.summary.map(TranslatableString::from),
+            icons: value
+                .icons
+                .into_iter()
+                .filter_map(|i| match i {
+                    appstream::enums::Icon::Cached {
+                        path,
+                        width,
+                        height,
+                    } => Some(Icon {
+                        path: path.to_string_lossy().into_owned(),
+                        width: width,
+                        height: height,
+                    }),
+                    _ => None,
+                })
+                .collect(),
         }
     }
 }
@@ -109,6 +144,12 @@ impl AppstreamWorker {
             collection.sort_unstable_by(|a, b| {
                 appstream_collection_sorters::sort_newly_released_components_first(a, b)
             });
+
+            redis_utils::del(&mut redis_con, ALL_APP_IDS_REDIS_KEY).await;
+
+            for c in collection.iter() {
+                redis_utils::rpush(&mut redis_con, ALL_APP_IDS_REDIS_KEY, &c.id.0).await;
+            }
 
             redis_utils::del(&mut redis_con, RECENTLY_UPDATED_REDIS_KEY).await;
 
@@ -186,7 +227,7 @@ impl AppstreamWorker {
         for c in collection {
             for icon in &c.icons {
                 // TODO: Do we need to handle other icon types?
-                if let Icon::Cached {
+                if let appstream::enums::Icon::Cached {
                     path,
                     width,
                     height,
