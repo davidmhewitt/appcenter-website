@@ -2,7 +2,7 @@ use actix_web::web::{Data, Json};
 use actix_web::{get, post, HttpResponse};
 use git_worker::GitWorker;
 use sqlx::postgres::PgRow;
-use sqlx::Row;
+use sqlx::{PgPool, Row};
 use url::Url;
 use uuid::Uuid;
 
@@ -41,19 +41,28 @@ use crate::types::{ErrorResponse, ErrorTranslationKey};
 #[get("/apps")]
 #[tracing::instrument(name = "Fetching apps for dashboard", skip(user, pool))]
 pub async fn get_apps(user: AuthedUser, pool: Data<sqlx::postgres::PgPool>) -> HttpResponse {
-    let mut con = match pool.acquire().await {
-        Ok(c) => c,
-        Err(_) => return HttpResponse::InternalServerError().finish(),
-    };
+    let apps = get_apps_from_db(&pool, &user.uuid).await;
 
-    let apps = sqlx::query(
+    match apps {
+        Ok(a) => HttpResponse::Ok().json(a),
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+async fn get_apps_from_db(
+    pool: &sqlx::postgres::PgPool,
+    uuid: &Uuid,
+) -> Result<Vec<App>, sqlx::Error> {
+    let mut con = pool.acquire().await?;
+
+    return sqlx::query(
         "SELECT id, repository, verified_owner, last_submitted_version
             FROM apps app
             INNER JOIN app_owners owner
             ON app.id = owner.app_id
             WHERE owner.user_id = $1",
     )
-    .bind(user.uuid)
+    .bind(uuid)
     .map(|r: PgRow| App {
         id: r.get("id"),
         repository: r.get("repository"),
@@ -62,11 +71,6 @@ pub async fn get_apps(user: AuthedUser, pool: Data<sqlx::postgres::PgPool>) -> H
     })
     .fetch_all(&mut con)
     .await;
-
-    match apps {
-        Ok(a) => HttpResponse::Ok().json(a),
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
 }
 
 #[utoipa::path(
@@ -122,75 +126,84 @@ pub async fn add_app(
         }
     }
 
-    let mut transaction = match pool.begin().await {
-        Ok(transaction) => transaction,
-        Err(e) => {
-            tracing::error!("Couldn't start database transaction: {}", e);
-            return HttpResponse::InternalServerError().json(ErrorResponse {
-                error: "Couldn't start database transaction".into(),
-                translation_key: ErrorTranslationKey::GenericAppRegisterProblem,
-            });
-        }
-    };
-
-    let db_repo = match sqlx::query("SELECT repository FROM apps WHERE id = $1")
-        .bind(&app.app_id)
-        .map(|r| -> String { r.get("repository") })
-        .fetch_one(&mut transaction)
-        .await
-    {
-        Ok(r) => Some(r),
-        Err(_) => None,
-    };
-
-    if db_repo.is_some() && &db_repo.unwrap() != &app.repository {
-        return HttpResponse::BadRequest().json(ErrorResponse {
-            error: "App already exists with a different repository set".into(),
-            translation_key: ErrorTranslationKey::GenericAppRegisterProblem,
-        });
-    }
-
-    match sqlx::query(
-        "INSERT INTO apps (id, repository, is_verified) VALUES ($1, $2, $3)
-        ON CONFLICT DO NOTHING",
-    )
-    .bind(&app.app_id)
-    .bind(&app.repository)
-    .bind(verified)
-    .execute(&mut transaction)
-    .await
-    {
+    match add_app_to_db(&pool, &user.uuid, &app.app_id, &app.repository, verified).await {
         Ok(_) => {}
-        Err(e) => {
-            tracing::error!("Couldn't insert app into database: {}", e);
-        }
-    }
-
-    match sqlx::query(
-        "INSERT INTO app_owners (user_id, app_id, verified_owner) VALUES ($1, $2, $3)
-        ON CONFLICT DO NOTHING",
-    )
-    .bind(user.uuid)
-    .bind(&app.app_id)
-    .bind(verified)
-    .execute(&mut transaction)
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            tracing::error!("Couldn't insert app owner into database: {}", e);
-        }
-    }
-
-    if let Err(e) = transaction.commit().await {
-        tracing::error!("Couldn't commit to database: {}", e);
-        return HttpResponse::InternalServerError().json(ErrorResponse {
-            error: "Couldn't commit database transaction".into(),
-            translation_key: ErrorTranslationKey::GenericAppRegisterProblem,
-        });
+        Err(e) => match e {
+            AddAppError::SqlError(e) => {
+                tracing::error!("Couldn't add app to database: {}", e);
+                return HttpResponse::InternalServerError().json(ErrorResponse {
+                    error: "Database error while trying to add new app".into(),
+                    translation_key: ErrorTranslationKey::GenericAppRegisterProblem,
+                });
+            }
+            AddAppError::UserError((message, translation_key)) => {
+                return HttpResponse::BadRequest().json(ErrorResponse {
+                    error: message,
+                    translation_key,
+                })
+            }
+        },
     }
 
     HttpResponse::Ok().finish()
+}
+
+enum AddAppError {
+    SqlError(sqlx::Error),
+    UserError((String, ErrorTranslationKey)),
+}
+
+async fn add_app_to_db(
+    pool: &PgPool,
+    owner: &Uuid,
+    app_id: &str,
+    repository_url: &str,
+    verified: bool,
+) -> Result<(), AddAppError> {
+    let mut transaction = pool.begin().await.map_err(AddAppError::SqlError)?;
+
+    let db_repo = sqlx::query("SELECT repository FROM apps WHERE id = $1")
+        .bind(app_id)
+        .map(|r| -> String { r.get("repository") })
+        .fetch_optional(&mut transaction)
+        .await
+        .map_err(AddAppError::SqlError)?;
+
+    if db_repo.is_some() && db_repo.unwrap() != repository_url {
+        return Err(AddAppError::UserError((
+            "App already exists with a different repository set".into(),
+            ErrorTranslationKey::GenericAppRegisterProblem,
+        )));
+    }
+
+    sqlx::query(
+        "INSERT INTO apps (id, repository, is_verified) VALUES ($1, $2, $3)
+        ON CONFLICT DO NOTHING",
+    )
+    .bind(app_id)
+    .bind(repository_url)
+    .bind(verified)
+    .execute(&mut transaction)
+    .await
+    .map_err(AddAppError::SqlError)?;
+
+    sqlx::query(
+        "INSERT INTO app_owners (user_id, app_id, verified_owner) VALUES ($1, $2, $3)
+        ON CONFLICT DO NOTHING",
+    )
+    .bind(owner)
+    .bind(app_id)
+    .bind(verified)
+    .execute(&mut transaction)
+    .await
+    .map_err(AddAppError::SqlError)?;
+
+    if let Err(e) = transaction.commit().await {
+        tracing::error!("Couldn't commit to database: {}", e);
+        return Err(AddAppError::SqlError(e));
+    }
+
+    Ok(())
 }
 
 async fn is_user_admin_member_of_github_org(
@@ -306,6 +319,8 @@ fn validate_github_url_and_rdnn(url: &Url, rdnn: &str) -> GithubRdnnValidationRe
 
 #[cfg(test)]
 mod tests {
+    use sqlx::PgPool;
+
     use super::*;
 
     #[test]
@@ -316,5 +331,53 @@ mod tests {
             validate_github_url_and_rdnn(&url, "com.github.davidmhewitt.torrential"),
             GithubRdnnValidationResult::Valid(("davidmhewitt".into(), "torrential".into()))
         );
+    }
+
+    #[sqlx::test]
+    async fn app_database_tests(pool: PgPool) -> sqlx::Result<()> {
+        let apps = get_apps_from_db(&pool, &Uuid::new_v4()).await?;
+        assert!(apps.is_empty());
+
+        let mut transaction = pool.begin().await?;
+
+        let user1_id: Uuid = sqlx::query(
+            "INSERT INTO users (email, password, is_active) VALUES ($1, NULL, TRUE) RETURNING id",
+        )
+        .bind("test1@example.com")
+        .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
+        .fetch_one(&mut transaction)
+        .await?;
+
+        let user2_id: Uuid = sqlx::query(
+            "INSERT INTO users (email, password, is_active) VALUES ($1, NULL, TRUE) RETURNING id",
+        )
+        .bind("test2@example.com")
+        .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
+        .fetch_one(&mut transaction)
+        .await?;
+
+        transaction.commit().await?;
+
+        match add_app_to_db(
+            &pool,
+            &user1_id,
+            "com.github.davidmhewitt.torrential",
+            "https://github.com/davidmhewitt/torrential",
+            true,
+        )
+        .await
+        {
+            Err(AddAppError::SqlError(e)) => return Err(e),
+            Err(AddAppError::UserError(e)) => panic!("{}", e.0),
+            Ok(_) => {}
+        }
+
+        let apps = get_apps_from_db(&pool, &user1_id).await?;
+        assert_eq!(apps.len(), 1);
+
+        let apps = get_apps_from_db(&pool, &user2_id).await?;
+        assert!(apps.is_empty());
+
+        Ok(())
     }
 }
