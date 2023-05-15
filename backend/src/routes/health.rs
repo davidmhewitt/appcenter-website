@@ -13,11 +13,7 @@ mod tests {
 
     #[test]
     async fn test_health_check() {
-        let mut app = test::init_service(
-            App::new()
-                .service(health_check)
-        )
-        .await;
+        let mut app = test::init_service(App::new().service(health_check)).await;
 
         let req = test::TestRequest::get().uri("/health-check").to_request();
         let response = test::call_service(&mut app, req).await;

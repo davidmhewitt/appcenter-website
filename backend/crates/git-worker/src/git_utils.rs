@@ -1,5 +1,5 @@
-use std::path::Path;
 use anyhow::Result;
+use std::path::Path;
 
 use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks, Repository};
 use secrecy::{ExposeSecret, SecretString};
@@ -84,7 +84,8 @@ mod tests {
 
     #[test]
     fn remote_commit_id() -> Result<()> {
-        let id = get_remote_commit_id_from_tag("https://github.com/elementary/appcenter.git", "7.2.1")?;
+        let id =
+            get_remote_commit_id_from_tag("https://github.com/elementary/appcenter.git", "7.2.1")?;
         assert_eq!(id, "1e210fe79afe6a0a59e253ca54de92105dbd3efa");
 
         Ok(())

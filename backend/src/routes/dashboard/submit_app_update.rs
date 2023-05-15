@@ -199,7 +199,7 @@ mod tests {
 
         sqlx::query(
             "INSERT INTO app_owners (user_id, app_id, verified_owner)
-            VALUES ($1, 'com.github.davidmhewitt.torrential', FALSE)"
+            VALUES ($1, 'com.github.davidmhewitt.torrential', FALSE)",
         )
         .bind(user1_id)
         .execute(&mut transaction)
@@ -207,22 +207,28 @@ mod tests {
 
         transaction.commit().await?;
 
-        let repo_url = get_repo_url_from_db(&pool, "com.github.davidmhewitt.torrential", &user1_id).await;
+        let repo_url =
+            get_repo_url_from_db(&pool, "com.github.davidmhewitt.torrential", &user1_id).await;
         assert!(repo_url.is_err());
 
         let mut transaction = pool.begin().await?;
 
         sqlx::query(
             "UPDATE app_owners SET verified_owner = TRUE
-            WHERE app_id = 'com.github.davidmhewitt.torrential'"
-        ).execute(&mut transaction)
+            WHERE app_id = 'com.github.davidmhewitt.torrential'",
+        )
+        .execute(&mut transaction)
         .await?;
 
         transaction.commit().await?;
 
-        let repo_url = get_repo_url_from_db(&pool, "com.github.davidmhewitt.torrential", &user1_id).await;
+        let repo_url =
+            get_repo_url_from_db(&pool, "com.github.davidmhewitt.torrential", &user1_id).await;
         assert!(repo_url.is_ok());
-        assert_eq!(repo_url.unwrap(), "https://github.com/davidmhewitt/torrential.git");
+        assert_eq!(
+            repo_url.unwrap(),
+            "https://github.com/davidmhewitt/torrential.git"
+        );
 
         Ok(())
     }
