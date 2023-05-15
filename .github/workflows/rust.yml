@@ -36,6 +36,7 @@ jobs:
         run: |
           git config --global user.name "David Hewitt"
           git config --global user.email "davidmhewitt@gmail.com"
+          git config --global init.defaultBranch main
           cd backend
           cargo build --workspace --all-features
           cargo test --workspace
