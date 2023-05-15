@@ -27,7 +27,7 @@ jobs:
           workspaces: "backend"
       - name: Build
         env:
-          DATABASE_URL: postgresql://postgres:postgres@postgres/appcenter_website
+          DATABASE_URL: postgresql://postgres:postgres@localhost/appcenter_website
         run: |
           cd backend
           cargo build --workspace --all-features
