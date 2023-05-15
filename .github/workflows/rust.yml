@@ -5,6 +5,22 @@ on:
 
 jobs:
   build:
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: appcenter_website
+          POSTGRES_USER: appcenter
+          POSTGRES_PASSWORD: appcenter
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     name: Rust build
     runs-on: ubuntu-latest
     steps:
@@ -15,4 +31,12 @@ jobs:
         with:
           workspaces: "backend"
       - name: Build
-        run: cd backend && cargo build --workspace --all-features
+        env:
+          DATABASE_URL: postgresql://appcenter:appcenter@localhost/appcenter_website
+        run: |
+          git config --global user.name "David Hewitt"
+          git config --global user.email "davidmhewitt@gmail.com"
+          git config --global init.defaultBranch main
+          cd backend
+          cargo build --workspace --all-features
+          cargo test --workspace
