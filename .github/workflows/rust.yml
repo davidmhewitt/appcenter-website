@@ -9,7 +9,10 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: appcenter_website
+          POSTGRES_USER: appcenter
+          POSTGRES_PASSWORD: appcenter
+          POSTGRES_HOST_AUTH_METHOD: trust
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -27,7 +30,7 @@ jobs:
           workspaces: "backend"
       - name: Build
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost/appcenter_website
+          DATABASE_URL: postgresql://appcenter:appcenter@localhost/appcenter_website
         run: |
           cd backend
           cargo build --workspace --all-features
