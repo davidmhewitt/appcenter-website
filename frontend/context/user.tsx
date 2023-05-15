@@ -16,6 +16,7 @@ type authContextType = {
 
 const authContextDefaultValues: authContextType = {
   user: false,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   logout: () => {},
 }
 
@@ -35,7 +36,7 @@ export default function Provider({ children }: Props) {
 
   useEffect(() => {
     const getUserProfile = async () => {
-      let res = await fetch(
+      const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/test_auth`,
         { credentials: 'include' }
       )
