@@ -34,6 +34,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://appcenter:appcenter@localhost/appcenter_website
         run: |
+          git config --global user.name "David Hewitt"
+          git config --global user.email "davidmhewitt@gmail.com"
           cd backend
           cargo build --workspace --all-features
           cargo test --workspace
