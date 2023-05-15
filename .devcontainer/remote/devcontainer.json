@@ -17,10 +17,11 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "mtxr.sqltools",
-        "mtxr.sqltools-driver-pg",
-        "bradlc.vscode-tailwindcss"
-      ],
+		"mtxr.sqltools",
+		"mtxr.sqltools-driver-pg",
+		"bradlc.vscode-tailwindcss",
+		"esbenp.prettier-vscode"
+	],
       "settings": {
         "sqltools.connections": [
           {

@@ -4,7 +4,7 @@
 
 module.exports = {
   // Log level. Can be one of silly, debug, verbose, info, warn or error
-  log: "info",
+  log: 'info',
   config: {
     // Allow unknown arguments
     //allowUnknownArguments: false,
@@ -12,8 +12,7 @@ module.exports = {
   plugins: {
     // Plugins to be registered
     //register: [],
-    proxyRoutesHandler: {
-    },
+    proxyRoutesHandler: {},
     adminApi: {
       // Port number for the admin API server to be listening at
       //port: 3110,
@@ -49,7 +48,7 @@ module.exports = {
       //delay: 0,
     },
     collections: {
-      selected: "base",
+      selected: 'base',
     },
   },
   server: {
@@ -61,7 +60,7 @@ module.exports = {
       // Use CORS middleware or not
       enabled: true,
       // Options for the CORS middleware. Further information at https://github.com/expressjs/cors#configuration-options
-      options: { "origin": true, "credentials": true },
+      options: { origin: true, credentials: true },
     },
     jsonBodyParser: {
       // Use json body-parser middleware or not
@@ -102,4 +101,4 @@ module.exports = {
     // Variant Handlers to be registered
     //register: [],
   },
-};
+}

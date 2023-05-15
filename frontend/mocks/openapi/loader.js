@@ -1,8 +1,8 @@
 module.exports = [
   {
-    basePath: "/api",
-    document : {
-      $ref: "../../../backend/openapi.json"
-    }
-  }
-];
+    basePath: '/api',
+    document: {
+      $ref: '../../../backend/openapi.json',
+    },
+  },
+]
