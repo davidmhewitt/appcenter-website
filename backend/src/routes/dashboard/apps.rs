@@ -96,43 +96,21 @@ pub async fn add_app(
 
     let mut verified = false;
     if app.app_id.starts_with("com.github.") || app.app_id.starts_with("io.github.") {
-        let path_segments = match url.path_segments() {
-            Some(s) => s,
-            None => {
+        let (owner, path_repo_name) = match validate_github_url_and_rdnn(&url, &app.app_id) {
+            GithubRdnnValidationResult::Valid((owner, repo)) => (owner, repo),
+            GithubRdnnValidationResult::Invalid((error, translation_key)) => {
                 return HttpResponse::BadRequest().json(ErrorResponse {
-                    error: "Invalid GitHub repository URL passed in `git_repo_url`".into(),
-                    translation_key: ErrorTranslationKey::AppRegisterInvalidRepositoryUrl,
-                });
+                    error,
+                    translation_key,
+                })
             }
-        }
-        .collect::<Vec<&str>>();
-
-        let rdnn_parts = app.app_id.split('.').collect::<Vec<&str>>();
-        if rdnn_parts.len() != 4 {
-            return HttpResponse::BadRequest().json(ErrorResponse {
-                error: "GitHub RDNNs must have exactly 4 sections/components".into(),
-                translation_key: ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
-            });
-        }
-
-        let path_repo_name = path_segments.get(1).unwrap();
-        let path_repo_name = if path_repo_name.ends_with(".git") {
-            path_repo_name.strip_suffix(".git").unwrap()
-        } else {
-            path_repo_name
         };
 
-        if let Some(response) =
-            validate_github_url_and_rdnn(&url, &path_segments, &rdnn_parts, path_repo_name)
-        {
-            return response;
-        }
-
         if let Some(github_user_id) = github_user_id {
-            let owner = *path_segments.get(0).unwrap();
-            let repo = path_repo_name;
-
-            let owner_id = git_worker.get_github_repo_owner_id(owner, repo).await.ok();
+            let owner_id = git_worker
+                .get_github_repo_owner_id(&owner, &path_repo_name)
+                .await
+                .ok();
 
             if let Some(owner_id) = owner_id {
                 if let git_worker::GithubOwner::User(repo_owner_id) = owner_id {
@@ -259,39 +237,84 @@ async fn get_github_user_tokens(
     tokens.ok()
 }
 
-fn validate_github_url_and_rdnn(
-    url: &Url,
-    path_segments: &Vec<&str>,
-    rdnn_parts: &Vec<&str>,
-    path_repo_name: &str,
-) -> Option<HttpResponse> {
+#[derive(Debug, PartialEq)]
+enum GithubRdnnValidationResult {
+    Valid((String, String)),
+    Invalid((String, ErrorTranslationKey)),
+}
+
+fn validate_github_url_and_rdnn(url: &Url, rdnn: &str) -> GithubRdnnValidationResult {
+    let rdnn_parts = rdnn.split('.').collect::<Vec<&str>>();
+    if rdnn_parts.len() != 4 {
+        return GithubRdnnValidationResult::Invalid((
+            "GitHub RDNNs must have exactly 4 sections/components".into(),
+            ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
+        ));
+    }
+
+    let path_segments = match url.path_segments() {
+        Some(s) => s,
+        None => {
+            return GithubRdnnValidationResult::Invalid((
+                "Invalid GitHub repository URL passed in `git_repo_url`".into(),
+                ErrorTranslationKey::AppRegisterInvalidRepositoryUrl,
+            ));
+        }
+    }
+    .collect::<Vec<&str>>();
+
+    let path_repo_name = path_segments.get(1).unwrap();
+    let path_repo_name = if path_repo_name.ends_with(".git") {
+        path_repo_name.strip_suffix(".git").unwrap()
+    } else {
+        path_repo_name
+    };
+
     if url.host_str() != Some("github.com") {
-        return Some(HttpResponse::BadRequest().json(ErrorResponse {
-            error: "GitHub RDNN repositories must be served from GitHub".into(),
-            translation_key: ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
-        }));
+        return GithubRdnnValidationResult::Invalid((
+            "GitHub RDNN repositories must be served from GitHub".into(),
+            ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
+        ));
     }
 
     if path_segments.len() != 2 {
-        return Some(HttpResponse::BadRequest().json(ErrorResponse {
-            error: "Invalid GitHub repository URL passed in `git_repo_url`".into(),
-            translation_key: ErrorTranslationKey::AppRegisterInvalidRepositoryUrl,
-        }));
+        return GithubRdnnValidationResult::Invalid((
+            "Invalid GitHub repository URL passed in `git_repo_url`".into(),
+            ErrorTranslationKey::AppRegisterInvalidRepositoryUrl,
+        ));
     }
 
     if *rdnn_parts.get(2).unwrap() != *path_segments.get(0).unwrap() {
-        return Some(HttpResponse::BadRequest().json(ErrorResponse {
-            error: "RDNN owner doesn't match GitHub URL owner".into(),
-            translation_key: ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
-        }));
+        return GithubRdnnValidationResult::Invalid((
+            "RDNN owner doesn't match GitHub URL owner".into(),
+            ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
+        ));
     }
 
     if *rdnn_parts.get(3).unwrap() != path_repo_name {
-        return Some(HttpResponse::BadRequest().json(ErrorResponse {
-            error: "RDNN repo doesn't match GitHub URL repo".into(),
-            translation_key: ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
-        }));
+        return GithubRdnnValidationResult::Invalid((
+            "RDNN repo doesn't match GitHub URL repo".into(),
+            ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
+        ));
     }
 
-    None
+    GithubRdnnValidationResult::Valid((
+        (*path_segments.get(0).unwrap()).to_owned(),
+        path_repo_name.to_owned(),
+    ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn github_rdnn_validation() {
+        let url = Url::parse("https://github.com/davidmhewitt/torrential.git")
+            .expect("Couldn't parse URL");
+        assert_eq!(
+            validate_github_url_and_rdnn(&url, "com.github.davidmhewitt.torrential"),
+            GithubRdnnValidationResult::Valid(("davidmhewitt".into(), "torrential".into()))
+        );
+    }
 }

@@ -5,10 +5,10 @@ use argon2::{
 use secrecy::{ExposeSecret, SecretString};
 
 #[tracing::instrument(name = "Hashing user password", skip(password))]
-pub async fn hash(password: &[u8]) -> SecretString {
+pub fn hash(password: &SecretString) -> SecretString {
     let salt = SaltString::generate(&mut OsRng);
     Argon2::default()
-        .hash_password(password, &salt)
+        .hash_password(password.expose_secret().as_bytes(), &salt)
         .expect("Unable to hash password.")
         .to_string()
         .into()
@@ -21,4 +21,15 @@ pub fn verify_password(
 ) -> Result<(), argon2::password_hash::Error> {
     let parsed_hash = PasswordHash::new(hash.expose_secret())?;
     Argon2::default().verify_password(password.expose_secret().as_bytes(), &parsed_hash)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hash_and_verify() -> Result<(), argon2::password_hash::Error> {
+        let hash = hash(&SecretString::new("password123".into()));
+        verify_password(&hash, &SecretString::new("password123".into()))
+    }
 }

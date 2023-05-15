@@ -1,4 +1,4 @@
-#[derive(serde::Serialize)]
+#[derive(Debug, PartialEq, serde::Serialize)]
 pub enum ErrorTranslationKey {
     #[serde(rename = "confirmation.generic-problem")]
     GenericConfirmationProblem,

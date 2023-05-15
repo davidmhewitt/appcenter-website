@@ -39,8 +39,7 @@ pub async fn register_user(
             );
         }
     };
-    let hashed_password =
-        crate::utils::auth::password::hash(new_user.0.password.expose_secret().as_bytes()).await;
+    let hashed_password = crate::utils::auth::password::hash(&new_user.0.password);
 
     let create_new_user = CreateNewUser {
         password: Some(hashed_password),
