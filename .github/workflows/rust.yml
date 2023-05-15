@@ -31,8 +31,6 @@ jobs:
         with:
           workspaces: "backend"
       - name: Build
-        env:
-          DATABASE_URL: postgresql://appcenter:appcenter@localhost/appcenter_website
         run: |
           git config --global user.name "David Hewitt"
           git config --global user.email "davidmhewitt@gmail.com"
@@ -42,6 +40,8 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Generate code coverage
+        env:
+          DATABASE_URL: postgresql://appcenter:appcenter@localhost/appcenter_website
         run: cd backend && cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
