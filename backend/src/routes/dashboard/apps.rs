@@ -93,7 +93,7 @@ pub async fn add_app(
         Err(_) => {
             return HttpResponse::BadRequest().json(ErrorResponse {
                 error: "Invalid URL passed in `git_repo_url`".into(),
-                translation_key: ErrorTranslationKey::AppRegisterInvalidRepositoryUrl,
+                translation_key: ErrorTranslationKey::AddAppInvalidRepositoryUrl,
             });
         }
     };
@@ -133,7 +133,7 @@ pub async fn add_app(
                 tracing::error!("Couldn't add app to database: {}", e);
                 return HttpResponse::InternalServerError().json(ErrorResponse {
                     error: "Database error while trying to add new app".into(),
-                    translation_key: ErrorTranslationKey::GenericAppRegisterProblem,
+                    translation_key: ErrorTranslationKey::GenericAddAppProblem,
                 });
             }
             AddAppError::UserError((message, translation_key)) => {
@@ -172,7 +172,7 @@ async fn add_app_to_db(
     if db_repo.is_some() && db_repo.unwrap() != repository_url {
         return Err(AddAppError::UserError((
             "App already exists with a different repository set".into(),
-            ErrorTranslationKey::GenericAppRegisterProblem,
+            ErrorTranslationKey::GenericAddAppProblem,
         )));
     }
 
@@ -261,7 +261,7 @@ fn validate_github_url_and_rdnn(url: &Url, rdnn: &str) -> GithubRdnnValidationRe
     if rdnn_parts.len() != 4 {
         return GithubRdnnValidationResult::Invalid((
             "GitHub RDNNs must have exactly 4 sections/components".into(),
-            ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
+            ErrorTranslationKey::AddAppNonMatchingGithubRDNN,
         ));
     }
 
@@ -270,7 +270,7 @@ fn validate_github_url_and_rdnn(url: &Url, rdnn: &str) -> GithubRdnnValidationRe
         None => {
             return GithubRdnnValidationResult::Invalid((
                 "Invalid GitHub repository URL passed in `git_repo_url`".into(),
-                ErrorTranslationKey::AppRegisterInvalidRepositoryUrl,
+                ErrorTranslationKey::AddAppInvalidRepositoryUrl,
             ));
         }
     }
@@ -286,28 +286,28 @@ fn validate_github_url_and_rdnn(url: &Url, rdnn: &str) -> GithubRdnnValidationRe
     if url.host_str() != Some("github.com") {
         return GithubRdnnValidationResult::Invalid((
             "GitHub RDNN repositories must be served from GitHub".into(),
-            ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
+            ErrorTranslationKey::AddAppNonMatchingGithubRDNN,
         ));
     }
 
     if path_segments.len() != 2 {
         return GithubRdnnValidationResult::Invalid((
             "Invalid GitHub repository URL passed in `git_repo_url`".into(),
-            ErrorTranslationKey::AppRegisterInvalidRepositoryUrl,
+            ErrorTranslationKey::AddAppInvalidRepositoryUrl,
         ));
     }
 
     if *rdnn_parts.get(2).unwrap() != *path_segments.get(0).unwrap() {
         return GithubRdnnValidationResult::Invalid((
             "RDNN owner doesn't match GitHub URL owner".into(),
-            ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
+            ErrorTranslationKey::AddAppNonMatchingGithubRDNN,
         ));
     }
 
     if *rdnn_parts.get(3).unwrap() != path_repo_name {
         return GithubRdnnValidationResult::Invalid((
             "RDNN repo doesn't match GitHub URL repo".into(),
-            ErrorTranslationKey::AppRegisterNonMatchingGithubRDNN,
+            ErrorTranslationKey::AddAppNonMatchingGithubRDNN,
         ));
     }
 

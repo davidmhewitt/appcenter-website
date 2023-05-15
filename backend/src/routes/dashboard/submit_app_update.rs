@@ -5,12 +5,13 @@ use actix_web::{
 };
 use git_worker::GitWorker;
 use serde::Serialize;
-use sqlx::postgres::PgRow;
 use sqlx::Row;
+use sqlx::{postgres::PgRow, PgPool};
+use uuid::Uuid;
 
 use crate::{
     extractors::AuthedUser,
-    types::{dashboard::AppUpdateSubmission, ErrorResponse},
+    types::{dashboard::AppUpdateSubmission, ErrorResponse, ErrorTranslationKey},
 };
 
 #[derive(Serialize)]
@@ -32,29 +33,12 @@ pub async fn submit(
     git_worker: actix_web::web::Data<GitWorker>,
     submission: Json<AppUpdateSubmission>,
 ) -> HttpResponse {
-    let mut con = match pool.acquire().await {
-        Ok(c) => c,
-        Err(_) => return HttpResponse::InternalServerError().finish(),
-    };
-
-    let repo_url: String = match sqlx::query(
-        "SELECT repository
-            FROM apps app
-            INNER JOIN app_owners owner
-            ON app.id = owner.app_id 
-            WHERE owner.user_id = $1 AND app.id = $2 AND owner.verified_owner = TRUE",
-    )
-    .bind(user.uuid)
-    .bind(submission.app_id.to_owned())
-    .map(|r: PgRow| r.get("repository"))
-    .fetch_one(&mut con)
-    .await
-    {
+    let repo_url = match get_repo_url_from_db(&pool, &submission.app_id, &user.uuid).await {
         Ok(r) => r,
         Err(_) => {
-            return HttpResponse::BadRequest().json(ErrorResponse {
-                error: "Unable to get repository URL for this app".into(),
-                translation_key: crate::types::ErrorTranslationKey::AppSubmitUpdateCannotGetUrl,
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                error: "Unable to get Repository URL for app".into(),
+                translation_key: ErrorTranslationKey::SubmitAppUpdateCannotGetUrl,
             })
         }
     };
@@ -75,7 +59,7 @@ pub async fn submit(
         let commit_message = message;
 
         let commit_id =
-            match git_worker.get_remote_commit_id_from_tag(&repo_url, &submission.version_tag) {
+            match git_worker::get_remote_commit_id_from_tag(&repo_url, &submission.version_tag) {
                 Ok(id) => id,
                 Err(_) => return false,
             };
@@ -166,4 +150,80 @@ pub async fn submit(
     }
 
     HttpResponse::Ok().finish()
+}
+
+async fn get_repo_url_from_db(
+    pool: &PgPool,
+    app_id: &str,
+    user_id: &Uuid,
+) -> Result<String, sqlx::Error> {
+    let mut con = pool.acquire().await?;
+
+    let repo_url: String = sqlx::query(
+        "SELECT repository
+            FROM apps app
+            INNER JOIN app_owners owner
+            ON app.id = owner.app_id
+            WHERE owner.user_id = $1 AND app.id = $2 AND owner.verified_owner = TRUE",
+    )
+    .bind(user_id)
+    .bind(app_id)
+    .map(|r: PgRow| r.get("repository"))
+    .fetch_one(&mut con)
+    .await?;
+
+    Ok(repo_url)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[sqlx::test]
+    async fn get_repo_from_db(pool: PgPool) -> sqlx::Result<()> {
+        let mut transaction = pool.begin().await?;
+
+        let user1_id: Uuid = sqlx::query(
+            "INSERT INTO users (email, password, is_active) VALUES ($1, NULL, TRUE) RETURNING id",
+        )
+        .bind("test1@example.com")
+        .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
+        .fetch_one(&mut transaction)
+        .await?;
+
+        sqlx::query(
+            "INSERT INTO apps (id, repository)
+            VALUES ('com.github.davidmhewitt.torrential', 'https://github.com/davidmhewitt/torrential.git')"
+        ).execute(&mut transaction)
+        .await?;
+
+        sqlx::query(
+            "INSERT INTO app_owners (user_id, app_id, verified_owner)
+            VALUES ($1, 'com.github.davidmhewitt.torrential', FALSE)"
+        )
+        .bind(user1_id)
+        .execute(&mut transaction)
+        .await?;
+
+        transaction.commit().await?;
+
+        let repo_url = get_repo_url_from_db(&pool, "com.github.davidmhewitt.torrential", &user1_id).await;
+        assert!(repo_url.is_err());
+
+        let mut transaction = pool.begin().await?;
+
+        sqlx::query(
+            "UPDATE app_owners SET verified_owner = TRUE
+            WHERE app_id = 'com.github.davidmhewitt.torrential'"
+        ).execute(&mut transaction)
+        .await?;
+
+        transaction.commit().await?;
+
+        let repo_url = get_repo_url_from_db(&pool, "com.github.davidmhewitt.torrential", &user1_id).await;
+        assert!(repo_url.is_ok());
+        assert_eq!(repo_url.unwrap(), "https://github.com/davidmhewitt/torrential.git");
+
+        Ok(())
+    }
 }

@@ -16,14 +16,14 @@ pub enum ErrorTranslationKey {
     UserDoesntExist,
     #[serde(rename = "logout.generic-problem")]
     GenericLogoutProblem,
-    #[serde(rename = "app-register.generic-problem")]
-    GenericAppRegisterProblem,
-    #[serde(rename = "app-register.non-matching-github-rdnn")]
-    AppRegisterNonMatchingGithubRDNN,
-    #[serde(rename = "app-register.invalid-repository-url")]
-    AppRegisterInvalidRepositoryUrl,
-    #[serde(rename = "app-submit-update.unable-to-get-url")]
-    AppSubmitUpdateCannotGetUrl,
+    #[serde(rename = "add-app.generic-problem")]
+    GenericAddAppProblem,
+    #[serde(rename = "add-app.non-matching-github-rdnn")]
+    AddAppNonMatchingGithubRDNN,
+    #[serde(rename = "add-app.invalid-repository-url")]
+    AddAppInvalidRepositoryUrl,
+    #[serde(rename = "submit-app-update.unable-to-get-url")]
+    SubmitAppUpdateCannotGetUrl,
 }
 
 #[derive(serde::Serialize)]
