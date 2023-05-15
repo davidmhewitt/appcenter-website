@@ -4,7 +4,7 @@ import '../globals.css'
 import Header from '../../components/Header'
 
 export async function generateStaticParams() {
-  return locales.map((lng) => ({ lng }))
+  return locales.map((lang) => ({ lang }))
 }
 
 export default function RootLayout({
