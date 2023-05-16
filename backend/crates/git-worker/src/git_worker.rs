@@ -4,7 +4,7 @@ use std::{path::PathBuf, sync::Mutex};
 
 use git2::{
     build::CheckoutBuilder, FetchOptions, IndexAddOption, ObjectType, PushOptions, RemoteCallbacks,
-    Repository,
+    Repository, Sort,
 };
 use secrecy::{ExposeSecret, SecretString};
 
@@ -34,6 +34,12 @@ pub struct GitWorker {
     git_password: SecretString,
     repo: Mutex<Repository>,
     octo: Octocrab,
+}
+
+#[derive(Debug)]
+struct FileTouchTime {
+    path: PathBuf,
+    time: time::OffsetDateTime,
 }
 
 impl GitWorker {
@@ -69,6 +75,39 @@ impl GitWorker {
             &self.git_username,
             &self.git_password,
         )
+    }
+
+    pub async fn get_app_versions(&self) -> Result<()> {
+        self.checkout_branch("main")?;
+
+        let repo = self.repo.lock().unwrap();
+
+        let mut revwalk = repo.revwalk()?;
+        revwalk.set_sorting(Sort::REVERSE)?;
+        revwalk.push_head()?;
+
+        for item in revwalk {
+            if let Ok(item) = item {
+                let commit = repo.find_commit(item)?;
+                let mut files = vec![];
+                if let Ok(parent) = commit.parent(0) {
+
+                    let time = time::OffsetDateTime::from_unix_timestamp(commit.author().when().seconds())?;
+                    let diffs = repo.diff_tree_to_tree(Some(&parent.tree()?), Some(&commit.tree()?), None)?;
+                    for diff in diffs.deltas() {
+
+                        match diff.new_file().path() {
+                            Some(file) => files.push(FileTouchTime { path: file.to_owned(), time: time }),
+                            None => {}
+                        }
+                    }
+                }
+
+                println!("{:?}", files);
+            }
+        };
+
+        Ok(())
     }
 
     pub async fn create_pull_request(

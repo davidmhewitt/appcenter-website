@@ -578,6 +578,7 @@ dependencies = [
  "anyhow",
  "appstream-worker",
  "argon2",
+ "base64 0.21.0",
  "chrono",
  "config",
  "deadpool-redis",
@@ -1361,6 +1362,7 @@ dependencies = [
  "secrecy",
  "tempfile",
  "thiserror",
+ "time 0.3.21",
  "tokio",
  "tracing",
 ]

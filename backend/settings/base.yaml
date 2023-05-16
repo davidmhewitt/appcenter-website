@@ -1,11 +1,21 @@
 application:
   port: 3100
+  host: 127.0.0.1
+  base_url: ""
+
+secret:
+  token_expiration: 30
+  # Deliberately invalid base64
+  secret_key: "!"
+  hmac_secret: "!"
 
 database:
   port: 5432
+  host: ""
   database_name: "appcenter_website"
   username: ""
   password: ""
+  require_ssl: false
 
 github:
   client_id: ""
@@ -24,7 +34,3 @@ email:
 
 redis:
   uri: "redis://127.0.0.1"
-  pool_max_open: 16
-  pool_max_idle: 8
-  pool_timeout_seconds: 1
-  pool_expire_seconds: 60

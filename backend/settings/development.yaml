@@ -15,9 +15,9 @@ email:
   host_user_password: ""
 
 secret:
-  secret_key: "YkDU_%q({@QV&5-Z}SONy,7YO?[qF6F6"
+  secret_key: "BbcZo5lSA95SnbjUuKI+Y1D7+AZAznQsgMk="
   token_expiration: 30
-  hmac_secret: "3daad17f50d3577ae06406213073aa28e5cda75b97f5f35170e63653bbb66d8d"
+  hmac_secret: "ul+PZhWfIv8JVx+QLMGjiJPwabGidir0GRX86VsCPM5d0TSL2AITaGruCKfvtDoKosdSL1fpEPVDVsHRZzG/yg=="
 
 frontend_url: "http://localhost:3000"
 

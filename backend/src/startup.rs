@@ -4,6 +4,7 @@ use actix_cors::Cors;
 use actix_files as fs;
 use actix_session::config::PersistentSession;
 use actix_web::cookie::time::Duration;
+use base64::{engine::general_purpose, Engine as _};
 use git_worker::GitWorker;
 use secrecy::ExposeSecret;
 
@@ -83,10 +84,15 @@ async fn run(
     )
     .map_err(|e| std::io::Error::new(ErrorKind::Other, e))?;
 
+    git_worker.get_app_versions().await;
+
     let git_worker_data = actix_web::web::Data::new(git_worker);
 
-    let secret_key =
-        actix_web::cookie::Key::from(settings.secret.hmac_secret.expose_secret().as_bytes());
+    let secret_key = actix_web::cookie::Key::from(
+        &general_purpose::STANDARD
+            .decode(settings.secret.hmac_secret.expose_secret())
+            .expect("Couldn't decode base64 HMAC secret"),
+    );
 
     let server = actix_web::HttpServer::new(move || {
         let cors = Cors::default()

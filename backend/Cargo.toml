@@ -31,6 +31,7 @@ actix-web = "4"
 anyhow = "1.0.71"
 appstream-worker = { path = "crates/appstream-worker" }
 argon2 = "0.5.0"
+base64 = "0.21.0"
 chrono = { version = "0.4.24", features = ["serde"] }
 config = { version = "0.13", features = ["yaml"] }
 deadpool-redis = "0.12.0"

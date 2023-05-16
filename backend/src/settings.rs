@@ -24,17 +24,12 @@ pub struct ApplicationSettings {
     pub port: u16,
     pub host: String,
     pub base_url: String,
-    pub protocol: String,
 }
 
 /// Redis settings for the entire app
 #[derive(serde::Deserialize, Clone, Debug)]
 pub struct RedisSettings {
     pub uri: String,
-    pub pool_max_open: u64,
-    pub pool_max_idle: u64,
-    pub pool_timeout_seconds: u64,
-    pub pool_expire_seconds: u64,
 }
 
 /// Database settings for the entire app

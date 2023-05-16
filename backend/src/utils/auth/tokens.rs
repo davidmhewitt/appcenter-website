@@ -1,4 +1,5 @@
 use argon2::password_hash::rand_core::{OsRng, RngCore};
+use base64::{engine::general_purpose, Engine as _};
 use core::convert::TryFrom;
 use deadpool_redis::redis::AsyncCommands;
 use hex;
@@ -85,13 +86,21 @@ pub async fn issue_confirmation_token_pasetors(
         .add_additional("session_key", serde_json::json!(session_key))
         .unwrap();
 
-    let sk =
-        SymmetricKey::<V4>::from(settings.secret.secret_key.expose_secret().as_bytes()).unwrap();
+    let sk = SymmetricKey::<V4>::from(
+        &general_purpose::STANDARD
+            .decode(settings.secret.secret_key.expose_secret())
+            .expect("Unable to decode secret key for PASETO encryption"),
+    )
+    .unwrap();
     Ok(local::encrypt(
         &sk,
         &claims,
         None,
-        Some(settings.secret.hmac_secret.expose_secret().as_bytes()),
+        Some(
+            &general_purpose::STANDARD
+                .decode(settings.secret.hmac_secret.expose_secret())
+                .expect("Unable to decode HMAC secret for PASETO encryption"),
+        ),
     )
     .unwrap())
 }
@@ -106,8 +115,12 @@ pub async fn verify_confirmation_token_pasetor(
     is_for_password_change: bool,
 ) -> Result<crate::types::ConfirmationToken, String> {
     let settings = crate::settings::get_settings().expect("Cannot load settings.");
-    let sk =
-        SymmetricKey::<V4>::from(settings.secret.secret_key.expose_secret().as_bytes()).unwrap();
+    let sk = SymmetricKey::<V4>::from(
+        &general_purpose::STANDARD
+            .decode(settings.secret.secret_key.expose_secret())
+            .expect("Unable to decode secret key for PASETO encryption"),
+    )
+    .unwrap();
 
     let validation_rules = ClaimsValidationRules::new();
     let untrusted_token = UntrustedToken::<Local, V4>::try_from(&token)
@@ -117,7 +130,11 @@ pub async fn verify_confirmation_token_pasetor(
         &untrusted_token,
         &validation_rules,
         None,
-        Some(settings.secret.hmac_secret.expose_secret().as_bytes()),
+        Some(
+            &general_purpose::STANDARD
+                .decode(settings.secret.hmac_secret.expose_secret())
+                .expect("Unable to decode HMAC secret for PASETO decryption"),
+        ),
     )
     .map_err(|e| format!("Pasetor: {}", e))?;
     let claims = trusted_token.payload_claims().unwrap();

@@ -1,13 +1,11 @@
 application:
-  protocol: https
   host: 0.0.0.0
   base_url: ""
 
-secret:
-  secret_key: ""
-  token_expiration: 0
-  hmac_secret: ""
+github:
+  reviews_url: "https://github.com/elementary/appcenter-reviews.git"
+  local_repo_path: "/tmp/appcenter-reviews"
 
-frontend_url: ""
+frontend_url: "https://appcenter-beta.elementary.io"
 
 debug: false
