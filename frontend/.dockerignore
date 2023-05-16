@@ -1,0 +1,7 @@
+.husky
+.next
+.vscode
+mocks
+node_modules
+Dockerfile
+.env.development
