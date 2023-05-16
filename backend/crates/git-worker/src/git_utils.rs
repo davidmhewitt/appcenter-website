@@ -3,7 +3,7 @@ use std::path::Path;
 
 use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks, Repository};
 use secrecy::{ExposeSecret, SecretString};
-use tempdir::TempDir;
+use tempfile::tempdir;
 
 use crate::git_worker::Error;
 
@@ -63,7 +63,7 @@ pub(crate) fn clone_repo(
 }
 
 pub fn get_remote_commit_id_from_tag(repo_url: &str, tag_name: &str) -> Result<String> {
-    let temp_repo_dir = TempDir::new("remote")?;
+    let temp_repo_dir = tempdir()?;
     let temp_repo = git2::Repository::init(temp_repo_dir.path())?;
     let mut remote = temp_repo.remote("origin", repo_url)?;
     remote.connect(git2::Direction::Fetch)?;

@@ -261,14 +261,14 @@ impl GitWorker {
 mod tests {
     use super::*;
     use std::{fs::File, process::Command};
-    use tempdir::TempDir;
+    use tempfile::tempdir;
 
     #[tokio::test]
     async fn test_clone_repo() -> Result<()> {
-        let remote_dir = TempDir::new("remote").expect("Couldn't create temporary remote dir");
+        let remote_dir = tempdir().expect("Couldn't create temporary remote dir");
         let remote_path = remote_dir.path().to_string_lossy();
 
-        let local_dir = TempDir::new("local").expect("Couldn't create temporary local dir");
+        let local_dir = tempdir().expect("Couldn't create temporary local dir");
         let local_path = local_dir.path().to_path_buf();
 
         Command::new("git")
@@ -326,10 +326,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_create_branch() -> Result<()> {
-        let remote_dir = TempDir::new("remote").expect("Couldn't create temporary remote dir");
+        let remote_dir = tempdir().expect("Couldn't create temporary remote dir");
         let remote_path = remote_dir.path().to_string_lossy();
 
-        let local_dir = TempDir::new("local").expect("Couldn't create temporary local dir");
+        let local_dir = tempdir().expect("Couldn't create temporary local dir");
         let local_path = local_dir.path().to_path_buf();
 
         Command::new("git")
@@ -387,10 +387,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_commit() -> Result<()> {
-        let remote_dir = TempDir::new("remote").expect("Couldn't create temporary remote dir");
+        let remote_dir = tempdir().expect("Couldn't create temporary remote dir");
         let remote_path = remote_dir.path().to_string_lossy();
 
-        let local_dir = TempDir::new("local").expect("Couldn't create temporary local dir");
+        let local_dir = tempdir().expect("Couldn't create temporary local dir");
         let local_path = local_dir.path().to_path_buf();
 
         Command::new("git")
@@ -411,7 +411,7 @@ mod tests {
         worker.add_and_commit(&["second_file.txt"], "commit")?;
         worker.push("main")?;
 
-        let local_dir = TempDir::new("local").expect("Couldn't create temporary local dir");
+        let local_dir = tempdir().expect("Couldn't create temporary local dir");
         let local_path = local_dir.path().to_path_buf();
 
         GitWorker::new(
