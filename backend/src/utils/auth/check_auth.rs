@@ -39,7 +39,7 @@ async fn get_active_user_by_email_and_id(
     id: &Uuid,
     email: &String,
 ) -> Result<crate::types::User, sqlx::Error> {
-    match sqlx::query("SELECT id, email, password, is_admin, date_joined FROM users WHERE id = $1 AND email = $2 AND is_active = TRUE")
+    match sqlx::query("SELECT id, email, password, is_admin FROM users WHERE id = $1 AND email = $2 AND is_active = TRUE")
         .bind(id)
         .bind(email)
         .map(|row: sqlx::postgres::PgRow| crate::types::User {
@@ -48,7 +48,6 @@ async fn get_active_user_by_email_and_id(
             password_hash: row.get::<Option<String>, &str>("password").map(SecretString::from),
             is_active: true,
             is_admin: row.get("is_admin"),
-            date_joined: row.get("date_joined"),
         })
         .fetch_one(pool)
         .await
