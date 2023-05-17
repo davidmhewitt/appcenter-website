@@ -11,7 +11,6 @@ use secrecy::ExposeSecret;
 const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
 
 pub struct Application {
-    port: u16,
     server: actix_web::dev::Server,
 }
 
@@ -31,20 +30,9 @@ impl Application {
             .await
             .expect("Failed to migrate the database.");
 
-        let address = format!(
-            "{}:{}",
-            settings.application.host, settings.application.port
-        );
+        let server = run(connection_pool, settings).await?;
 
-        let listener = std::net::TcpListener::bind(&address)?;
-        let port = listener.local_addr().unwrap().port();
-        let server = run(listener, connection_pool, settings).await?;
-
-        Ok(Self { port, server })
-    }
-
-    pub fn port(&self) -> u16 {
-        self.port
+        Ok(Self { server })
     }
 
     pub async fn run_until_stopped(self) -> Result<(), std::io::Error> {
@@ -61,7 +49,6 @@ pub async fn get_connection_pool(
 }
 
 async fn run(
-    listener: std::net::TcpListener,
     db_pool: sqlx::postgres::PgPool,
     settings: crate::settings::Settings,
 ) -> Result<actix_web::dev::Server, std::io::Error> {
@@ -124,7 +111,7 @@ async fn run(
             .app_data(redis_pool_data.clone())
             .app_data(git_worker_data.clone())
     })
-    .listen(listener)?
+    .bind((settings.application.host, settings.application.port))?
     .run();
 
     Ok(server)

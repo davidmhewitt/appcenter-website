@@ -11,7 +11,7 @@ async fn main() -> Result<()> {
 
     let application = backend::startup::Application::build(settings.clone(), None).await?;
 
-    tracing::event!(target: "backend", tracing::Level::INFO, "Listening on http://127.0.0.1:{}/", application.port());
+    tracing::event!(target: "backend", tracing::Level::INFO, "Listening on http://{}:{}/", settings.application.host, settings.application.port);
 
     let appstream_worker = appstream_worker::AppstreamWorker::new(settings.redis.uri);
     tokio::spawn(async {

@@ -18,6 +18,9 @@ FROM debian:bullseye-slim
 WORKDIR /app
 COPY --from=builder /usr/local/cargo/bin/backend /app/backend
 COPY settings/base.yaml settings/production.yaml /app/settings/
+
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
 ENV APP_ENVIRONMENT=production
 EXPOSE 3100
 
