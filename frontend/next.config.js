@@ -15,6 +15,12 @@ const nextConfig = {
         port: '3100',
         pathname: '/static/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'backend',
+        port: '3100',
+        pathname: '/static/**',
+      },
     ],
   },
 }

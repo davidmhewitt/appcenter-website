@@ -5,6 +5,7 @@ application:
 github:
   reviews_url: "https://github.com/elementary/appcenter-reviews.git"
   local_repo_path: "/tmp/appcenter-reviews"
+  username: elementaryBot
 
 frontend_url: "https://appcenter-beta.elementary.io"
 

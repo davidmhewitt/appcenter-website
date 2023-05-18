@@ -21,7 +21,7 @@ interface ComponentSummary {
 async function getRecentlyAdded(): Promise<ComponentSummary[] | undefined> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/apps/recently_added`,
+      `${process.env.SERVER_SIDE_API_URL}/api/apps/recently_added`,
       { next: { revalidate: 600 } }
     )
 
@@ -38,7 +38,7 @@ async function getRecentlyAdded(): Promise<ComponentSummary[] | undefined> {
 async function getRecentlyUpdated(): Promise<ComponentSummary[] | undefined> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/apps/recently_updated`,
+      `${process.env.SERVER_SIDE_API_URL}/api/apps/recently_updated`,
       { next: { revalidate: 600 } }
     )
 
@@ -76,7 +76,7 @@ export default async function Page({
             id={id}
             name={name[lang] ?? name['C']}
             description={summary[lang] ?? summary['C']}
-            imageUrl={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static/apps/icons/${icons[0].width}x${icons[0].height}/${icons[0].path}`}
+            imageUrl={`${process.env.SERVER_SIDE_API_URL}/static/apps/icons/${icons[0].width}x${icons[0].height}/${icons[0].path}`}
           />
         ))}
       </div>
@@ -92,7 +92,7 @@ export default async function Page({
             id={id}
             name={name[lang] ?? name['C']}
             description={summary[lang] ?? summary['C']}
-            imageUrl={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static/apps/icons/${icons[0].width}x${icons[0].height}/${icons[0].path}`}
+            imageUrl={`${process.env.SERVER_SIDE_API_URL}/static/apps/icons/${icons[0].width}x${icons[0].height}/${icons[0].path}`}
           />
         ))}
       </div>

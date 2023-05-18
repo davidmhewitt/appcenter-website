@@ -38,7 +38,7 @@ interface Component {
 async function getData(id: string): Promise<Component | undefined> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/static/apps/${id}.json`,
+      `${process.env.SERVER_SIDE_API_URL}/static/apps/${id}.json`,
       { next: { revalidate: 600 } }
     )
 
@@ -73,7 +73,7 @@ export default async function Page({
                 width={64}
                 height={64}
                 alt={''}
-                src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static/apps/icons/${appdata?.icons[0].width}x${appdata?.icons[0].height}/${appdata?.icons[0].path}`}
+                src={`${process.env.SERVER_SIDE_API_URL}/static/apps/icons/${appdata?.icons[0].width}x${appdata?.icons[0].height}/${appdata?.icons[0].path}`}
               />
               <div className="flex-inline mx-3">
                 <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">

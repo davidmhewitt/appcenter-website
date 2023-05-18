@@ -16,18 +16,32 @@ services:
       APP_REDIS__URI: redis://redis
       APP_SECRET__SECRET_KEY: "${APP_SECRET_KEY}"
       APP_SECRET__HMAC_SECRET: "${APP_HMAC_SECRET}"
+      APP_GITHUB__CLIENT_ID: "${GH_CLIENT_ID}"
+      APP_GITHUB__CLIENT_SECRET: "${GH_CLIENT_SECRET}"
+      APP_GITHUB__USERNAME: "${GH_USERNAME}"
+      APP_GITHUB__ACCESS_TOKEN: "${GH_ACCESS_TOKEN}"
+      APP_GITHUB__REVIEWS_URL: "${GH_REVIEWS_URL}"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3100/api/health_check"]
-      interval: 1m30s
-      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:3100/health-check"]
+      interval: 20s
+      timeout: 5s
       retries: 3
       start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`frontend.localhost`) && ( PathPrefix(`/api`) || PathPrefix(`/static/apps`) )"
+      - "traefik.http.routers.backend.entrypoints=web"
 
   frontend:
     build: frontend
     restart: always
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`) && PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
 
   redis:
     image: "redis:7.0"
@@ -50,3 +64,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"

@@ -1,6 +1,6 @@
 export async function generateStaticParams() {
   const ids = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/apps/all_ids`,
+    `${process.env.SERVER_SIDE_API_URL}/api/apps/all_ids`,
     { next: { revalidate: 300 } }
   ).then((res) => res.json())
 
