@@ -1,3 +1,7 @@
+use anyhow::Result;
+use diesel::ExpressionMethods;
+use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
+
 use crate::types::ErrorTranslationKey;
 
 #[derive(serde::Deserialize)]
@@ -9,7 +13,7 @@ pub struct Parameters {
 #[actix_web::get("/register/confirm")]
 pub async fn confirm(
     parameters: actix_web::web::Query<Parameters>,
-    pool: actix_web::web::Data<sqlx::postgres::PgPool>,
+    pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
     redis_pool: actix_web::web::Data<deadpool_redis::Pool>,
 ) -> actix_web::HttpResponse {
     let settings = crate::settings::get_settings().expect("Failed to read settings.");
@@ -85,19 +89,17 @@ pub async fn confirm(
 #[tracing::instrument(name = "Mark a user active", skip(pool), fields(
     new_user_user_id = %user_id
 ))]
-pub async fn activate_new_user(
-    pool: &sqlx::postgres::PgPool,
-    user_id: uuid::Uuid,
-) -> Result<(), sqlx::Error> {
-    match sqlx::query("UPDATE users SET is_active=true WHERE id = $1")
-        .bind(user_id)
-        .execute(pool)
-        .await
-    {
-        Ok(_) => Ok(()),
-        Err(e) => {
-            tracing::error!("Failed to execute query: {:#?}", e);
-            Err(e)
-        }
-    }
+pub async fn activate_new_user(pool: &Pool<AsyncPgConnection>, user_id: uuid::Uuid) -> Result<()> {
+    use crate::schema::users;
+    use crate::schema::users::dsl::*;
+
+    let mut con = pool.get().await?;
+
+    diesel::update(users::table)
+        .filter(id.eq(user_id))
+        .set(is_active.eq(true))
+        .execute(&mut con)
+        .await?;
+
+    Ok(())
 }

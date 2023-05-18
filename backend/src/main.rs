@@ -9,7 +9,7 @@ async fn main() -> Result<()> {
     let subscriber = backend::telemetry::get_subscriber(settings.clone().debug);
     backend::telemetry::init_subscriber(subscriber);
 
-    let application = backend::startup::Application::build(settings.clone(), None).await?;
+    let application = backend::startup::Application::build(settings.clone()).await?;
 
     tracing::event!(target: "backend", tracing::Level::INFO, "Listening on http://{}:{}/", settings.application.host, settings.application.port);
 

@@ -5,30 +5,40 @@ use actix_files as fs;
 use actix_session::config::PersistentSession;
 use actix_web::cookie::time::Duration;
 use base64::{engine::general_purpose, Engine as _};
+use diesel::{Connection, PgConnection};
+use diesel_async::pooled_connection::bb8::Pool;
+use diesel_async::pooled_connection::AsyncDieselConnectionManager;
+use diesel_async::AsyncPgConnection;
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
 use git_worker::GitWorker;
 use secrecy::ExposeSecret;
 
+use crate::settings::DatabaseSettings;
+
 const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
+const MIGRATIONS: EmbeddedMigrations = diesel_migrations::embed_migrations!("migrations/");
 
 pub struct Application {
     server: actix_web::dev::Server,
 }
 
-impl Application {
-    pub async fn build(
-        settings: crate::settings::Settings,
-        test_pool: Option<sqlx::postgres::PgPool>,
-    ) -> Result<Self, std::io::Error> {
-        let connection_pool = if let Some(pool) = test_pool {
-            pool
-        } else {
-            get_connection_pool(&settings.database).await
-        };
+pub async fn get_connection_pool(settings: &DatabaseSettings) -> Pool<AsyncPgConnection> {
+    let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&settings.url);
+    Pool::builder()
+        .build(manager)
+        .await
+        .expect("Unable to build database pool")
+}
 
-        sqlx::migrate!()
-            .run(&connection_pool)
-            .await
-            .expect("Failed to migrate the database.");
+impl Application {
+    pub async fn build(settings: crate::settings::Settings) -> Result<Self, std::io::Error> {
+        let mut connection = PgConnection::establish(&settings.database.url)
+            .expect("Unable to connect to database to run migrations");
+        connection
+            .run_pending_migrations(MIGRATIONS)
+            .expect("Unable to run database migrations");
+
+        let connection_pool = get_connection_pool(&settings.database).await;
 
         let server = run(connection_pool, settings).await?;
 
@@ -40,16 +50,8 @@ impl Application {
     }
 }
 
-pub async fn get_connection_pool(
-    settings: &crate::settings::DatabaseSettings,
-) -> sqlx::postgres::PgPool {
-    sqlx::postgres::PgPoolOptions::new()
-        .acquire_timeout(std::time::Duration::from_secs(2))
-        .connect_lazy_with(settings.connect_to_db())
-}
-
 async fn run(
-    db_pool: sqlx::postgres::PgPool,
+    db_pool: Pool<AsyncPgConnection>,
     settings: crate::settings::Settings,
 ) -> Result<actix_web::dev::Server, std::io::Error> {
     // Database connection pool application state
@@ -70,8 +72,6 @@ async fn run(
         settings.github.access_token,
     )
     .map_err(|e| std::io::Error::new(ErrorKind::Other, e))?;
-
-    git_worker.get_app_versions().await;
 
     let git_worker_data = actix_web::web::Data::new(git_worker);
 

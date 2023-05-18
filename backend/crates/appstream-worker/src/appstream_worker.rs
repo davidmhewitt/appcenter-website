@@ -27,7 +27,7 @@ pub struct TranslatableString(pub BTreeMap<String, String>);
 
 impl TranslatableString {
     pub fn from(original: appstream::TranslatableString) -> Self {
-        Self { 0: original.0 }
+        Self(original.0)
     }
 }
 
@@ -67,8 +67,8 @@ impl From<Component> for ComponentSummary {
                         height,
                     } => Some(Icon {
                         path: path.to_string_lossy().into_owned(),
-                        width: width,
-                        height: height,
+                        width,
+                        height,
                     }),
                     _ => None,
                 })

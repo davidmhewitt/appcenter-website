@@ -86,26 +86,26 @@ impl GitWorker {
         revwalk.set_sorting(Sort::REVERSE)?;
         revwalk.push_head()?;
 
-        for item in revwalk {
-            if let Ok(item) = item {
-                let commit = repo.find_commit(item)?;
-                let mut files = vec![];
-                if let Ok(parent) = commit.parent(0) {
-
-                    let time = time::OffsetDateTime::from_unix_timestamp(commit.author().when().seconds())?;
-                    let diffs = repo.diff_tree_to_tree(Some(&parent.tree()?), Some(&commit.tree()?), None)?;
-                    for diff in diffs.deltas() {
-
-                        match diff.new_file().path() {
-                            Some(file) => files.push(FileTouchTime { path: file.to_owned(), time: time }),
-                            None => {}
-                        }
+        for item in revwalk.flatten() {
+            let commit = repo.find_commit(item)?;
+            let mut files = vec![];
+            if let Ok(parent) = commit.parent(0) {
+                let time =
+                    time::OffsetDateTime::from_unix_timestamp(commit.author().when().seconds())?;
+                let diffs =
+                    repo.diff_tree_to_tree(Some(&parent.tree()?), Some(&commit.tree()?), None)?;
+                for diff in diffs.deltas() {
+                    if let Some(file) = diff.new_file().path() {
+                        files.push(FileTouchTime {
+                            path: file.to_owned(),
+                            time,
+                        });
                     }
                 }
-
-                println!("{:?}", files);
             }
-        };
+
+            println!("{:?}", files);
+        }
 
         Ok(())
     }
@@ -143,7 +143,7 @@ impl GitWorker {
 
         // TODO: Awaiting https://github.com/XAMPPRocky/octocrab/pull/357
 
-        return Ok(false);
+        Ok(false)
     }
 
     pub async fn get_github_repo_owner_id(
@@ -156,7 +156,7 @@ impl GitWorker {
             .repos(org, repo)
             .get()
             .await
-            .and_then(|r| Ok(r.owner))
+            .map(|r| r.owner)
             .map_err(Error::GitHub)?;
 
         if let Some(owner) = owner {
