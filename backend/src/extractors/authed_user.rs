@@ -6,6 +6,7 @@ use actix_web::{
     web::Data,
     FromRequest,
 };
+use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
 use serde_json::json;
 
 pub struct AuthedUser {
@@ -22,7 +23,7 @@ impl FromRequest for AuthedUser {
         let req = req.clone();
         Box::pin(async move {
             let session = req.get_session();
-            if let Some(pool) = req.app_data::<Data<sqlx::postgres::PgPool>>() {
+            if let Some(pool) = req.app_data::<Data<Pool<AsyncPgConnection>>>() {
                 if let Some(user) = crate::utils::auth::check_auth(session, pool).await {
                     Ok(AuthedUser { uuid: user })
                 } else {

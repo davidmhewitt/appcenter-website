@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
-use secrecy::{ExposeSecret, SecretString};
-use sqlx::ConnectOptions;
+use secrecy::SecretString;
 
 /// Global settings for exposing all preconfigured variables
 #[derive(serde::Deserialize, Clone)]
@@ -35,12 +34,7 @@ pub struct RedisSettings {
 /// Database settings for the entire app
 #[derive(serde::Deserialize, Clone)]
 pub struct DatabaseSettings {
-    pub username: String,
-    pub password: SecretString,
-    pub port: u16,
-    pub host: String,
-    pub database_name: String,
-    pub require_ssl: bool,
+    pub url: String,
 }
 
 #[derive(serde::Deserialize, Clone)]
@@ -67,25 +61,6 @@ pub struct GithubSettings {
     pub username: String,
     pub access_token: SecretString,
     pub local_repo_path: PathBuf,
-}
-
-impl DatabaseSettings {
-    pub fn connect_to_db(&self) -> sqlx::postgres::PgConnectOptions {
-        let ssl_mode = if self.require_ssl {
-            sqlx::postgres::PgSslMode::Require
-        } else {
-            sqlx::postgres::PgSslMode::Prefer
-        };
-        let mut options = sqlx::postgres::PgConnectOptions::new()
-            .host(&self.host)
-            .username(&self.username)
-            .password(self.password.expose_secret())
-            .port(self.port)
-            .ssl_mode(ssl_mode)
-            .database(&self.database_name);
-        options.log_statements(tracing::log::LevelFilter::Trace);
-        options
-    }
 }
 
 /// The possible runtime environment for our application.

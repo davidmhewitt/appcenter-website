@@ -1,6 +1,8 @@
 use actix_session::Session;
 use actix_web::http::header::{ACCEPT, USER_AGENT};
 use actix_web::web;
+use diesel_async::pooled_connection::bb8::Pool;
+use diesel_async::AsyncPgConnection;
 use oauth2::reqwest::async_http_client;
 use oauth2::TokenResponse;
 use oauth2::{
@@ -10,10 +12,10 @@ use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use serde_json::Number;
 use serde_variant::to_variant_name;
-use sqlx::Row;
 
-use crate::routes::users::register::insert_created_user_into_db;
-use crate::types::{CreateNewUser, ErrorTranslationKey};
+use crate::models::{NewGithubAuth, NewUser};
+use crate::routes::users::register::insert_user_into_db;
+use crate::types::ErrorTranslationKey;
 
 #[derive(Debug, Deserialize)]
 pub struct CodeResponse {
@@ -37,7 +39,7 @@ pub struct GithubUser {
 #[tracing::instrument(name = "Github Callback", skip(session, response))]
 #[actix_web::get("/github/callback")]
 pub async fn github_callback(
-    pool: actix_web::web::Data<sqlx::postgres::PgPool>,
+    pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
     session: Session,
     response: web::Query<CodeResponse>,
 ) -> actix_web::HttpResponse {
@@ -176,7 +178,8 @@ pub async fn github_callback(
             }
         };
 
-        if let Ok(user) = get_user_who_is_active(&pool, primary).await {
+        if let Ok(user) = crate::routes::users::login::get_user_who_is_active(&pool, primary).await
+        {
             session.remove("_github_oauth_csrf");
             session.renew();
             session
@@ -191,18 +194,14 @@ pub async fn github_callback(
                 .finish();
         }
 
-        let user = CreateNewUser {
-            email: primary.to_owned(),
+        let user = NewUser {
+            email: primary,
             password: None,
             is_active: true,
-            github_id: Some(user_info.id.to_string()),
-            github_access_token: Some(SecretString::new(token.access_token().secret().to_owned())),
-            github_refresh_token: token
-                .refresh_token()
-                .and_then(|t| Some(SecretString::new(t.secret().to_owned()))),
+            is_admin: false,
         };
 
-        let mut transaction = match pool.begin().await {
+        let mut connection = match pool.get().await {
             Ok(transaction) => transaction,
             Err(_) => {
                 return error_redirect(
@@ -212,7 +211,17 @@ pub async fn github_callback(
             }
         };
 
-        let user_id = match insert_created_user_into_db(&mut transaction, &user).await {
+        let user_id = match insert_user_into_db(
+            &mut connection,
+            user,
+            NewGithubAuth {
+                github_user_id: Some(user_info.id.to_string()),
+                github_access_token: Some(token.access_token().secret().to_owned()),
+                github_refresh_token: token.refresh_token().map(|t| t.secret().to_owned()),
+            },
+        )
+        .await
+        {
             Ok(u) => u,
             Err(_) => {
                 return error_redirect(
@@ -221,13 +230,6 @@ pub async fn github_callback(
                 )
             }
         };
-
-        if transaction.commit().await.is_err() {
-            return error_redirect(
-                &settings.frontend_url,
-                ErrorTranslationKey::GenericRegistrationProblem,
-            );
-        }
 
         session.remove("_github_oauth_csrf");
         session.renew();
@@ -258,28 +260,4 @@ fn error_redirect(
             ),
         ))
         .finish()
-}
-
-#[tracing::instrument(name = "Getting a user from DB.", skip(pool, email),fields(user_email = %email))]
-async fn get_user_who_is_active(
-    pool: &sqlx::postgres::PgPool,
-    email: &String,
-) -> Result<crate::types::User, sqlx::Error> {
-    match sqlx::query("SELECT id, email, password, is_admin FROM users WHERE email = $1 AND is_active = TRUE")
-        .bind(email)
-        .map(|row: sqlx::postgres::PgRow| crate::types::User {
-            id: row.get("id"),
-            email: row.get("email"),
-            password_hash: row.get::<Option<String>, &str>("password").map(SecretString::from),
-            is_active: true,
-            is_admin: row.get("is_admin"),
-        })
-        .fetch_one(pool)
-        .await
-    {
-        Ok(user) => Ok(user),
-        Err(e) => {
-            Err(e)
-        }
-    }
 }

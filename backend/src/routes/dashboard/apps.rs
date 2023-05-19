@@ -1,13 +1,16 @@
 use actix_web::web::{Data, Json};
 use actix_web::{get, post, HttpResponse};
+use anyhow::{anyhow, Result};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
+use diesel_async::pooled_connection::bb8::{Pool, PooledConnection};
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use git_worker::GitWorker;
-use sqlx::postgres::PgRow;
-use sqlx::{PgPool, Row};
 use url::Url;
 use uuid::Uuid;
 
 use crate::extractors::AuthedUser;
-use crate::types::dashboard::{App, CreateApp};
+use crate::models::App;
+use crate::types::dashboard::CreateApp;
 use crate::types::{ErrorResponse, ErrorTranslationKey};
 
 #[utoipa::path(
@@ -24,13 +27,17 @@ use crate::types::{ErrorResponse, ErrorTranslationKey};
                             id: "com.github.davidmhewitt.torrential".into(),
                             repository: "https://github.com/davidmhewitt/torrential.git".into(),
                             is_verified: true,
-                            version: Some("3.0.1".into()),
+                            last_submitted_version: Some("3.0.1".into()),
+                            first_seen: None,
+                            last_update: None,
                         },
                         App {
                             id: "io.elementary.photos".into(),
                             repository: "https://github.com/elementary/photos.git".into(),
                             is_verified: false,
-                            version: None,
+                            last_submitted_version: None,
+                            first_seen: None,
+                            last_update: None,
                         }
                     ]
                 )))
@@ -40,8 +47,16 @@ use crate::types::{ErrorResponse, ErrorTranslationKey};
 )]
 #[get("/apps")]
 #[tracing::instrument(name = "Fetching apps for dashboard", skip(user, pool))]
-pub async fn get_apps(user: AuthedUser, pool: Data<sqlx::postgres::PgPool>) -> HttpResponse {
-    let apps = get_apps_from_db(&pool, &user.uuid).await;
+pub async fn get_apps(user: AuthedUser, pool: Data<Pool<AsyncPgConnection>>) -> HttpResponse {
+    let mut con = match pool.get().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("Error getting databsae connection: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let apps = get_apps_from_db(&mut con, &user.uuid).await;
 
     match apps {
         Ok(a) => HttpResponse::Ok().json(a),
@@ -49,28 +64,26 @@ pub async fn get_apps(user: AuthedUser, pool: Data<sqlx::postgres::PgPool>) -> H
     }
 }
 
-async fn get_apps_from_db(
-    pool: &sqlx::postgres::PgPool,
+pub async fn get_apps_from_db(
+    con: &mut PooledConnection<'_, AsyncPgConnection>,
     uuid: &Uuid,
-) -> Result<Vec<App>, sqlx::Error> {
-    let mut con = pool.acquire().await?;
+) -> Result<Vec<App>> {
+    use crate::schema::app_owners::dsl::*;
+    use crate::schema::apps::dsl::*;
 
-    return sqlx::query(
-        "SELECT id, repository, verified_owner, last_submitted_version
-            FROM apps app
-            INNER JOIN app_owners owner
-            ON app.id = owner.app_id
-            WHERE owner.user_id = $1",
-    )
-    .bind(uuid)
-    .map(|r: PgRow| App {
-        id: r.get("id"),
-        repository: r.get("repository"),
-        is_verified: r.get("verified_owner"),
-        version: r.get("last_submitted_version"),
-    })
-    .fetch_all(&mut con)
-    .await;
+    Ok(apps
+        .inner_join(app_owners)
+        .select((
+            id,
+            repository,
+            verified_owner,
+            last_submitted_version,
+            first_seen,
+            last_update,
+        ))
+        .filter(user_id.eq(uuid))
+        .get_results::<App>(con)
+        .await?)
 }
 
 #[utoipa::path(
@@ -81,12 +94,11 @@ async fn get_apps_from_db(
 #[tracing::instrument(name = "Adding dashboard app", skip(user, pool, git_worker))]
 pub async fn add_app(
     user: AuthedUser,
-    pool: Data<sqlx::postgres::PgPool>,
+    pool: Data<Pool<AsyncPgConnection>>,
     git_worker: Data<GitWorker>,
     app: Json<CreateApp>,
 ) -> HttpResponse {
     let github_user_id = get_github_user_id(&pool, &user.uuid).await;
-    println!("{:?}", github_user_id);
 
     let url = match Url::parse(&app.repository) {
         Ok(u) => u,
@@ -110,7 +122,7 @@ pub async fn add_app(
             }
         };
 
-        if let Some(github_user_id) = github_user_id {
+        if let Ok(Some(github_user_id)) = github_user_id {
             let owner_id = git_worker
                 .get_github_repo_owner_id(&owner, &path_repo_name)
                 .await
@@ -126,94 +138,78 @@ pub async fn add_app(
         }
     }
 
-    match add_app_to_db(&pool, &user.uuid, &app.app_id, &app.repository, verified).await {
+    let mut con = match pool.get().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("Error getting database connection: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    match add_app_to_db(&mut con, &user.uuid, &app.app_id, &app.repository, verified).await {
         Ok(_) => {}
-        Err(e) => match e {
-            AddAppError::SqlError(e) => {
-                tracing::error!("Couldn't add app to database: {}", e);
-                return HttpResponse::InternalServerError().json(ErrorResponse {
-                    error: "Database error while trying to add new app".into(),
-                    translation_key: ErrorTranslationKey::GenericAddAppProblem,
-                });
-            }
-            AddAppError::UserError((message, translation_key)) => {
-                return HttpResponse::BadRequest().json(ErrorResponse {
-                    error: message,
-                    translation_key,
-                })
-            }
-        },
+        Err(e) => {
+            tracing::error!("Error adding app to db: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
     }
 
     HttpResponse::Ok().finish()
 }
 
-enum AddAppError {
-    SqlError(sqlx::Error),
-    UserError((String, ErrorTranslationKey)),
-}
-
-async fn add_app_to_db(
-    pool: &PgPool,
+pub async fn add_app_to_db(
+    con: &mut PooledConnection<'_, AsyncPgConnection>,
     owner: &Uuid,
-    app_id: &str,
+    new_app_id: &str,
     repository_url: &str,
     verified: bool,
-) -> Result<(), AddAppError> {
-    let mut transaction = pool.begin().await.map_err(AddAppError::SqlError)?;
+) -> Result<()> {
+    use crate::schema::app_owners::dsl::*;
+    use crate::schema::apps::dsl::*;
 
-    let db_repo = sqlx::query("SELECT repository FROM apps WHERE id = $1")
-        .bind(app_id)
-        .map(|r| -> String { r.get("repository") })
-        .fetch_optional(&mut transaction)
+    if let Some(existing_repository) = apps
+        .filter(id.eq(new_app_id))
+        .select(repository)
+        .get_result::<String>(con)
         .await
-        .map_err(AddAppError::SqlError)?;
-
-    if db_repo.is_some() && db_repo.unwrap() != repository_url {
-        return Err(AddAppError::UserError((
-            "App already exists with a different repository set".into(),
-            ErrorTranslationKey::GenericAddAppProblem,
-        )));
+        .optional()?
+    {
+        if existing_repository != repository_url {
+            return Err(anyhow!("App already exists with a different repository"));
+        }
     }
 
-    sqlx::query(
-        "INSERT INTO apps (id, repository, is_verified) VALUES ($1, $2, $3)
-        ON CONFLICT DO NOTHING",
-    )
-    .bind(app_id)
-    .bind(repository_url)
-    .bind(verified)
-    .execute(&mut transaction)
-    .await
-    .map_err(AddAppError::SqlError)?;
+    diesel::insert_into(apps)
+        .values((
+            id.eq(new_app_id),
+            repository.eq(repository_url),
+            is_verified.eq(verified),
+        ))
+        .on_conflict_do_nothing()
+        .execute(con)
+        .await?;
 
-    sqlx::query(
-        "INSERT INTO app_owners (user_id, app_id, verified_owner) VALUES ($1, $2, $3)
-        ON CONFLICT DO NOTHING",
-    )
-    .bind(owner)
-    .bind(app_id)
-    .bind(verified)
-    .execute(&mut transaction)
-    .await
-    .map_err(AddAppError::SqlError)?;
-
-    if let Err(e) = transaction.commit().await {
-        tracing::error!("Couldn't commit to database: {}", e);
-        return Err(AddAppError::SqlError(e));
-    }
+    diesel::insert_into(app_owners)
+        .values((
+            user_id.eq(owner),
+            app_id.eq(new_app_id),
+            verified_owner.eq(verified),
+        ))
+        .on_conflict_do_nothing()
+        .execute(con)
+        .await?;
 
     Ok(())
 }
 
 async fn is_user_admin_member_of_github_org(
-    pool: &Data<sqlx::postgres::PgPool>,
+    pool: &Data<Pool<AsyncPgConnection>>,
     uuid: &Uuid,
     _org_id: String,
 ) -> bool {
-    let _tokens = match get_github_user_tokens(&pool, &uuid).await {
-        Some(t) => t,
-        None => return false,
+    let _tokens = match get_github_user_tokens(pool, uuid).await {
+        Ok(t) => t,
+        Err(_) => return false,
     };
 
     // TODO: Awaiting https://github.com/XAMPPRocky/octocrab/pull/357
@@ -221,33 +217,34 @@ async fn is_user_admin_member_of_github_org(
     false
 }
 
-async fn get_github_user_id(pool: &Data<sqlx::postgres::PgPool>, user: &Uuid) -> Option<String> {
-    let mut con = pool.acquire().await.ok()?;
+async fn get_github_user_id(
+    pool: &Data<Pool<AsyncPgConnection>>,
+    user: &Uuid,
+) -> Result<Option<String>> {
+    use crate::schema::github_auth::dsl::*;
 
-    let id = sqlx::query("SELECT github_user_id FROM github_auth WHERE user_id = $1")
-        .bind(user)
-        .map(|r: PgRow| r.get("github_user_id"))
-        .fetch_one(&mut con)
-        .await;
+    let mut con = pool.get().await?;
 
-    id.ok()
+    Ok(github_auth
+        .select(github_user_id)
+        .filter(user_id.eq(user))
+        .get_result(&mut con)
+        .await?)
 }
 
 async fn get_github_user_tokens(
-    pool: &Data<sqlx::postgres::PgPool>,
+    pool: &Data<Pool<AsyncPgConnection>>,
     user: &Uuid,
-) -> Option<(Option<String>, Option<String>)> {
-    let mut con = pool.acquire().await.ok()?;
+) -> Result<(Option<String>, Option<String>)> {
+    use crate::schema::github_auth::dsl::*;
 
-    let tokens = sqlx::query(
-        "SELECT github_access_token, github_refresh_token FROM github_auth WHERE user_id = $1",
-    )
-    .bind(user)
-    .map(|r: PgRow| (r.get("github_access_token"), r.get("github_refresh_token")))
-    .fetch_one(&mut con)
-    .await;
+    let mut con = pool.get().await?;
 
-    tokens.ok()
+    Ok(github_auth
+        .select((github_access_token, github_refresh_token))
+        .filter(user_id.eq(user))
+        .get_result(&mut con)
+        .await?)
 }
 
 #[derive(Debug, PartialEq)]
@@ -319,8 +316,6 @@ fn validate_github_url_and_rdnn(url: &Url, rdnn: &str) -> GithubRdnnValidationRe
 
 #[cfg(test)]
 mod tests {
-    use sqlx::PgPool;
-
     use super::*;
 
     #[test]
@@ -331,53 +326,5 @@ mod tests {
             validate_github_url_and_rdnn(&url, "com.github.davidmhewitt.torrential"),
             GithubRdnnValidationResult::Valid(("davidmhewitt".into(), "torrential".into()))
         );
-    }
-
-    #[sqlx::test]
-    async fn app_database_tests(pool: PgPool) -> sqlx::Result<()> {
-        let apps = get_apps_from_db(&pool, &Uuid::new_v4()).await?;
-        assert!(apps.is_empty());
-
-        let mut transaction = pool.begin().await?;
-
-        let user1_id: Uuid = sqlx::query(
-            "INSERT INTO users (email, password, is_active) VALUES ($1, NULL, TRUE) RETURNING id",
-        )
-        .bind("test1@example.com")
-        .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
-        .fetch_one(&mut transaction)
-        .await?;
-
-        let user2_id: Uuid = sqlx::query(
-            "INSERT INTO users (email, password, is_active) VALUES ($1, NULL, TRUE) RETURNING id",
-        )
-        .bind("test2@example.com")
-        .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
-        .fetch_one(&mut transaction)
-        .await?;
-
-        transaction.commit().await?;
-
-        match add_app_to_db(
-            &pool,
-            &user1_id,
-            "com.github.davidmhewitt.torrential",
-            "https://github.com/davidmhewitt/torrential",
-            true,
-        )
-        .await
-        {
-            Err(AddAppError::SqlError(e)) => return Err(e),
-            Err(AddAppError::UserError(e)) => panic!("{}", e.0),
-            Ok(_) => {}
-        }
-
-        let apps = get_apps_from_db(&pool, &user1_id).await?;
-        assert_eq!(apps.len(), 1);
-
-        let apps = get_apps_from_db(&pool, &user2_id).await?;
-        assert!(apps.is_empty());
-
-        Ok(())
     }
 }

@@ -6,9 +6,8 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
     environment:
-      - APP_DATABASE__USERNAME=appcenter
-      - APP_DATABASE__PASSWORD=appcenter
-      - APP_DATABASE__HOST=db
+      - DATABASE_URL=postgresql://appcenter:appcenter@db/appcenter_website
+      - APP_DATABASE__URL=postgresql://appcenter:appcenter@db/appcenter_website
       - APP_REDIS__URI=redis://redis
 
     volumes:

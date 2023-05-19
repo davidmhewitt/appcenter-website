@@ -1,12 +1,15 @@
 use actix_session::Session;
-use secrecy::SecretString;
-use sqlx::Row;
+use anyhow::Result;
+use diesel::{ExpressionMethods, QueryDsl};
+use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
 use uuid::Uuid;
+
+use crate::models::*;
 
 #[tracing::instrument(name = "Check Auth", skip(session, pool))]
 pub async fn check_auth(
     session: Session,
-    pool: &actix_web::web::Data<sqlx::postgres::PgPool>,
+    pool: &actix_web::web::Data<Pool<AsyncPgConnection>>,
 ) -> Option<Uuid> {
     let id = match session.get::<Uuid>(crate::types::USER_ID_KEY) {
         Ok(u) => match u {
@@ -35,27 +38,19 @@ pub async fn check_auth(
 
 #[tracing::instrument(name = "Getting a user from DB.", skip(pool, email),fields(user_email = %email))]
 async fn get_active_user_by_email_and_id(
-    pool: &sqlx::postgres::PgPool,
+    pool: &Pool<AsyncPgConnection>,
     id: &Uuid,
     email: &String,
-) -> Result<crate::types::User, sqlx::Error> {
-    match sqlx::query("SELECT id, email, password, is_admin FROM users WHERE id = $1 AND email = $2 AND is_active = TRUE")
-        .bind(id)
-        .bind(email)
-        .map(|row: sqlx::postgres::PgRow| crate::types::User {
-            id: row.get("id"),
-            email: row.get("email"),
-            password_hash: row.get::<Option<String>, &str>("password").map(SecretString::from),
-            is_active: true,
-            is_admin: row.get("is_admin"),
-        })
-        .fetch_one(pool)
-        .await
-    {
-        Ok(user) => Ok(user),
-        Err(e) => {
-            tracing::event!(target: "sqlx",tracing::Level::ERROR, "User not found in DB: {:#?}", e);
-            Err(e)
-        }
-    }
+) -> Result<crate::models::User> {
+    use crate::schema::users::dsl::*;
+
+    let mut con = pool.get().await?;
+    let result = users
+        .filter(is_active.eq(true))
+        .filter(id.eq(id))
+        .filter(email.eq(email))
+        .get_result::<User>(&mut con)
+        .await?;
+
+    Ok(result)
 }

@@ -1,5 +1,7 @@
 pub mod extractors;
+pub mod models;
 pub mod routes;
+pub mod schema;
 pub mod settings;
 pub mod startup;
 pub mod telemetry;

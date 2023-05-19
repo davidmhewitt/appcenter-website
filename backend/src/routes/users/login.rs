@@ -1,7 +1,9 @@
+use anyhow::Result;
+use diesel::{ExpressionMethods, QueryDsl};
+use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
 use secrecy::SecretString;
-use sqlx::Row;
 
-use crate::types::ErrorTranslationKey;
+use crate::{models::User, types::ErrorTranslationKey};
 
 #[derive(serde::Deserialize, Debug)]
 pub struct LoginUser {
@@ -12,14 +14,14 @@ pub struct LoginUser {
 #[tracing::instrument(name = "Logging a user in", skip( pool, user, session), fields(user_email = %user.email))]
 #[actix_web::post("/login/")]
 async fn login_user(
-    pool: actix_web::web::Data<sqlx::postgres::PgPool>,
+    pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
     user: actix_web::web::Json<LoginUser>,
     session: actix_session::Session,
 ) -> actix_web::HttpResponse {
     match get_user_who_is_active(&pool, &user.email).await {
         Ok(loggedin_user) => match tokio::task::spawn_blocking(move || {
             crate::utils::auth::password::verify_password(
-                &loggedin_user.password_hash.unwrap(),
+                &loggedin_user.password.unwrap(),
                 &user.password,
             )
         })
@@ -62,26 +64,18 @@ async fn login_user(
 }
 
 #[tracing::instrument(name = "Getting a user from DB.", skip(pool, email),fields(user_email = %email))]
-async fn get_user_who_is_active(
-    pool: &sqlx::postgres::PgPool,
+pub(crate) async fn get_user_who_is_active(
+    pool: &Pool<AsyncPgConnection>,
     email: &String,
-) -> Result<crate::types::User, sqlx::Error> {
-    match sqlx::query("SELECT id, email, password, is_admin FROM users WHERE email = $1 AND is_active = TRUE AND password IS NOT NULL")
-        .bind(email)
-        .map(|row: sqlx::postgres::PgRow| crate::types::User {
-            id: row.get("id"),
-            email: row.get("email"),
-            password_hash: row.get::<Option<String>, &str>("password").map(SecretString::from),
-            is_active: true,
-            is_admin: row.get("is_admin"),
-        })
-        .fetch_one(pool)
-        .await
-    {
-        Ok(user) => Ok(user),
-        Err(e) => {
-            tracing::event!(target: "sqlx",tracing::Level::ERROR, "User not found in DB: {:#?}", e);
-            Err(e)
-        }
-    }
+) -> Result<crate::models::User> {
+    use crate::schema::users::dsl::*;
+
+    let mut con = pool.get().await?;
+
+    Ok(users
+        .filter(email.eq(email))
+        .filter(is_active.eq(true))
+        .limit(1)
+        .get_result::<User>(&mut con)
+        .await?)
 }

@@ -1,19 +1,22 @@
-use secrecy::{ExposeSecret, SecretString};
-use sqlstate::{
-    postgres::{
-        class::IntegrityConstraintViolation::UniqueViolation,
-        SqlState::IntegrityConstraintViolation,
-    },
-    PostgresSqlState,
+use diesel::ExpressionMethods;
+use diesel_async::{
+    pooled_connection::bb8::{Pool, PooledConnection},
+    scoped_futures::ScopedFutureExt,
+    AsyncConnection, AsyncPgConnection, RunQueryDsl,
 };
-use sqlx::Row;
 
-use crate::types::{CreateNewUser, ErrorTranslationKey};
+use anyhow::Result;
+use uuid::Uuid;
+
+use crate::{
+    models::{NewGithubAuth, NewUser},
+    types::ErrorTranslationKey,
+};
 
 #[derive(serde::Deserialize, Debug)]
-pub struct NewUser {
+pub struct NewUserRequest {
     email: String,
-    password: SecretString,
+    password: String,
 }
 
 #[tracing::instrument(name = "Adding a new user",
@@ -23,14 +26,14 @@ fields(
 ))]
 #[actix_web::post("/register")]
 pub async fn register_user(
-    pool: actix_web::web::Data<sqlx::postgres::PgPool>,
-    new_user: actix_web::web::Json<NewUser>,
+    pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
+    new_user: actix_web::web::Json<NewUserRequest>,
     redis_pool: actix_web::web::Data<deadpool_redis::Pool>,
 ) -> actix_web::HttpResponse {
-    let mut transaction = match pool.begin().await {
-        Ok(transaction) => transaction,
+    let mut connection = match pool.get().await {
+        Ok(c) => c,
         Err(e) => {
-            tracing::event!(target: "backend", tracing::Level::ERROR, "Unable to begin DB transaction: {:#?}", e);
+            tracing::event!(target: "backend", tracing::Level::ERROR, "Unable to get DB connection: {:#?}", e);
             return actix_web::HttpResponse::InternalServerError().json(
                 crate::types::ErrorResponse {
                     error: "Something unexpected happened. Kindly try again.".to_string(),
@@ -39,41 +42,36 @@ pub async fn register_user(
             );
         }
     };
+
     let hashed_password = crate::utils::auth::password::hash(&new_user.0.password);
 
-    let create_new_user = CreateNewUser {
+    let user = NewUser {
+        email: &new_user.0.email,
         password: Some(hashed_password),
-        email: new_user.0.email,
         is_active: false,
-        github_id: None,
-        github_access_token: None,
-        github_refresh_token: None,
+        is_admin: false,
     };
 
-    let user_id = match insert_created_user_into_db(&mut transaction, &create_new_user).await {
-        Ok(id) => id,
+    let user_id = match insert_user_into_db(
+        &mut connection,
+        user,
+        NewGithubAuth {
+            github_user_id: None,
+            github_access_token: None,
+            github_refresh_token: None,
+        },
+    )
+    .await
+    {
+        Ok(u) => u,
         Err(e) => {
-            tracing::event!(target: "sqlx",tracing::Level::ERROR, "Failed to insert user into DB: {:#?}", e);
-            let error_message = if e
-                .as_database_error()
-                .unwrap()
-                .code()
-                .unwrap()
-                .parse::<PostgresSqlState>()
-                .unwrap()
-                == PostgresSqlState::Custom(IntegrityConstraintViolation(Some(UniqueViolation)))
-            {
+            tracing::error!("Error inserting new user into DB: {}", e);
+            return actix_web::HttpResponse::InternalServerError().json(
                 crate::types::ErrorResponse {
-                    error: "A user with that email address already exists".to_string(),
-                    translation_key: ErrorTranslationKey::UserAlreadyExists,
-                }
-            } else {
-                crate::types::ErrorResponse {
-                    error: "Error inserting user into the database".to_string(),
+                    error: "We cannot create your account at the moment".to_string(),
                     translation_key: ErrorTranslationKey::GenericRegistrationProblem,
-                }
-            };
-            return actix_web::HttpResponse::InternalServerError().json(error_message);
+                },
+            );
         }
     };
 
@@ -94,16 +92,12 @@ pub async fn register_user(
         "RustAuth - Let's get you verified".to_string(),
         user_id,
         Some(String::from("accounts@elementary.io")),
-        create_new_user.email,
+        new_user.0.email.to_owned(),
         "verification_email.html",
         &mut redis_con,
     )
     .await
     .unwrap();
-
-    if transaction.commit().await.is_err() {
-        return actix_web::HttpResponse::InternalServerError().finish();
-    }
 
     tracing::event!(target: "backend", tracing::Level::INFO, "User created successfully.");
     actix_web::HttpResponse::Ok().json(crate::types::SuccessResponse {
@@ -111,70 +105,54 @@ pub async fn register_user(
     })
 }
 
-#[tracing::instrument(name = "Inserting new user into DB.", skip(transaction, new_user),fields(
-    new_user_email = %new_user.email,
-))]
-pub async fn insert_created_user_into_db(
-    transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    new_user: &CreateNewUser,
-) -> Result<uuid::Uuid, sqlx::Error> {
-    let user_id = match sqlx::query(
-        "INSERT INTO users (email, password, is_active) VALUES ($1, $2, $3) RETURNING id",
-    )
-    .bind(&new_user.email)
-    .bind(new_user.password.as_ref().map(|p| p.expose_secret()))
-    .bind(new_user.is_active)
-    .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
-    .fetch_one(&mut *transaction)
-    .await
-    {
-        Ok(id) => id,
-        Err(e) => {
-            tracing::event!(target: "sqlx",tracing::Level::ERROR, "Failed to insert user into DB: {:#?}", e);
-            return Err(e);
-        }
-    };
+pub async fn insert_user_into_db<'a>(
+    connection: &mut PooledConnection<'a, AsyncPgConnection>,
+    user: NewUser<'a>,
+    github: NewGithubAuth,
+) -> Result<Uuid> {
+    use crate::schema::github_auth;
+    use crate::schema::github_auth::{github_access_token, github_refresh_token, github_user_id};
+    use crate::schema::user_profile;
+    use crate::schema::users;
+    use crate::schema::users::dsl::*;
 
-    match sqlx::query(
-        "INSERT INTO user_profile (user_id)
-                VALUES ($1)
-            ON CONFLICT (user_id)
-            DO NOTHING
-            RETURNING user_id",
-    )
-    .bind(user_id)
-    .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("user_id") })
-    .fetch_one(&mut *transaction)
-    .await
-    {
-        Ok(id) => {
-            tracing::event!(target: "sqlx",tracing::Level::INFO, "User profile created successfully {}.", id);
-        }
-        Err(e) => {
-            tracing::event!(target: "sqlx",tracing::Level::ERROR, "Failed to insert user's profile into DB: {:#?}", e);
-        }
-    }
+    let user_id: Uuid = connection
+        .transaction::<_, diesel::result::Error, _>(|mut transaction| {
+            async move {
+                let new_user_uuid = diesel::insert_into(users::table)
+                    .values(user)
+                    .returning(id)
+                    .get_result::<Uuid>(transaction)
+                    .await?;
 
-    match sqlx::query(
-        "INSERT INTO github_auth (user_id, github_user_id, github_access_token, github_refresh_token)
-            VALUES ($1, $2, $3, $4)
-            RETURNING user_id",
-    )
-    .bind(user_id)
-    .bind(new_user.github_id.to_owned())
-    .bind(new_user.github_access_token.as_ref().map(|t| t.expose_secret()))
-    .bind(new_user.github_refresh_token.as_ref().map(|t| t.expose_secret()))
-    .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("user_id") })
-    .fetch_one(&mut *transaction)
-    .await
-    {
-        Ok(id) => {
-            tracing::event!(target: "sqlx",tracing::Level::INFO, "User github auth info created successfully {}.", id);
-            Ok(id)
-        }
-        Err(e) => {
-            tracing::event!(target: "sqlx",tracing::Level::ERROR, "Failed to insert user's github auth info into DB: {:#?}", e);
-            Err(e)
-        }
-    }
+                diesel::insert_into(user_profile::table)
+                    .values(&user_profile::user_id.eq(new_user_uuid))
+                    .execute(&mut transaction)
+                    .await?;
+
+                diesel::insert_into(github_auth::table)
+                    .values((
+                        github_auth::user_id.eq(new_user_uuid),
+                        github_user_id.eq(github.github_user_id),
+                        github_access_token.eq(github.github_access_token),
+                        github_refresh_token.eq(github.github_refresh_token),
+                    ))
+                    .execute(&mut transaction)
+                    .await?;
+
+                Ok(new_user_uuid)
+            }
+            .scope_boxed()
+        })
+        .await?;
+
+    Ok(user_id)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_user_insertion() {}
 }
