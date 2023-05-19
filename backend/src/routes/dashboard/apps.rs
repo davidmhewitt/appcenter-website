@@ -320,6 +320,8 @@ mod tests {
 
     use super::*;
     use async_once_cell::OnceCell;
+    use diesel::{PgConnection, Connection};
+    use diesel_migrations::MigrationHarness;
     use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncConnection};
 
     static POOL: OnceCell<Pool<AsyncPgConnection>> = OnceCell::new();
@@ -338,6 +340,13 @@ mod tests {
         dotenv::dotenv().ok();
 
         let settings = crate::settings::get_settings().expect("Failed to read settings.");
+
+        let mut connection = PgConnection::establish(&settings.database.url)
+            .expect("Unable to connect to database to run migrations");
+        connection
+            .run_pending_migrations(crate::startup::MIGRATIONS)
+            .expect("Unable to run database migrations");
+
         let manager =
             AsyncDieselConnectionManager::<AsyncPgConnection>::new(&settings.database.url);
         Pool::builder()
