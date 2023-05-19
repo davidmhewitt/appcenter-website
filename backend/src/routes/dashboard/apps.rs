@@ -64,7 +64,7 @@ pub async fn get_apps(user: AuthedUser, pool: Data<Pool<AsyncPgConnection>>) -> 
     }
 }
 
-async fn get_apps_from_db(
+pub async fn get_apps_from_db(
     con: &mut PooledConnection<'_, AsyncPgConnection>,
     uuid: &Uuid,
 ) -> Result<Vec<App>> {
@@ -157,7 +157,7 @@ pub async fn add_app(
     HttpResponse::Ok().finish()
 }
 
-async fn add_app_to_db(
+pub async fn add_app_to_db(
     con: &mut PooledConnection<'_, AsyncPgConnection>,
     owner: &Uuid,
     new_app_id: &str,
@@ -316,15 +316,7 @@ fn validate_github_url_and_rdnn(url: &Url, rdnn: &str) -> GithubRdnnValidationRe
 
 #[cfg(test)]
 mod tests {
-    use crate::models::{NewGithubAuth, NewUser};
-
     use super::*;
-    use async_once_cell::OnceCell;
-    use diesel::{PgConnection, Connection};
-    use diesel_migrations::MigrationHarness;
-    use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncConnection};
-
-    static POOL: OnceCell<Pool<AsyncPgConnection>> = OnceCell::new();
 
     #[test]
     fn github_rdnn_validation() {
@@ -334,89 +326,5 @@ mod tests {
             validate_github_url_and_rdnn(&url, "com.github.davidmhewitt.torrential"),
             GithubRdnnValidationResult::Valid(("davidmhewitt".into(), "torrential".into()))
         );
-    }
-
-    async fn create_db_pool() -> Pool<AsyncPgConnection> {
-        dotenv::dotenv().ok();
-
-        let settings = crate::settings::get_settings().expect("Failed to read settings.");
-
-        let mut connection = PgConnection::establish(&settings.database.url)
-            .expect("Unable to connect to database to run migrations");
-        connection
-            .run_pending_migrations(crate::startup::MIGRATIONS)
-            .expect("Unable to run database migrations");
-
-        let manager =
-            AsyncDieselConnectionManager::<AsyncPgConnection>::new(&settings.database.url);
-        Pool::builder()
-            .build(manager)
-            .await
-            .expect("Unable to build database pool")
-    }
-
-    #[tokio::test]
-    async fn app_database_tests() -> Result<()> {
-        use crate::routes::users::register::insert_user_into_db;
-
-        let pool = POOL.get_or_init(create_db_pool()).await;
-
-        let mut con = pool.get().await.expect("Unable to get database connection");
-
-        con.begin_test_transaction()
-            .await
-            .expect("Unable to start test transaction");
-
-        let apps = get_apps_from_db(&mut con, &Uuid::new_v4()).await?;
-        assert!(apps.is_empty());
-
-        let user1 = insert_user_into_db(
-            &mut con,
-            NewUser {
-                email: "test1@example.com",
-                password: None,
-                is_active: true,
-                is_admin: false,
-            },
-            NewGithubAuth {
-                github_user_id: None,
-                github_access_token: None,
-                github_refresh_token: None,
-            },
-        )
-        .await?;
-
-        let user2 = insert_user_into_db(
-            &mut con,
-            NewUser {
-                email: "test2@example.com",
-                password: None,
-                is_active: true,
-                is_admin: false,
-            },
-            NewGithubAuth {
-                github_user_id: None,
-                github_access_token: None,
-                github_refresh_token: None,
-            },
-        )
-        .await?;
-
-        add_app_to_db(
-            &mut con,
-            &user1,
-            "com.github.fakeorg.fakeapp",
-            "https://github.com/fakeorg/fakeapp.git",
-            true,
-        )
-        .await?;
-
-        let apps = get_apps_from_db(&mut con, &user1).await?;
-        assert!(apps.len() == 1);
-
-        let apps = get_apps_from_db(&mut con, &user2).await?;
-        assert!(apps.is_empty());
-
-        Ok(())
     }
 }

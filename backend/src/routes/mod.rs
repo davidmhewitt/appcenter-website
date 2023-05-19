@@ -1,9 +1,9 @@
 use utoipa::OpenApi;
 
 mod apps;
-mod dashboard;
+pub mod dashboard;
 mod health;
-mod users;
+pub mod users;
 
 pub use apps::apps_routes_config;
 pub use dashboard::dashboard_routes_config;

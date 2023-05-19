@@ -105,7 +105,7 @@ pub async fn register_user(
     })
 }
 
-pub(crate) async fn insert_user_into_db<'a>(
+pub async fn insert_user_into_db<'a>(
     connection: &mut PooledConnection<'a, AsyncPgConnection>,
     user: NewUser<'a>,
     github: NewGithubAuth,

@@ -1,5 +1,5 @@
-pub(crate) mod apps;
-pub(crate) mod submit_app_update;
+pub mod apps;
+pub mod submit_app_update;
 
 pub fn dashboard_routes_config(cfg: &mut actix_web::web::ServiceConfig) {
     cfg.service(

@@ -16,7 +16,7 @@ use secrecy::ExposeSecret;
 use crate::settings::DatabaseSettings;
 
 const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
-pub(crate) const MIGRATIONS: EmbeddedMigrations = diesel_migrations::embed_migrations!("migrations/");
+pub const MIGRATIONS: EmbeddedMigrations = diesel_migrations::embed_migrations!("migrations/");
 
 pub struct Application {
     server: actix_web::dev::Server,

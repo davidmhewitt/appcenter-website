@@ -5,7 +5,10 @@ use actix_web::{
 };
 use anyhow::Result;
 use diesel::{ExpressionMethods, QueryDsl};
-use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
+use diesel_async::{
+    pooled_connection::bb8::{Pool, PooledConnection},
+    AsyncPgConnection, RunQueryDsl,
+};
 use git_worker::GitWorker;
 use serde::Serialize;
 use uuid::Uuid;
@@ -34,7 +37,15 @@ pub async fn submit(
     git_worker: actix_web::web::Data<GitWorker>,
     submission: Json<AppUpdateSubmission>,
 ) -> HttpResponse {
-    let repo_url = match get_repo_url_from_db(&pool, &submission.app_id, &user.uuid).await {
+    let mut con = match pool.get().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("Error getting database connection: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let repo_url = match get_repo_url_from_db(&mut con, &submission.app_id, &user.uuid).await {
         Ok(r) => r,
         Err(_) => {
             return HttpResponse::InternalServerError().json(ErrorResponse {
@@ -153,15 +164,13 @@ pub async fn submit(
     HttpResponse::Ok().finish()
 }
 
-async fn get_repo_url_from_db(
-    pool: &Pool<AsyncPgConnection>,
+pub async fn get_repo_url_from_db(
+    con: &mut PooledConnection<'_, AsyncPgConnection>,
     app_id: &str,
     uuid: &Uuid,
 ) -> Result<String> {
     use crate::schema::app_owners;
     use crate::schema::apps::dsl::*;
-
-    let mut con = pool.get().await?;
 
     Ok(apps
         .inner_join(app_owners::table)
@@ -169,65 +178,6 @@ async fn get_repo_url_from_db(
         .filter(app_owners::user_id.eq(uuid))
         .filter(id.eq(app_id))
         .filter(app_owners::verified_owner.eq(true))
-        .get_result::<String>(&mut con)
+        .get_result::<String>(con)
         .await?)
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-
-//     #[sqlx::test]
-//     async fn get_repo_from_db(pool: PgPool) -> sqlx::Result<()> {
-//         let mut transaction = pool.begin().await?;
-
-//         let user1_id: Uuid = sqlx::query(
-//             "INSERT INTO users (email, password, is_active) VALUES ($1, NULL, TRUE) RETURNING id",
-//         )
-//         .bind("test1@example.com")
-//         .map(|row: sqlx::postgres::PgRow| -> uuid::Uuid { row.get("id") })
-//         .fetch_one(&mut transaction)
-//         .await?;
-
-//         sqlx::query(
-//             "INSERT INTO apps (id, repository)
-//             VALUES ('com.github.davidmhewitt.torrential', 'https://github.com/davidmhewitt/torrential.git')"
-//         ).execute(&mut transaction)
-//         .await?;
-
-//         sqlx::query(
-//             "INSERT INTO app_owners (user_id, app_id, verified_owner)
-//             VALUES ($1, 'com.github.davidmhewitt.torrential', FALSE)",
-//         )
-//         .bind(user1_id)
-//         .execute(&mut transaction)
-//         .await?;
-
-//         transaction.commit().await?;
-
-//         let repo_url =
-//             get_repo_url_from_db(&pool, "com.github.davidmhewitt.torrential", &user1_id).await;
-//         assert!(repo_url.is_err());
-
-//         let mut transaction = pool.begin().await?;
-
-//         sqlx::query(
-//             "UPDATE app_owners SET verified_owner = TRUE
-//             WHERE app_id = 'com.github.davidmhewitt.torrential'",
-//         )
-//         .execute(&mut transaction)
-//         .await?;
-
-//         transaction.commit().await?;
-
-//         let repo_url =
-//             get_repo_url_from_db(&pool, "com.github.davidmhewitt.torrential", &user1_id).await;
-//         assert!(repo_url.is_ok());
-//         assert_eq!(
-//             repo_url.unwrap(),
-//             "https://github.com/davidmhewitt/torrential.git"
-//         );
-
-//         Ok(())
-//     }
-// }
