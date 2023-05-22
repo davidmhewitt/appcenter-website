@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0.71", features = ["backtrace"] }
 git2 = "0.17.1"
-octocrab = "0.21.0"
+octocrab = "0.23.0"
 secrecy = "0.8.0"
 tempfile = "3"
 thiserror = "1.0.40"
