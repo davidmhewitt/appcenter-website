@@ -4,14 +4,13 @@ use anyhow::{anyhow, Result};
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use diesel_async::pooled_connection::bb8::{Pool, PooledConnection};
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-use git_worker::GitWorker;
 use url::Url;
 use uuid::Uuid;
 
 use crate::extractors::AuthedUser;
-use crate::models::App;
 use crate::types::dashboard::CreateApp;
 use crate::types::{ErrorResponse, ErrorTranslationKey};
+use common::models::App;
 
 #[utoipa::path(
     path = "/dashboard/apps",
@@ -68,8 +67,8 @@ pub async fn get_apps_from_db(
     con: &mut PooledConnection<'_, AsyncPgConnection>,
     uuid: &Uuid,
 ) -> Result<Vec<App>> {
-    use crate::schema::app_owners::dsl::*;
-    use crate::schema::apps::dsl::*;
+    use common::schema::app_owners::dsl::*;
+    use common::schema::apps::dsl::*;
 
     Ok(apps
         .inner_join(app_owners)
@@ -91,11 +90,10 @@ pub async fn get_apps_from_db(
     request_body = CreateApp,
 )]
 #[post("/apps")]
-#[tracing::instrument(name = "Adding dashboard app", skip(user, pool, git_worker))]
+#[tracing::instrument(name = "Adding dashboard app", skip(user, pool))]
 pub async fn add_app(
     user: AuthedUser,
     pool: Data<Pool<AsyncPgConnection>>,
-    git_worker: Data<GitWorker>,
     app: Json<CreateApp>,
 ) -> HttpResponse {
     let github_user_id = get_github_user_id(&pool, &user.uuid).await;
@@ -123,15 +121,14 @@ pub async fn add_app(
         };
 
         if let Ok(Some(github_user_id)) = github_user_id {
-            let owner_id = git_worker
-                .get_github_repo_owner_id(&owner, &path_repo_name)
+            let owner_id = github_utils::get_github_repo_owner_id(&owner, &path_repo_name)
                 .await
                 .ok();
 
             if let Some(owner_id) = owner_id {
-                if let git_worker::GithubOwner::User(repo_owner_id) = owner_id {
+                if let github_utils::GithubOwner::User(repo_owner_id) = owner_id {
                     verified = repo_owner_id == github_user_id;
-                } else if let git_worker::GithubOwner::Org(org_id) = owner_id {
+                } else if let github_utils::GithubOwner::Org(org_id) = owner_id {
                     verified = is_user_admin_member_of_github_org(&pool, &user.uuid, org_id).await;
                 }
             }
@@ -164,8 +161,8 @@ pub async fn add_app_to_db(
     repository_url: &str,
     verified: bool,
 ) -> Result<()> {
-    use crate::schema::app_owners::dsl::*;
-    use crate::schema::apps::dsl::*;
+    use common::schema::app_owners::dsl::*;
+    use common::schema::apps::dsl::*;
 
     if let Some(existing_repository) = apps
         .filter(id.eq(new_app_id))
@@ -221,7 +218,7 @@ async fn get_github_user_id(
     pool: &Data<Pool<AsyncPgConnection>>,
     user: &Uuid,
 ) -> Result<Option<String>> {
-    use crate::schema::github_auth::dsl::*;
+    use common::schema::github_auth::dsl::*;
 
     let mut con = pool.get().await?;
 
@@ -236,7 +233,7 @@ async fn get_github_user_tokens(
     pool: &Data<Pool<AsyncPgConnection>>,
     user: &Uuid,
 ) -> Result<(Option<String>, Option<String>)> {
-    use crate::schema::github_auth::dsl::*;
+    use common::schema::github_auth::dsl::*;
 
     let mut con = pool.get().await?;
 

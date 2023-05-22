@@ -3,7 +3,9 @@ use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
 use secrecy::SecretString;
 
-use crate::{models::User, types::ErrorTranslationKey};
+use common::models::User;
+
+use crate::types::ErrorTranslationKey;
 
 #[derive(serde::Deserialize, Debug)]
 pub struct LoginUser {
@@ -67,8 +69,8 @@ async fn login_user(
 pub(crate) async fn get_user_who_is_active(
     pool: &Pool<AsyncPgConnection>,
     email: &String,
-) -> Result<crate::models::User> {
-    use crate::schema::users::dsl::*;
+) -> Result<common::models::User> {
+    use common::schema::users::dsl::*;
 
     let mut con = pool.get().await?;
 

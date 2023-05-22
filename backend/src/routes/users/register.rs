@@ -8,10 +8,9 @@ use diesel_async::{
 use anyhow::Result;
 use uuid::Uuid;
 
-use crate::{
-    models::{NewGithubAuth, NewUser},
-    types::ErrorTranslationKey,
-};
+use common::models::{NewGithubAuth, NewUser};
+
+use crate::types::ErrorTranslationKey;
 
 #[derive(serde::Deserialize, Debug)]
 pub struct NewUserRequest {
@@ -110,11 +109,11 @@ pub async fn insert_user_into_db<'a>(
     user: NewUser<'a>,
     github: NewGithubAuth,
 ) -> Result<Uuid> {
-    use crate::schema::github_auth;
-    use crate::schema::github_auth::{github_access_token, github_refresh_token, github_user_id};
-    use crate::schema::user_profile;
-    use crate::schema::users;
-    use crate::schema::users::dsl::*;
+    use common::schema::github_auth;
+    use common::schema::github_auth::{github_access_token, github_refresh_token, github_user_id};
+    use common::schema::user_profile;
+    use common::schema::users;
+    use common::schema::users::dsl::*;
 
     let user_id: Uuid = connection
         .transaction::<_, diesel::result::Error, _>(|mut transaction| {
@@ -147,12 +146,4 @@ pub async fn insert_user_into_db<'a>(
         .await?;
 
     Ok(user_id)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_user_insertion() {}
 }

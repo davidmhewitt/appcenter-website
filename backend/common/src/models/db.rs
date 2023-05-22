@@ -1,6 +1,6 @@
 use crate::schema::*;
 use diesel::prelude::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Queryable, PartialEq, Debug, Clone)]
@@ -30,7 +30,7 @@ pub struct NewProfile<'a> {
     pub github_link: Option<&'a str>,
 }
 
-#[derive(Queryable, PartialEq, Debug, Clone, Serialize)]
+#[derive(Queryable, Insertable, PartialEq, Debug, Clone, Serialize)]
 pub struct App {
     pub id: String,
     pub repository: String,
@@ -53,4 +53,11 @@ pub struct NewGithubAuth {
     pub github_user_id: Option<String>,
     pub github_access_token: Option<String>,
     pub github_refresh_token: Option<String>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct RepoAppFile {
+    pub source: String,
+    pub commit: String,
+    pub version: String,
 }

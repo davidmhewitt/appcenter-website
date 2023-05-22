@@ -9,9 +9,7 @@ use diesel_migrations::MigrationHarness;
 static POOL: OnceCell<Pool<AsyncPgConnection>> = OnceCell::new();
 
 async fn create_db_pool() -> Pool<AsyncPgConnection> {
-    dotenv::dotenv().ok();
-
-    let settings = backend::settings::get_settings().expect("Failed to read settings.");
+    let settings = common::settings::get_settings().expect("Failed to read settings.");
 
     let mut connection = PgConnection::establish(&settings.database.url)
         .expect("Unable to connect to database to run migrations");

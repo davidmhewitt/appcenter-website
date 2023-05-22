@@ -16,7 +16,7 @@ pub async fn confirm(
     pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
     redis_pool: actix_web::web::Data<deadpool_redis::Pool>,
 ) -> actix_web::HttpResponse {
-    let settings = crate::settings::get_settings().expect("Failed to read settings.");
+    let settings = common::settings::get_settings().expect("Failed to read settings.");
 
     let mut redis_con = redis_pool
         .get()
@@ -90,8 +90,8 @@ pub async fn confirm(
     new_user_user_id = %user_id
 ))]
 pub async fn activate_new_user(pool: &Pool<AsyncPgConnection>, user_id: uuid::Uuid) -> Result<()> {
-    use crate::schema::users;
-    use crate::schema::users::dsl::*;
+    use common::schema::users;
+    use common::schema::users::dsl::*;
 
     let mut con = pool.get().await?;
 

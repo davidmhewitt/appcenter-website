@@ -1,8 +1,8 @@
 mod common;
 
+use ::common::models::{NewGithubAuth, NewUser};
 use anyhow::Result;
 use backend;
-use backend::models::{NewGithubAuth, NewUser};
 use backend::routes::dashboard::apps::{add_app_to_db, get_apps_from_db};
 use backend::routes::users::register::insert_user_into_db;
 use diesel_async::AsyncConnection;

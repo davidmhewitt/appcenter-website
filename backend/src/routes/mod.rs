@@ -22,9 +22,9 @@ pub use users::auth_routes_config;
         dashboard::submit_app_update::submit,
     ),
     components(schemas(
-        appstream_worker::ComponentSummary,
-        appstream_worker::TranslatableString,
-        appstream_worker::Icon,
+        common::models::ComponentSummary,
+        common::models::TranslatableString,
+        common::models::Icon,
         crate::types::dashboard::App,
         crate::types::dashboard::CreateApp,
         crate::types::dashboard::AppUpdateSubmission,

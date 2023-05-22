@@ -1,6 +1,5 @@
 use argon2::password_hash::rand_core::{OsRng, RngCore};
 use base64::{engine::general_purpose, Engine as _};
-use core::convert::TryFrom;
 use deadpool_redis::redis::AsyncCommands;
 use hex;
 use pasetors::claims::{Claims, ClaimsValidationRules};
@@ -59,7 +58,7 @@ pub async fn issue_confirmation_token_pasetors(
             e
         })?;
 
-    let settings = crate::settings::get_settings().expect("Cannot load settings.");
+    let settings = common::settings::get_settings().expect("Cannot load settings.");
     let current_date_time = chrono::Local::now();
 
     let time_to_live = chrono::Duration::minutes(expiration_in_minutes);
@@ -114,7 +113,7 @@ pub async fn verify_confirmation_token_pasetor(
     redis_connection: &mut deadpool_redis::redis::aio::Connection,
     is_for_password_change: bool,
 ) -> Result<crate::types::ConfirmationToken, String> {
-    let settings = crate::settings::get_settings().expect("Cannot load settings.");
+    let settings = common::settings::get_settings().expect("Cannot load settings.");
     let sk = SymmetricKey::<V4>::from(
         &general_purpose::STANDARD
             .decode(settings.secret.secret_key.expose_secret())

@@ -107,6 +107,8 @@ impl TryFrom<String> for Environment {
 /// followed by `__` separator,  and then the variable, e.g.
 /// `APP__APPLICATION_PORT=5001` for `port` to be set as `5001`
 pub fn get_settings() -> Result<Settings, config::ConfigError> {
+    dotenv::dotenv().ok();
+
     let base_path = std::env::current_dir().expect("Failed to determine the current directory");
     let settings_directory = base_path.join("settings");
 
