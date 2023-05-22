@@ -755,15 +755,16 @@ dependencies = [
 
 [[package]]
 name = "cacache"
-version = "11.5.2"
+version = "11.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a61f9f035b98caee1c86f2283542474d8d9c24e7a527eeb69dae03c201c29090"
+checksum = "11e3f7fcc57143528b55ff07ce71b4608d674d2929c2365f768c6c5bcaaa7a17"
 dependencies = [
  "async-std",
  "digest",
  "either",
  "futures",
  "hex",
+ "libc",
  "memmap2",
  "miette",
  "reflink",
@@ -3261,9 +3262,9 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
 name = "ssri"
-version = "8.1.0"
+version = "9.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "312a252a15c120718e8ce073aefab69d0de6fba7daadeb869edfc6e6a1e1a417"
+checksum = "b5327a6eb28e137e180380169adeae3ac6128438ca1e8a8dc80118f3d1812cbd"
 dependencies = [
  "base64 0.21.0",
  "digest",
@@ -3273,6 +3274,7 @@ dependencies = [
  "sha-1",
  "sha2",
  "thiserror",
+ "xxhash-rust",
 ]
 
 [[package]]
@@ -4198,6 +4200,12 @@ checksum = "d7d8a75eaf6557bb84a65ace8609883db44a29951042ada9b393151532e41fcb"
 dependencies = [
  "xml-rs",
 ]
+
+[[package]]
+name = "xxhash-rust"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "735a71d46c4d68d71d4b24d03fdc2b98e38cea81730595801db779c04fe80d70"
 
 [[package]]
 name = "yaml-rust"
