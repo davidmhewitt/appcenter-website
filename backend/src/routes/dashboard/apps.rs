@@ -29,6 +29,7 @@ use common::models::App;
                             last_submitted_version: Some("3.0.1".into()),
                             first_seen: None,
                             last_update: None,
+                            is_published: true,
                         },
                         App {
                             id: "io.elementary.photos".into(),
@@ -37,6 +38,7 @@ use common::models::App;
                             last_submitted_version: None,
                             first_seen: None,
                             last_update: None,
+                            is_published: true,
                         }
                     ]
                 )))
@@ -79,6 +81,7 @@ pub async fn get_apps_from_db(
             last_submitted_version,
             first_seen,
             last_update,
+            is_published,
         ))
         .filter(user_id.eq(uuid))
         .get_results::<App>(con)

@@ -22,6 +22,7 @@ diesel::table! {
         last_submitted_version -> Nullable<Text>,
         first_seen -> Nullable<Timestamptz>,
         last_update -> Nullable<Timestamptz>,
+        is_published -> Bool,
     }
 }
 

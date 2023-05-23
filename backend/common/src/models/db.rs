@@ -38,6 +38,7 @@ pub struct App {
     pub last_submitted_version: Option<String>,
     pub first_seen: Option<time::OffsetDateTime>,
     pub last_update: Option<time::OffsetDateTime>,
+    pub is_published: bool,
 }
 
 #[derive(Insertable, Queryable, PartialEq, Debug, Clone)]

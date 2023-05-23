@@ -32,7 +32,7 @@ pub async fn all_ids(pool: Data<Pool<AsyncPgConnection>>) -> actix_web::HttpResp
     };
 
     let all_apps: Vec<String> = match apps
-        .filter(is_verified.eq(true))
+        .filter(is_published.eq(true))
         .load::<App>(&mut con)
         .await
     {

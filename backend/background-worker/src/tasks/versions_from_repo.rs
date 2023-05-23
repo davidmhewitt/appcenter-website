@@ -44,7 +44,8 @@ impl Runnable for VersionsFromRepo {
             .iter()
             .map(|f| App {
                 id: f.0.file_stem().unwrap().to_string_lossy().to_string(),
-                is_verified: true,
+                is_verified: false,
+                is_published: true,
                 repository: f.1.repository.to_owned(),
                 last_submitted_version: Some(f.1.version.to_owned()),
                 first_seen: Some(f.1.first),
@@ -61,6 +62,7 @@ impl Runnable for VersionsFromRepo {
                 last_submitted_version.eq(excluded(last_submitted_version)),
                 first_seen.eq(excluded(first_seen)),
                 last_update.eq(excluded(last_update)),
+                is_published.eq(excluded(is_published)),
             ))
             .execute(&mut connection)
             .map_err(|e| FangError {
