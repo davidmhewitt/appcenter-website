@@ -46,6 +46,7 @@ pub async fn recently_updated(
     };
 
     let recent_apps = match apps
+        .filter(is_published.eq(true))
         .order(last_update.desc())
         .limit(20)
         .load::<App>(&mut con)
