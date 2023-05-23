@@ -1,28 +1,23 @@
-use std::io::ErrorKind;
-
 use actix_cors::Cors;
 use actix_files as fs;
 use actix_session::config::PersistentSession;
 use actix_web::cookie::time::Duration;
 use base64::{engine::general_purpose, Engine as _};
+use common::settings::DatabaseSettings;
 use diesel::{Connection, PgConnection};
 use diesel_async::pooled_connection::bb8::Pool;
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::AsyncPgConnection;
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
-use git_worker::GitWorker;
 use secrecy::ExposeSecret;
-
-use crate::settings::DatabaseSettings;
 
 const SECS_IN_WEEK: i64 = 60 * 60 * 24 * 7;
 pub const MIGRATIONS: EmbeddedMigrations = diesel_migrations::embed_migrations!("migrations/");
-
 pub struct Application {
     server: actix_web::dev::Server,
 }
 
-pub async fn get_connection_pool(settings: &DatabaseSettings) -> Pool<AsyncPgConnection> {
+pub async fn async_connection_pool(settings: &DatabaseSettings) -> Pool<AsyncPgConnection> {
     let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&settings.url);
     Pool::builder()
         .build(manager)
@@ -31,14 +26,14 @@ pub async fn get_connection_pool(settings: &DatabaseSettings) -> Pool<AsyncPgCon
 }
 
 impl Application {
-    pub async fn build(settings: crate::settings::Settings) -> Result<Self, std::io::Error> {
+    pub async fn build(settings: common::settings::Settings) -> Result<Self, std::io::Error> {
         let mut connection = PgConnection::establish(&settings.database.url)
             .expect("Unable to connect to database to run migrations");
         connection
             .run_pending_migrations(MIGRATIONS)
             .expect("Unable to run database migrations");
 
-        let connection_pool = get_connection_pool(&settings.database).await;
+        let connection_pool = async_connection_pool(&settings.database).await;
 
         let server = run(connection_pool, settings).await?;
 
@@ -52,7 +47,7 @@ impl Application {
 
 async fn run(
     db_pool: Pool<AsyncPgConnection>,
-    settings: crate::settings::Settings,
+    settings: common::settings::Settings,
 ) -> Result<actix_web::dev::Server, std::io::Error> {
     // Database connection pool application state
     let pool = actix_web::web::Data::new(db_pool);
@@ -65,21 +60,13 @@ async fn run(
 
     let redis_pool_data = actix_web::web::Data::new(redis_pool);
 
-    let git_worker = GitWorker::new(
-        settings.github.local_repo_path,
-        settings.github.reviews_url,
-        settings.github.username,
-        settings.github.access_token,
-    )
-    .map_err(|e| std::io::Error::new(ErrorKind::Other, e))?;
-
-    let git_worker_data = actix_web::web::Data::new(git_worker);
-
     let secret_key = actix_web::cookie::Key::from(
         &general_purpose::STANDARD
             .decode(settings.secret.hmac_secret.expose_secret())
             .expect("Couldn't decode base64 HMAC secret"),
     );
+
+    tracing::event!(target: "backend", tracing::Level::INFO, "Listening on http://{}:{}/", &settings.application.host, &settings.application.port);
 
     let server = actix_web::HttpServer::new(move || {
         let cors = Cors::default()
@@ -109,7 +96,6 @@ async fn run(
             .service(fs::Files::new("/static/apps", "_apps"))
             .app_data(pool.clone())
             .app_data(redis_pool_data.clone())
-            .app_data(git_worker_data.clone())
     })
     .bind((settings.application.host, settings.application.port))?
     .run();

@@ -20,7 +20,7 @@ pub async fn send_email(
     html_content: impl Into<String>,
     text_content: impl Into<String>,
 ) -> Result<(), String> {
-    let settings = crate::settings::get_settings().expect("Failed to read settings.");
+    let settings = common::settings::get_settings().expect("Failed to read settings.");
 
     let email = lettre::Message::builder()
         .from(
@@ -101,8 +101,8 @@ pub async fn send_multipart_email(
     template_name: &str,
     redis_connection: &mut deadpool_redis::redis::aio::Connection,
 ) -> Result<(), String> {
-    let settings = crate::settings::get_settings().expect("Unable to load settings.");
-    let title = subject.clone();
+    let settings = common::settings::get_settings().expect("Unable to load settings.");
+    let title: String = subject.clone();
 
     let is_for_password_change = template_name == "password_reset_email.html";
 

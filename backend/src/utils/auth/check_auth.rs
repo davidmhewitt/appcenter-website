@@ -4,7 +4,7 @@ use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
 use uuid::Uuid;
 
-use crate::models::*;
+use common::models::*;
 
 #[tracing::instrument(name = "Check Auth", skip(session, pool))]
 pub async fn check_auth(
@@ -41,8 +41,8 @@ async fn get_active_user_by_email_and_id(
     pool: &Pool<AsyncPgConnection>,
     id: &Uuid,
     email: &String,
-) -> Result<crate::models::User> {
-    use crate::schema::users::dsl::*;
+) -> Result<User> {
+    use common::schema::users::dsl::*;
 
     let mut con = pool.get().await?;
     let result = users

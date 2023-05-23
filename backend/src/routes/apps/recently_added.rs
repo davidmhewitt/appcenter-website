@@ -1,5 +1,8 @@
-use actix_web::{get, HttpResponse};
-use appstream_worker::ComponentSummary;
+use actix_web::{get, web::Data, HttpResponse};
+use diesel::{ExpressionMethods, QueryDsl};
+use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
+
+use common::models::{App, ComponentSummary};
 
 const EXAMPLE_JSON: &str = include_str!("examples/recently_added.json");
 
@@ -16,11 +19,14 @@ const EXAMPLE_JSON: &str = include_str!("examples/recently_added.json");
         ),
     )
 )]
-#[tracing::instrument(name = "Getting recently updated apps", skip(redis_pool))]
+#[tracing::instrument(name = "Getting recently updated apps", skip(pool, redis_pool))]
 #[get("/recently_added")]
 pub async fn recently_added(
+    pool: Data<Pool<AsyncPgConnection>>,
     redis_pool: actix_web::web::Data<deadpool_redis::Pool>,
 ) -> actix_web::HttpResponse {
+    use common::schema::apps::dsl::*;
+
     let mut redis_con = redis_pool
         .get()
         .await
@@ -31,9 +37,24 @@ pub async fn recently_added(
         })
         .expect("Redis connection cannot be gotten.");
 
-    let apps: Vec<ComponentSummary> =
-        match deadpool_redis::redis::Cmd::lrange(appstream_worker::RECENTLY_ADDED_REDIS_KEY, 0, 19)
-            .query_async::<_, Vec<String>>(&mut redis_con)
+    let mut con = match pool.get().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("Unable to get DB connection for recent apps: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let newest_apps = match apps
+        .order(first_seen.desc())
+        .limit(20)
+        .load::<App>(&mut con)
+        .await
+    {
+        Ok(r) => match deadpool_redis::redis::cmd("hmget")
+            .arg(appstream_worker::APP_SUMMARIES_REDIS_KEY)
+            .arg(r.iter().map(|a| a.id.to_owned()).collect::<Vec<_>>())
+            .query_async::<_, Vec<Option<String>>>(&mut redis_con)
             .await
         {
             Ok(a) => a,
@@ -43,8 +64,9 @@ pub async fn recently_added(
             }
         }
         .into_iter()
+        .flatten()
         .filter_map(
-            |s| match serde_json::de::from_str::<appstream_worker::ComponentSummary>(&s) {
+            |s| match serde_json::de::from_str::<ComponentSummary>(&s) {
                 Ok(c) => Some(c),
                 Err(e) => {
                     tracing::warn!("Error deserializing component summary from redis: {}", e);
@@ -52,7 +74,12 @@ pub async fn recently_added(
                 }
             },
         )
-        .collect();
+        .collect::<Vec<_>>(),
+        Err(e) => {
+            tracing::error!("Unable to get DB connection for recent apps: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
 
-    HttpResponse::Ok().json(apps)
+    HttpResponse::Ok().json(newest_apps)
 }

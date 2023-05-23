@@ -13,9 +13,9 @@ use serde::Deserialize;
 use serde_json::Number;
 use serde_variant::to_variant_name;
 
-use crate::models::{NewGithubAuth, NewUser};
 use crate::routes::users::register::insert_user_into_db;
 use crate::types::ErrorTranslationKey;
+use common::models::{NewGithubAuth, NewUser};
 
 #[derive(Debug, Deserialize)]
 pub struct CodeResponse {
@@ -43,7 +43,7 @@ pub async fn github_callback(
     session: Session,
     response: web::Query<CodeResponse>,
 ) -> actix_web::HttpResponse {
-    let settings = crate::settings::get_settings().expect("Failed to read settings.");
+    let settings = common::settings::get_settings().expect("Failed to read settings.");
 
     let github_client_id = ClientId::new(settings.github.client_id);
     let github_client_secret =

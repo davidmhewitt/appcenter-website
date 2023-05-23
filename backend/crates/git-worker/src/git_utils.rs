@@ -5,7 +5,7 @@ use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks, Repository};
 use secrecy::{ExposeSecret, SecretString};
 use tempfile::tempdir;
 
-use crate::git_worker::Error;
+use crate::Error;
 
 pub(crate) fn get_fetch_options<'a>(
     git_repo_url: &'a str,

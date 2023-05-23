@@ -1,229 +1,88 @@
-use crate::{
-    appstream_collection_sorters,
-    appstream_version_utils::{get_latest_component_version, get_new_and_updated_apps},
-    redis_utils, ALL_APP_IDS_REDIS_KEY, RECENTLY_ADDED_REDIS_KEY, RECENTLY_UPDATED_REDIS_KEY,
-};
+use crate::{redis_utils, APP_SUMMARIES_REDIS_KEY};
 
 use appstream::{enums::Bundle, Collection, Component};
-use deadpool_redis::Pool;
-use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
-use reqwest::{Client, StatusCode};
-use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
-use semver::Version;
-use serde::{Deserialize, Serialize};
+use reqwest::{blocking::Client, header::ETAG, StatusCode};
 use std::{
-    collections::{BTreeMap, HashMap},
     io::{Error, ErrorKind},
     path::Path,
 };
-use tokio::time::Duration;
-use tokio_stream::StreamExt;
-use tokio_util::io::StreamReader;
-use utoipa::ToSchema;
-
-#[derive(Serialize, Deserialize, ToSchema)]
-#[schema(example = json!({"C": "Welcome", "ja": "いらっしゃいませ"}))]
-pub struct TranslatableString(pub BTreeMap<String, String>);
-
-impl TranslatableString {
-    pub fn from(original: appstream::TranslatableString) -> Self {
-        Self(original.0)
-    }
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-
-pub struct Icon {
-    #[schema(example = "com.github.alexkdeveloper.bmi.png")]
-    path: String,
-    #[schema(example = 64)]
-    width: Option<u32>,
-    #[schema(example = 64)]
-    height: Option<u32>,
-}
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub struct ComponentSummary {
-    #[schema(example = "com.github.davidmhewitt.torrential")]
-    id: String,
-    name: TranslatableString,
-    summary: Option<TranslatableString>,
-    icons: Vec<Icon>,
-}
-
-impl From<Component> for ComponentSummary {
-    fn from(value: Component) -> Self {
-        Self {
-            id: value.id.0,
-            name: TranslatableString::from(value.name),
-            summary: value.summary.map(TranslatableString::from),
-            icons: value
-                .icons
-                .into_iter()
-                .filter_map(|i| match i {
-                    appstream::enums::Icon::Cached {
-                        path,
-                        width,
-                        height,
-                    } => Some(Icon {
-                        path: path.to_string_lossy().into_owned(),
-                        width,
-                        height,
-                    }),
-                    _ => None,
-                })
-                .collect(),
-        }
-    }
-}
-
 pub struct AppstreamWorker {
-    latest_versions: HashMap<String, Version>,
-    redis_pool: Pool,
+    redis_client: redis::Client,
+    http_client: Client,
+}
+
+impl Default for AppstreamWorker {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl AppstreamWorker {
-    pub fn new(redis_uri: String) -> Self {
-        let cfg = deadpool_redis::Config::from_url(redis_uri);
+    pub fn new() -> Self {
+        let settings = common::settings::get_settings().expect("Unable to load settings");
         Self {
-            latest_versions: HashMap::new(),
-            redis_pool: cfg
-                .create_pool(Some(deadpool_redis::Runtime::Tokio1))
+            redis_client: redis::Client::open(settings.redis.uri)
                 .expect("Cannot create deadpool redis"),
+            http_client: Client::new(),
         }
     }
 
-    pub async fn run_appstream_update(mut self) {
-        let mut interval = tokio::time::interval(Duration::from_secs(30 * 60));
-        let client = ClientBuilder::new(Client::new())
-            .with(Cache(HttpCache {
-                mode: CacheMode::Default,
-                manager: CACacheManager::default(),
-                options: None,
-            }))
-            .build();
+    pub fn run_appstream_update(&self) {
+        tracing::info!("Updating AppStream info");
 
-        loop {
-            interval.tick().await;
-            tracing::info!("Updating AppStream info");
+        match self.download_appstream_xml() {
+            Ok(_) => {}
+            Err(e) => {
+                tracing::error!("Error downloading appstream xml: {:?}", e);
+                return;
+            }
+        };
 
-            match self.download_appstream_xml(&client).await {
-                Ok(_) => {}
-                Err(e) => {
-                    tracing::error!("Error downloading appstream xml: {:?}", e);
-                    continue;
-                }
-            };
+        let mut collection = match self.parse_and_extract_appstream_collection() {
+            Ok(c) => c,
+            Err(e) => {
+                tracing::error!("Error parsing appstream download: {:?}", e);
+                return;
+            }
+        };
 
-            let mut collection = match self.parse_and_extract_appstream_collection().await {
-                Ok(c) => c,
-                Err(e) => {
-                    tracing::error!("Error parsing appstream download: {:?}", e);
-                    continue;
-                }
-            };
-
-            self.summarise_apps(&mut collection).await;
-            self.download_icons(&collection, &client).await;
-        }
+        self.summarise_apps(&mut collection);
+        self.download_icons(&collection);
     }
 
-    async fn summarise_apps(&mut self, collection: &mut Vec<Component>) {
-        let first_update = self.latest_versions.is_empty();
-
+    fn summarise_apps(&self, collection: &mut [Component]) {
         let mut redis_con = self
-            .redis_pool
-            .get()
-            .await
+            .redis_client
+            .get_connection()
             .map_err(|e| {
                 tracing::error!("Error getting redis connection: {}", e);
             })
             .expect("Redis connection cannot be gotten.");
 
-        if first_update {
-            collection.sort_unstable_by(|a, b| {
-                appstream_collection_sorters::sort_newly_released_components_first(a, b)
-            });
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("Unable to start tokio runtime for async methods");
 
-            redis_utils::del(&mut redis_con, ALL_APP_IDS_REDIS_KEY).await;
-
-            for c in collection.iter() {
-                redis_utils::rpush(&mut redis_con, ALL_APP_IDS_REDIS_KEY, &c.id.0).await;
-            }
-
-            redis_utils::del(&mut redis_con, RECENTLY_UPDATED_REDIS_KEY).await;
-
-            for i in 0..20 {
-                if let Some(c) = collection.get(i) {
-                    let c: ComponentSummary = c.clone().into();
-                    redis_utils::rpush(
-                        &mut redis_con,
-                        RECENTLY_UPDATED_REDIS_KEY,
-                        &serde_json::to_string(&c).unwrap(),
-                    )
-                    .await;
-                } else {
-                    break;
+        for c in collection.iter() {
+            let summary = match serde_json::ser::to_string(&common::models::ComponentSummary::from(c)) {
+                Ok(s) => s,
+                Err(e) => {
+                    tracing::warn!("Error serializing component summary: {}", e);
+                    continue;
                 }
-            }
+            };
 
-            collection.sort_unstable_by(|a, b| {
-                appstream_collection_sorters::sort_recent_initial_release_components_first(a, b)
-            });
-
-            redis_utils::del(&mut redis_con, RECENTLY_ADDED_REDIS_KEY).await;
-
-            for i in 0..20 {
-                if let Some(c) = collection.get(i) {
-                    let c: ComponentSummary = c.clone().into();
-                    redis_utils::rpush(
-                        &mut redis_con,
-                        RECENTLY_ADDED_REDIS_KEY,
-                        &serde_json::to_string(&c).unwrap(),
-                    )
-                    .await;
-                } else {
-                    break;
-                }
-            }
-        }
-
-        if !first_update {
-            let (new_apps, updated_apps) =
-                get_new_and_updated_apps(&self.latest_versions, collection);
-            for c in new_apps {
-                let c: ComponentSummary = c.clone().into();
-                redis_utils::lpush(
-                    &mut redis_con,
-                    RECENTLY_ADDED_REDIS_KEY,
-                    &serde_json::to_string(&c).unwrap(),
-                )
-                .await;
-
-                redis_utils::ltrim(&mut redis_con, RECENTLY_ADDED_REDIS_KEY, 0, 19).await;
-            }
-
-            for c in updated_apps {
-                let c: ComponentSummary = c.clone().into();
-                redis_utils::lpush(
-                    &mut redis_con,
-                    RECENTLY_UPDATED_REDIS_KEY,
-                    &serde_json::to_string(&c).unwrap(),
-                )
-                .await;
-
-                redis_utils::ltrim(&mut redis_con, RECENTLY_UPDATED_REDIS_KEY, 0, 19).await;
-            }
-        }
-
-        for c in collection {
-            if let Some(v) = get_latest_component_version(c) {
-                self.latest_versions.insert(c.id.0.to_owned(), v);
-            }
+            rt.block_on(redis_utils::hset(
+                &mut redis_con,
+                APP_SUMMARIES_REDIS_KEY,
+                &c.id.0,
+                &summary,
+            ));
         }
     }
 
-    async fn download_icons(&self, collection: &Vec<Component>, client: &ClientWithMiddleware) {
+    fn download_icons(&self, collection: &Vec<Component>) {
         for c in collection {
             for icon in &c.icons {
                 // TODO: Do we need to handle other icon types?
@@ -233,7 +92,7 @@ impl AppstreamWorker {
                     height,
                 } = icon
                 {
-                    if let Err(e) = download_icon(width, height, client, path).await {
+                    if let Err(e) = download_icon(width, height, &self.http_client, path) {
                         tracing::warn!("Error downloading appstream icon: {}", e);
                     }
                 }
@@ -241,11 +100,11 @@ impl AppstreamWorker {
         }
     }
 
-    async fn download_appstream_xml(&self, client: &ClientWithMiddleware) -> Result<(), Error> {
-        let res = client
+    fn download_appstream_xml(&self) -> Result<(), Error> {
+        let mut res = self
+            .http_client
             .get("https://flatpak.elementary.io/repo/appstream/x86_64/appstream.xml.gz")
             .send()
-            .await
             .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
         if res.status() != StatusCode::OK {
@@ -263,23 +122,17 @@ impl AppstreamWorker {
             );
         }
 
-        let mut out_file = tokio::fs::File::create("/tmp/appstream.xml.gz")
-            .await
+        let mut out_file = std::fs::File::create("/tmp/appstream.xml.gz")
             .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-        let stream = res
-            .bytes_stream()
-            .map(|result| result.map_err(|err| Error::new(ErrorKind::Other, err)));
-
-        let mut read = StreamReader::new(stream);
-
-        tokio::io::copy(&mut read, &mut out_file).await?;
+        res.copy_to(&mut out_file)
+            .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
         Ok(())
     }
 
-    async fn parse_and_extract_appstream_collection(&self) -> Result<Vec<Component>, Error> {
-        match tokio::fs::create_dir("_apps").await {
+    fn parse_and_extract_appstream_collection(&self) -> Result<Vec<Component>, Error> {
+        match std::fs::create_dir("_apps") {
             Ok(()) => Ok(()),
             Err(e) => {
                 if e.kind() == ErrorKind::AlreadyExists {
@@ -290,49 +143,42 @@ impl AppstreamWorker {
             }
         }?;
 
-        match tokio::task::spawn_blocking(|| -> Result<Vec<Component>, Error> {
-            let collection = Collection::from_gzipped("/tmp/appstream.xml.gz".into())
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
+        let collection = Collection::from_gzipped("/tmp/appstream.xml.gz".into())
+            .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-            let components: Vec<Component> = collection
-                .components
-                .into_iter()
-                .filter(|c| !c.id.0.starts_with("org.gnome."))
-                .filter(|c| match c.bundles.first().unwrap() {
-                    Bundle::Flatpak {
-                        runtime: _,
-                        sdk: _,
-                        reference,
-                    } => reference.ends_with("/stable"),
-                    _ => true,
-                })
-                .collect();
+        let components: Vec<Component> = collection
+            .components
+            .into_iter()
+            .filter(|c| !c.id.0.starts_with("org.gnome."))
+            .filter(|c| match c.bundles.first().unwrap() {
+                Bundle::Flatpak {
+                    runtime: _,
+                    sdk: _,
+                    reference,
+                } => reference.ends_with("/stable"),
+                _ => true,
+            })
+            .collect();
 
-            for c in &components {
-                let out = match std::fs::File::create(format!("_apps/{}.json", c.id)) {
-                    Ok(f) => f,
-                    Err(_) => continue,
-                };
+        for c in &components {
+            let out = match std::fs::File::create(format!("_apps/{}.json", c.id)) {
+                Ok(f) => f,
+                Err(_) => continue,
+            };
 
-                if serde_json::ser::to_writer(out, &c).is_err() {
-                    continue;
-                }
+            if serde_json::ser::to_writer(out, &c).is_err() {
+                continue;
             }
-
-            Ok(components)
-        })
-        .await
-        {
-            Ok(r) => r,
-            Err(e) => Err(Error::new(ErrorKind::Other, e)),
         }
+
+        Ok(components)
     }
 }
 
-async fn download_icon(
+fn download_icon(
     width: &Option<u32>,
     height: &Option<u32>,
-    client: &ClientWithMiddleware,
+    client: &Client,
     path: &Path,
 ) -> Result<(), Error> {
     let mut dir = String::from("icons");
@@ -340,14 +186,15 @@ async fn download_icon(
         dir += &format!("/{}x{}", width, height);
     }
 
-    let res = client
-        .get(format!(
-            "https://flatpak.elementary.io/repo/appstream/x86_64/{}/{}",
-            dir,
-            path.to_string_lossy()
-        ))
+    let url = format!(
+        "https://flatpak.elementary.io/repo/appstream/x86_64/{}/{}",
+        dir,
+        path.to_string_lossy()
+    );
+
+    let mut res = client
+        .get(&url)
         .send()
-        .await
         .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
     if res.status() != StatusCode::OK {
@@ -357,29 +204,58 @@ async fn download_icon(
         ));
     }
 
-    if let Err(e) = tokio::fs::create_dir_all(format!("_apps/{}", dir)).await {
+    if let Err(e) = std::fs::create_dir_all(format!("_apps/{}", dir)) {
         return Err(Error::new(
             ErrorKind::Other,
             format!("Error creating directory for appstream icons: {:?}", e),
         ));
     }
 
-    let mut icon_file =
-        tokio::fs::File::create(format!("_apps/{}/{}", dir, path.to_string_lossy()))
-            .await
+    if let Some(etag) = res.headers().get(ETAG) {
+        let cache_key = format!(
+            "{}-{}",
+            &url,
+            etag.to_str()
+                .map_err(|_| Error::new(ErrorKind::Other, format!("Etag header was invalid"),))?
+        );
+
+        if let Some(mut cached_file) = match cacache::SyncReader::open(".image_cache", &cache_key) {
+            Ok(f) => Some(f),
+            Err(cacache::Error::EntryNotFound(_, _)) => None,
+            Err(e) => return Err(Error::new(ErrorKind::Other, e)),
+        } {
+            let path = format!("_apps/{}/{}", dir, path.to_string_lossy());
+            if std::path::Path::new(&path).exists() {
+                return Ok(());
+            }
+
+            let mut icon_file =
+                std::fs::File::create(&path).map_err(|e| Error::new(ErrorKind::Other, e))?;
+
+            std::io::copy(&mut cached_file, &mut icon_file)?;
+
+            if let Ok(_) = cached_file.check() {
+                return Ok(());
+            }
+        }
+
+        tracing::info!("Downloading body of icon");
+
+        if let Ok(mut cache_writer) = cacache::SyncWriter::create(".image_cache", &cache_key) {
+            res.copy_to(&mut cache_writer)
+                .map_err(|e| Error::new(ErrorKind::Other, e))?;
+            cache_writer.commit().ok();
+        }
+
+        let mut icon_file =
+            std::fs::File::create(format!("_apps/{}/{}", dir, path.to_string_lossy()))
+                .map_err(|e| Error::new(ErrorKind::Other, e))?;
+
+        res.copy_to(&mut icon_file)
             .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-    let stream = res
-        .bytes_stream()
-        .map(|result| result.map_err(|err| Error::new(ErrorKind::Other, err)));
-    let mut read = StreamReader::new(stream);
-
-    if let Err(e) = tokio::io::copy(&mut read, &mut icon_file).await {
-        return Err(Error::new(
-            ErrorKind::Other,
-            format!("Error downloading icon: {:?}", e),
-        ));
+        return Ok(());
     }
 
-    Ok(())
+    Err(Error::new(ErrorKind::Other, "Unable to download file"))
 }

@@ -1,30 +1,21 @@
 use anyhow::Result;
-use octocrab::Octocrab;
-use std::{path::PathBuf, sync::Mutex};
+use common::models::RepoAppFile;
+use std::{collections::HashMap, ffi::OsStr, fs::File, path::PathBuf, sync::Mutex};
+use time::OffsetDateTime;
 
 use git2::{
     build::CheckoutBuilder, FetchOptions, IndexAddOption, ObjectType, PushOptions, RemoteCallbacks,
     Repository, Sort,
 };
-use secrecy::{ExposeSecret, SecretString};
+use secrecy::SecretString;
 
-use crate::git_utils;
-use thiserror::Error;
+use crate::{git_utils, Error};
 
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error("Git error: {0}")]
-    Git(git2::Error),
-    #[error("Github error: {0}")]
-    GitHub(octocrab::Error),
-    #[error("Repository owner not found")]
-    RepoOwnerNotFound,
-}
-
-#[derive(Debug)]
-pub enum GithubOwner {
-    User(String),
-    Org(String),
+pub struct AppTouchTimes {
+    pub repository: String,
+    pub version: String,
+    pub first: OffsetDateTime,
+    pub last: OffsetDateTime,
 }
 
 pub struct GitWorker {
@@ -33,13 +24,19 @@ pub struct GitWorker {
     git_username: String,
     git_password: SecretString,
     repo: Mutex<Repository>,
-    octo: Octocrab,
 }
 
-#[derive(Debug)]
-struct FileTouchTime {
-    path: PathBuf,
-    time: time::OffsetDateTime,
+fn deserialize_app_info(path: PathBuf) -> Option<RepoAppFile> {
+    if let Ok(file) = File::open(&path) {
+        match serde_json::from_reader(file) {
+            Ok(app_info) => return Some(app_info),
+            Err(e) => {
+                tracing::warn!("Unable to parse app info json {}: {}", path.display(), e);
+            }
+        }
+    }
+
+    None
 }
 
 impl GitWorker {
@@ -50,18 +47,12 @@ impl GitWorker {
         git_password: SecretString,
     ) -> Result<Self> {
         let repo = git_utils::open_repo(&repo_path, &git_repo_url, &git_username, &git_password)?;
-        let octocrab = octocrab::OctocrabBuilder::new()
-            .personal_token(git_password.expose_secret().to_owned())
-            .build()
-            .map_err(Error::GitHub)?;
-
         Ok(Self {
             repo_path,
             git_repo_url,
             git_username,
             git_password,
             repo: Mutex::new(repo),
-            octo: octocrab,
         })
     }
 
@@ -77,18 +68,20 @@ impl GitWorker {
         )
     }
 
-    pub async fn get_app_versions(&self) -> Result<()> {
+    pub fn get_file_touch_times(&self) -> Result<HashMap<PathBuf, AppTouchTimes>> {
         self.checkout_branch("main")?;
+        self.update_repo()?;
 
         let repo = self.repo.lock().unwrap();
 
         let mut revwalk = repo.revwalk()?;
-        revwalk.set_sorting(Sort::REVERSE)?;
+        revwalk.set_sorting(Sort::NONE)?;
         revwalk.push_head()?;
+
+        let mut touch_times = HashMap::new();
 
         for item in revwalk.flatten() {
             let commit = repo.find_commit(item)?;
-            let mut files = vec![];
             if let Ok(parent) = commit.parent(0) {
                 let time =
                     time::OffsetDateTime::from_unix_timestamp(commit.author().when().seconds())?;
@@ -96,78 +89,33 @@ impl GitWorker {
                     repo.diff_tree_to_tree(Some(&parent.tree()?), Some(&commit.tree()?), None)?;
                 for diff in diffs.deltas() {
                     if let Some(file) = diff.new_file().path() {
-                        files.push(FileTouchTime {
-                            path: file.to_owned(),
-                            time,
-                        });
+                        if !file.starts_with("applications")
+                            || file.extension() != Some(OsStr::new("json"))
+                        {
+                            continue;
+                        }
+
+                        if !touch_times.contains_key(file) {
+                            if let Some(info) = deserialize_app_info(self.repo_path.join(file)) {
+                                touch_times.insert(
+                                    file.to_owned(),
+                                    AppTouchTimes {
+                                        repository: info.source,
+                                        version: info.version,
+                                        first: time,
+                                        last: time,
+                                    },
+                                );
+                            }
+                        } else {
+                            touch_times.get_mut(file).unwrap().first = time;
+                        }
                     }
                 }
             }
-
-            println!("{:?}", files);
         }
 
-        Ok(())
-    }
-
-    pub async fn create_pull_request(
-        &self,
-        title: String,
-        src_branch: String,
-        dst_branch: String,
-        body: String,
-    ) -> Result<(), Error> {
-        self.octo
-            .pulls("davidmhewitt", "appcenter-reviews")
-            .create(title, src_branch, dst_branch)
-            .body(body)
-            .send()
-            .await
-            .map_err(Error::GitHub)?;
-        Ok(())
-    }
-
-    pub async fn is_user_admin_member_of_github_org(
-        &self,
-        access_token: &SecretString,
-        _org_id: &str,
-    ) -> Result<bool, Error> {
-        let _octo = octocrab::OctocrabBuilder::new()
-            .oauth(octocrab::auth::OAuth {
-                access_token: access_token.to_owned(),
-                token_type: "Bearer".into(),
-                scope: vec![],
-            })
-            .build()
-            .map_err(Error::GitHub)?;
-
-        // TODO: Awaiting https://github.com/XAMPPRocky/octocrab/pull/357
-
-        Ok(false)
-    }
-
-    pub async fn get_github_repo_owner_id(
-        &self,
-        org: &str,
-        repo: &str,
-    ) -> Result<GithubOwner, Error> {
-        let owner = self
-            .octo
-            .repos(org, repo)
-            .get()
-            .await
-            .map(|r| r.owner)
-            .map_err(Error::GitHub)?;
-
-        if let Some(owner) = owner {
-            if owner.r#type == "Organization" {
-                return Ok(GithubOwner::Org(owner.id.0.to_string()));
-            } else {
-                return Ok(GithubOwner::User(owner.id.0.to_string()));
-            }
-        }
-
-        Err(Error::RepoOwnerNotFound)
+        Ok(touch_times)
     }
 
     pub fn update_repo(&self) -> Result<()> {

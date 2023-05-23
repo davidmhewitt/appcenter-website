@@ -5,7 +5,7 @@ use secrecy::ExposeSecret;
 #[tracing::instrument(name = "Github Login", skip(session))]
 #[actix_web::get("/github/login")]
 pub async fn github_login(session: Session) -> actix_web::HttpResponse {
-    let settings = crate::settings::get_settings().expect("Failed to read settings.");
+    let settings = common::settings::get_settings().expect("Failed to read settings.");
 
     let github_client_id = ClientId::new(settings.github.client_id);
     let github_client_secret =
