@@ -1,4 +1,5 @@
-use crate::{redis_utils, APP_SUMMARIES_REDIS_KEY};
+use crate::{redis_utils};
+use common::APP_SUMMARIES_REDIS_KEY;
 
 use appstream::{enums::Bundle, Collection, Component};
 use reqwest::{blocking::Client, header::ETAG, StatusCode};

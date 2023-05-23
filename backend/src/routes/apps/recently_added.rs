@@ -52,7 +52,7 @@ pub async fn recently_added(
         .await
     {
         Ok(r) => match deadpool_redis::redis::cmd("hmget")
-            .arg(appstream_worker::APP_SUMMARIES_REDIS_KEY)
+            .arg(common::APP_SUMMARIES_REDIS_KEY)
             .arg(r.iter().map(|a| a.id.to_owned()).collect::<Vec<_>>())
             .query_async::<_, Vec<Option<String>>>(&mut redis_con)
             .await
@@ -65,15 +65,13 @@ pub async fn recently_added(
         }
         .into_iter()
         .flatten()
-        .filter_map(
-            |s| match serde_json::de::from_str::<ComponentSummary>(&s) {
-                Ok(c) => Some(c),
-                Err(e) => {
-                    tracing::warn!("Error deserializing component summary from redis: {}", e);
-                    None
-                }
-            },
-        )
+        .filter_map(|s| match serde_json::de::from_str::<ComponentSummary>(&s) {
+            Ok(c) => Some(c),
+            Err(e) => {
+                tracing::warn!("Error deserializing component summary from redis: {}", e);
+                None
+            }
+        })
         .collect::<Vec<_>>(),
         Err(e) => {
             tracing::error!("Unable to get DB connection for recent apps: {}", e);

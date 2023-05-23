@@ -577,7 +577,6 @@ dependencies = [
  "actix-session",
  "actix-web",
  "anyhow",
- "appstream-worker",
  "argon2",
  "async-once-cell",
  "background-worker",

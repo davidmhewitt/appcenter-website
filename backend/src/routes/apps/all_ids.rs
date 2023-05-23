@@ -1,4 +1,7 @@
-use actix_web::{get, HttpResponse};
+use actix_web::{get, web::Data, HttpResponse};
+use common::models::App;
+use diesel::{query_dsl::methods::FilterDsl, ExpressionMethods};
+use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
 
 const EXAMPLE_JSON: &str = include_str!("examples/all_ids.json");
 
@@ -15,32 +18,33 @@ const EXAMPLE_JSON: &str = include_str!("examples/all_ids.json");
         ),
     )
 )]
-#[tracing::instrument(name = "Getting all app ids", skip(redis_pool))]
+#[tracing::instrument(name = "Getting all app ids", skip(pool))]
 #[get("/all_ids")]
-pub async fn all_ids(
-    redis_pool: actix_web::web::Data<deadpool_redis::Pool>,
-) -> actix_web::HttpResponse {
-    let mut redis_con = redis_pool
-        .get()
+pub async fn all_ids(pool: Data<Pool<AsyncPgConnection>>) -> actix_web::HttpResponse {
+    use common::schema::apps::dsl::*;
+
+    let mut con = match pool.get().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("Unable to get DB connection for recent apps: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let all_apps: Vec<String> = match apps
+        .filter(is_verified.eq(true))
+        .load::<App>(&mut con)
         .await
-        .map_err(|e| {
-            tracing::event!(target: "backend", tracing::Level::ERROR, "{}", e);
+    {
+        Ok(a) => a,
+        Err(e) => {
+            tracing::error!("Error getting all apps from db: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    }
+    .iter()
+    .map(|a| a.id.to_owned())
+    .collect();
 
-            actix_web::HttpResponse::InternalServerError().finish()
-        })
-        .expect("Redis connection cannot be gotten.");
-
-    let apps: Vec<String> =
-        match deadpool_redis::redis::Cmd::lrange(appstream_worker::ALL_APP_IDS_REDIS_KEY, 0, -1)
-            .query_async::<_, Vec<String>>(&mut redis_con)
-            .await
-        {
-            Ok(a) => a,
-            Err(e) => {
-                tracing::error!("Error getting recently updated apps from redis: {}", e);
-                return actix_web::HttpResponse::InternalServerError().finish();
-            }
-        };
-
-    HttpResponse::Ok().json(apps)
+    HttpResponse::Ok().json(all_apps)
 }
