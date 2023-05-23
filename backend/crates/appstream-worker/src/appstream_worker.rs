@@ -1,4 +1,4 @@
-use crate::{redis_utils};
+use crate::redis_utils;
 use common::APP_SUMMARIES_REDIS_KEY;
 
 use appstream::{enums::Bundle, Collection, Component};
@@ -66,13 +66,14 @@ impl AppstreamWorker {
             .expect("Unable to start tokio runtime for async methods");
 
         for c in collection.iter() {
-            let summary = match serde_json::ser::to_string(&common::models::ComponentSummary::from(c)) {
-                Ok(s) => s,
-                Err(e) => {
-                    tracing::warn!("Error serializing component summary: {}", e);
-                    continue;
-                }
-            };
+            let summary =
+                match serde_json::ser::to_string(&common::models::ComponentSummary::from(c)) {
+                    Ok(s) => s,
+                    Err(e) => {
+                        tracing::warn!("Error serializing component summary: {}", e);
+                        continue;
+                    }
+                };
 
             rt.block_on(redis_utils::hset(
                 &mut redis_con,

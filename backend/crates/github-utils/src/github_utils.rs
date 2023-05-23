@@ -1,4 +1,4 @@
-use crate::{OCTO};
+use crate::OCTO;
 use anyhow::{anyhow, Result};
 use secrecy::SecretString;
 
@@ -9,11 +9,7 @@ pub enum GithubOwner {
 }
 
 pub async fn get_github_repo_owner_id(org: &str, repo: &str) -> Result<GithubOwner> {
-    let owner = OCTO
-        .repos(org, repo)
-        .get()
-        .await
-        .map(|r| r.owner)?;
+    let owner = OCTO.repos(org, repo).get().await.map(|r| r.owner)?;
 
     if let Some(owner) = owner {
         if owner.r#type == "Organization" {
@@ -30,7 +26,6 @@ pub async fn is_user_admin_member_of_github_org(
     _access_token: &SecretString,
     _org_id: &str,
 ) -> Result<bool> {
-
     // TODO: Awaiting https://github.com/XAMPPRocky/octocrab/pull/357
 
     Ok(false)

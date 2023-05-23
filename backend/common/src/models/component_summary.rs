@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use appstream::Component;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 #[derive(Serialize, Deserialize, ToSchema)]
