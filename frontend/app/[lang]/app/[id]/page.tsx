@@ -43,7 +43,7 @@ async function getData(id: string): Promise<Component | undefined> {
     )
 
     if (!res.ok) {
-      throw new Error('Failed to fetch data')
+      throw new Error(`Failed to fetch data for ${id}`)
     }
 
     return res.json()

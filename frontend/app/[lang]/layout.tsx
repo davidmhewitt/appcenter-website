@@ -1,6 +1,7 @@
+import '../globals.css'
+
 import { dir } from 'i18next'
 import { locales } from '../i18n/settings'
-import '../globals.css'
 import Header from '../../components/Header'
 
 export async function generateStaticParams() {
@@ -16,7 +17,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang={lang} dir={dir(lang)}>
-      <head />
       <body>
         <Header />
         {children}

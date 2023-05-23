@@ -241,8 +241,6 @@ fn download_icon(
             }
         }
 
-        tracing::info!("Downloading body of icon");
-
         if let Ok(mut cache_writer) = cacache::SyncWriter::create(".image_cache", &cache_key) {
             res.copy_to(&mut cache_writer)
                 .map_err(|e| Error::new(ErrorKind::Other, e))?;
