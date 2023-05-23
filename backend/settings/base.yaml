@@ -10,12 +10,7 @@ secret:
   hmac_secret: "!"
 
 database:
-  port: 5432
-  host: ""
-  database_name: "appcenter_website"
-  username: ""
-  password: ""
-  require_ssl: false
+  url: "postgresql://appcenter:appcenter@db/appcenter_website"
 
 github:
   client_id: ""

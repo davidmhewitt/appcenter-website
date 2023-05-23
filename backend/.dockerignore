@@ -1,2 +1,4 @@
+.git/
+.image_cache/
 Dockerfile
 **/target/

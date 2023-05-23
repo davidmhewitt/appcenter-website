@@ -10,17 +10,15 @@ services:
       redis:
         condition: service_healthy
     environment:
-      APP_DATABASE__USERNAME: postgres
-      APP_DATABASE__PASSWORD: "${POSTGRES_PASSWORD}"
-      APP_DATABASE__HOST: postgres
+      APP_DATABASE__URL: "postgresql://postgres:${PG_PASSWORD}@postgres/appcenter_website"
       APP_REDIS__URI: redis://redis
-      APP_SECRET__SECRET_KEY: "${APP_SECRET_KEY}"
-      APP_SECRET__HMAC_SECRET: "${APP_HMAC_SECRET}"
-      APP_GITHUB__CLIENT_ID: "${GH_CLIENT_ID}"
-      APP_GITHUB__CLIENT_SECRET: "${GH_CLIENT_SECRET}"
-      APP_GITHUB__USERNAME: "${GH_USERNAME}"
-      APP_GITHUB__ACCESS_TOKEN: "${GH_ACCESS_TOKEN}"
-      APP_GITHUB__REVIEWS_URL: "${GH_REVIEWS_URL}"
+      APP_SECRET__SECRET_KEY: "${APP_SECRET__SECRET_KEY}"
+      APP_SECRET__HMAC_SECRET: "${APP_SECRET__HMAC_SECRET}"
+      APP_GITHUB__CLIENT_ID: "${APP_GITHUB__CLIENT_ID}"
+      APP_GITHUB__CLIENT_SECRET: "${APP_GITHUB__CLIENT_SECRET}"
+      APP_GITHUB__USERNAME: "${APP_GITHUB__USERNAME}"
+      APP_GITHUB__ACCESS_TOKEN: "${APP_GITHUB__ACCESS_TOKEN}"
+      APP_GITHUB__REVIEWS_URL: "${APP_GITHUB__REVIEWS_URL}"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3100/health-check"]
       interval: 20s
@@ -57,7 +55,7 @@ services:
     restart: always
     user: postgres
     environment:
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_PASSWORD: "${PG_PASSWORD}"
       POSTGRES_DB: appcenter_website
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
