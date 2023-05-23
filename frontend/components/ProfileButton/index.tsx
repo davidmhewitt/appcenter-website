@@ -41,7 +41,7 @@ function InnerProfileButton() {
                   aria-labelledby="user-menu-button"
                   tabIndex={-1}
                 >
-                  <a
+                  <Link
                     href="/dashboard"
                     className="block px-4 py-2 text-sm text-gray-700"
                     role="menuitem"
@@ -49,7 +49,7 @@ function InnerProfileButton() {
                     id="user-menu-item-0"
                   >
                     Dashboard
-                  </a>
+                  </Link>
                   <Link
                     href="/"
                     onClick={logout}
