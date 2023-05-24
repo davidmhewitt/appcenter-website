@@ -3,7 +3,7 @@ use common::APP_SUMMARIES_REDIS_KEY;
 
 use appstream::{enums::Bundle, Collection, Component};
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
-use reqwest::{Client, StatusCode};
+use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use std::{
     io::{Error, ErrorKind},
@@ -58,7 +58,7 @@ impl AppstreamWorker {
         };
 
         self.summarise_apps(&mut collection);
-        self.download_icons(&collection);
+        self.download_icons("https://flatpak.elementary.io", &collection);
     }
 
     fn summarise_apps(&self, collection: &mut [Component]) {
@@ -94,7 +94,7 @@ impl AppstreamWorker {
         }
     }
 
-    fn download_icons(&self, collection: &Vec<Component>) {
+    fn download_icons(&self, base_url: &str, collection: &Vec<Component>) {
         for c in collection {
             for icon in &c.icons {
                 // TODO: Do we need to handle other icon types?
@@ -104,14 +104,14 @@ impl AppstreamWorker {
                     height,
                 } = icon
                 {
-                    if let Err(e) = download_icon_sync(
-                        "https://flatpak.elementary.io",
-                        width,
-                        height,
-                        &self.http_client,
-                        path,
-                    ) {
-                        tracing::warn!("Error downloading appstream icon: {}", e);
+                    if let Err(e) =
+                        download_icon_sync(base_url, width, height, &self.http_client, path)
+                    {
+                        tracing::warn!(
+                            "Error downloading appstream icon '{}': {}",
+                            path.display(),
+                            e
+                        );
                     }
                 }
             }
@@ -134,7 +134,7 @@ impl AppstreamWorker {
             .await
             .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-        if res.status() != StatusCode::OK {
+        if !res.status().is_success() {
             tracing::error!(
                 "Flatpak remote returned {} for appstream.xml.gz",
                 res.status()
@@ -246,7 +246,7 @@ async fn download_icon(
         .await
         .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-    if res.status() != StatusCode::OK {
+    if !res.status().is_success() {
         return Err(Error::new(
             ErrorKind::Other,
             format!("Flatpak remote returned {} for icon download", res.status()),
@@ -277,9 +277,16 @@ async fn download_icon(
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use super::*;
 
+    use appstream::builders::ComponentBuilder;
+    use appstream::enums::Icon;
+    use appstream::TranslatableString;
     use reqwest::header::CACHE_CONTROL;
+    use tokio::task::spawn_blocking;
+    use tracing_test::traced_test;
     use wiremock::matchers::{method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -326,5 +333,97 @@ mod tests {
         .await?;
 
         Ok(())
+    }
+
+    #[tokio::test]
+    #[traced_test]
+    async fn test_download_icons() {
+        std::env::set_current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../../"))
+            .expect("Couldn't set working directory for test");
+
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path(
+                "/repo/appstream/x86_64/icons/64x64/com.example.foo.png",
+            ))
+            .respond_with(
+                ResponseTemplate::new(200).append_header(CACHE_CONTROL, "public, max-age=5356800"),
+            )
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path(
+                "/repo/appstream/x86_64/icons/128x128/com.example.foo.png",
+            ))
+            .respond_with(
+                ResponseTemplate::new(200).append_header(CACHE_CONTROL, "public, max-age=5356800"),
+            )
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path("/repo/appstream/x86_64/icons/com.example.foo.png"))
+            .respond_with(
+                ResponseTemplate::new(200).append_header(CACHE_CONTROL, "public, max-age=5356800"),
+            )
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path(
+                "/repo/appstream/x86_64/icons/64x64/com.example.bar.png",
+            ))
+            .respond_with(ResponseTemplate::new(404))
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        let components = vec![
+            ComponentBuilder::default()
+                .id("com.example.foo".into())
+                .name(TranslatableString::with_default("Foo"))
+                .icon(Icon::Cached {
+                    path: PathBuf::from("com.example.foo.png"),
+                    width: Some(64),
+                    height: Some(64),
+                })
+                .icon(Icon::Cached {
+                    path: PathBuf::from("com.example.foo.png"),
+                    width: Some(128),
+                    height: Some(128),
+                })
+                .icon(Icon::Cached {
+                    path: PathBuf::from("com.example.foo.png"),
+                    width: None,
+                    height: None,
+                })
+                .build(),
+            ComponentBuilder::default()
+                .id("com.example.bar".into())
+                .name(TranslatableString::with_default("Bar"))
+                .icon(Icon::Cached {
+                    path: PathBuf::from("com.example.bar.png"),
+                    width: Some(64),
+                    height: Some(64),
+                })
+                .build(),
+        ];
+
+        let thread_span = tracing::debug_span!("thread").or_current();
+
+        let worker = AppstreamWorker::new();
+        spawn_blocking(move || {
+            let _span = thread_span.entered();
+            worker.download_icons(&mock_server.uri(), &components);
+        })
+        .await
+        .expect("Unable to spawn blocking task");
+
+        assert!(logs_contain("Error downloading appstream icon 'com.example.bar.png'"));
     }
 }
