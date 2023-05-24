@@ -2,11 +2,13 @@ use crate::redis_utils;
 use common::APP_SUMMARIES_REDIS_KEY;
 
 use appstream::{enums::Bundle, Collection, Component};
-use reqwest::{blocking::Client, header::ETAG, StatusCode};
+use reqwest::{header::ETAG, Client, StatusCode};
 use std::{
     io::{Error, ErrorKind},
     path::Path,
 };
+use tokio_stream::StreamExt;
+use tokio_util::io::StreamReader;
 pub struct AppstreamWorker {
     redis_client: redis::Client,
     http_client: Client,
@@ -31,7 +33,7 @@ impl AppstreamWorker {
     pub fn run_appstream_update(&self) {
         tracing::info!("Updating AppStream info");
 
-        match self.download_appstream_xml() {
+        match self.download_appstream_xml_sync() {
             Ok(_) => {}
             Err(e) => {
                 tracing::error!("Error downloading appstream xml: {:?}", e);
@@ -94,7 +96,13 @@ impl AppstreamWorker {
                     height,
                 } = icon
                 {
-                    if let Err(e) = download_icon(width, height, &self.http_client, path) {
+                    if let Err(e) = download_icon_sync(
+                        "https://flatpak.elementary.io",
+                        width,
+                        height,
+                        &self.http_client,
+                        path,
+                    ) {
                         tracing::warn!("Error downloading appstream icon: {}", e);
                     }
                 }
@@ -102,11 +110,20 @@ impl AppstreamWorker {
         }
     }
 
-    fn download_appstream_xml(&self) -> Result<(), Error> {
-        let mut res = self
+    fn download_appstream_xml_sync(&self) -> Result<(), Error> {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
+
+        rt.block_on(self.download_appstream_xml())
+    }
+
+    async fn download_appstream_xml(&self) -> Result<(), Error> {
+        let res = self
             .http_client
             .get("https://flatpak.elementary.io/repo/appstream/x86_64/appstream.xml.gz")
             .send()
+            .await
             .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
         if res.status() != StatusCode::OK {
@@ -124,11 +141,16 @@ impl AppstreamWorker {
             );
         }
 
-        let mut out_file = std::fs::File::create("/tmp/appstream.xml.gz")
+        let mut out_file = tokio::fs::File::create("/tmp/appstream.xml.gz")
+            .await
             .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-        res.copy_to(&mut out_file)
-            .map_err(|e| Error::new(ErrorKind::Other, e))?;
+        let mut reader = StreamReader::new(
+            res.bytes_stream()
+                .map(|result| result.map_err(|err| Error::new(ErrorKind::Other, err))),
+        );
+
+        tokio::io::copy(&mut reader, &mut out_file).await?;
 
         Ok(())
     }
@@ -177,10 +199,25 @@ impl AppstreamWorker {
     }
 }
 
-fn download_icon(
+fn download_icon_sync(
+    base_url: &str,
     width: &Option<u32>,
     height: &Option<u32>,
-    client: &Client,
+    client: &reqwest::Client,
+    path: &Path,
+) -> Result<(), Error> {
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+
+    rt.block_on(download_icon(base_url, width, height, client, path))
+}
+
+async fn download_icon(
+    base_url: &str,
+    width: &Option<u32>,
+    height: &Option<u32>,
+    client: &reqwest::Client,
     path: &Path,
 ) -> Result<(), Error> {
     let mut dir = String::from("icons");
@@ -189,14 +226,16 @@ fn download_icon(
     }
 
     let url = format!(
-        "https://flatpak.elementary.io/repo/appstream/x86_64/{}/{}",
+        "{}/repo/appstream/x86_64/{}/{}",
+        base_url,
         dir,
         path.to_string_lossy()
     );
 
-    let mut res = client
-        .get(&url)
+    let res = client
+        .head(&url)
         .send()
+        .await
         .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
     if res.status() != StatusCode::OK {
@@ -206,7 +245,7 @@ fn download_icon(
         ));
     }
 
-    if let Err(e) = std::fs::create_dir_all(format!("_apps/{}", dir)) {
+    if let Err(e) = tokio::fs::create_dir_all(format!("_apps/{}", dir)).await {
         return Err(Error::new(
             ErrorKind::Other,
             format!("Error creating directory for appstream icons: {:?}", e),
@@ -221,7 +260,8 @@ fn download_icon(
                 .map_err(|_| Error::new(ErrorKind::Other, format!("Etag header was invalid"),))?
         );
 
-        if let Some(mut cached_file) = match cacache::SyncReader::open(".image_cache", &cache_key) {
+        if let Some(mut cached_file) = match cacache::Reader::open(".image_cache", &cache_key).await
+        {
             Ok(f) => Some(f),
             Err(cacache::Error::EntryNotFound(_, _)) => None,
             Err(e) => return Err(Error::new(ErrorKind::Other, e)),
@@ -231,31 +271,102 @@ fn download_icon(
                 return Ok(());
             }
 
-            let mut icon_file =
-                std::fs::File::create(&path).map_err(|e| Error::new(ErrorKind::Other, e))?;
+            let mut icon_file = tokio::fs::File::create(&path)
+                .await
+                .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-            std::io::copy(&mut cached_file, &mut icon_file)?;
+            tokio::io::copy(&mut cached_file, &mut icon_file).await?;
 
             if let Ok(_) = cached_file.check() {
                 return Ok(());
             }
         }
 
-        if let Ok(mut cache_writer) = cacache::SyncWriter::create(".image_cache", &cache_key) {
-            res.copy_to(&mut cache_writer)
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
-            cache_writer.commit().ok();
+        let res = client
+            .get(&url)
+            .send()
+            .await
+            .map_err(|e| Error::new(ErrorKind::Other, e))?;
+
+        if res.status() != StatusCode::OK {
+            return Err(Error::new(
+                ErrorKind::Other,
+                format!("Flatpak remote returned {} for icon download", res.status()),
+            ));
+        }
+
+        let mut reader = StreamReader::new(
+            res.bytes_stream()
+                .map(|result| result.map_err(|err| Error::new(ErrorKind::Other, err))),
+        );
+
+        if let Ok(mut cache_writer) = cacache::Writer::create(".image_cache", &cache_key).await {
+            tokio::io::copy(&mut reader, &mut cache_writer).await?;
+            cache_writer.commit().await.ok();
         }
 
         let mut icon_file =
-            std::fs::File::create(format!("_apps/{}/{}", dir, path.to_string_lossy()))
+            tokio::fs::File::create(format!("_apps/{}/{}", dir, path.to_string_lossy()))
+                .await
                 .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-        res.copy_to(&mut icon_file)
-            .map_err(|e| Error::new(ErrorKind::Other, e))?;
+        tokio::io::copy(&mut reader, &mut icon_file).await?;
 
         return Ok(());
     }
 
     Err(Error::new(ErrorKind::Other, "Unable to download file"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    #[tokio::test]
+    async fn test_download_icon() -> Result<(), Error> {
+        let mock_server = MockServer::start().await;
+
+        let http_client = Client::new();
+
+        Mock::given(method("HEAD"))
+            .and(path(
+                "/repo/appstream/x86_64/icons/64x64/com.github.fakeorg.fakeapp.png",
+            ))
+            .respond_with(ResponseTemplate::new(200).append_header(ETAG, "1234"))
+            .expect(2)
+            .mount(&mock_server)
+            .await;
+
+        Mock::given(method("GET"))
+            .and(path(
+                "/repo/appstream/x86_64/icons/64x64/com.github.fakeorg.fakeapp.png",
+            ))
+            .respond_with(ResponseTemplate::new(200).append_header(ETAG, "1234"))
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        download_icon(
+            &mock_server.uri(),
+            &Some(64),
+            &Some(64),
+            &http_client,
+            &Path::new("com.github.fakeorg.fakeapp.png"),
+        )
+        .await?;
+
+        download_icon(
+            &mock_server.uri(),
+            &Some(64),
+            &Some(64),
+            &http_client,
+            &Path::new("com.github.fakeorg.fakeapp.png"),
+        )
+        .await?;
+
+        Ok(())
+    }
 }
