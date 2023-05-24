@@ -2,7 +2,9 @@ use crate::redis_utils;
 use common::APP_SUMMARIES_REDIS_KEY;
 
 use appstream::{enums::Bundle, Collection, Component};
-use reqwest::{header::ETAG, Client, StatusCode};
+use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
+use reqwest::{Client, StatusCode};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use std::{
     io::{Error, ErrorKind},
     path::Path,
@@ -11,7 +13,7 @@ use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
 pub struct AppstreamWorker {
     redis_client: redis::Client,
-    http_client: Client,
+    http_client: ClientWithMiddleware,
 }
 
 impl Default for AppstreamWorker {
@@ -26,7 +28,13 @@ impl AppstreamWorker {
         Self {
             redis_client: redis::Client::open(settings.redis.uri)
                 .expect("Cannot create deadpool redis"),
-            http_client: Client::new(),
+            http_client: ClientBuilder::new(Client::new())
+                .with(Cache(HttpCache {
+                    mode: CacheMode::Default,
+                    manager: CACacheManager::default(),
+                    options: None,
+                }))
+                .build(),
         }
     }
 
@@ -203,7 +211,7 @@ fn download_icon_sync(
     base_url: &str,
     width: &Option<u32>,
     height: &Option<u32>,
-    client: &reqwest::Client,
+    client: &ClientWithMiddleware,
     path: &Path,
 ) -> Result<(), Error> {
     let rt = tokio::runtime::Builder::new_current_thread()
@@ -217,7 +225,7 @@ async fn download_icon(
     base_url: &str,
     width: &Option<u32>,
     height: &Option<u32>,
-    client: &reqwest::Client,
+    client: &ClientWithMiddleware,
     path: &Path,
 ) -> Result<(), Error> {
     let mut dir = String::from("icons");
@@ -233,7 +241,7 @@ async fn download_icon(
     );
 
     let res = client
-        .head(&url)
+        .get(&url)
         .send()
         .await
         .map_err(|e| Error::new(ErrorKind::Other, e))?;
@@ -252,76 +260,26 @@ async fn download_icon(
         ));
     }
 
-    if let Some(etag) = res.headers().get(ETAG) {
-        let cache_key = format!(
-            "{}-{}",
-            &url,
-            etag.to_str()
-                .map_err(|_| Error::new(ErrorKind::Other, format!("Etag header was invalid"),))?
-        );
+    let mut reader = StreamReader::new(
+        res.bytes_stream()
+            .map(|result| result.map_err(|err| Error::new(ErrorKind::Other, err))),
+    );
 
-        if let Some(mut cached_file) = match cacache::Reader::open(".image_cache", &cache_key).await
-        {
-            Ok(f) => Some(f),
-            Err(cacache::Error::EntryNotFound(_, _)) => None,
-            Err(e) => return Err(Error::new(ErrorKind::Other, e)),
-        } {
-            let path = format!("_apps/{}/{}", dir, path.to_string_lossy());
-            if std::path::Path::new(&path).exists() {
-                return Ok(());
-            }
-
-            let mut icon_file = tokio::fs::File::create(&path)
-                .await
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
-
-            tokio::io::copy(&mut cached_file, &mut icon_file).await?;
-
-            if let Ok(_) = cached_file.check() {
-                return Ok(());
-            }
-        }
-
-        let res = client
-            .get(&url)
-            .send()
+    let mut icon_file =
+        tokio::fs::File::create(format!("_apps/{}/{}", dir, path.to_string_lossy()))
             .await
             .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-        if res.status() != StatusCode::OK {
-            return Err(Error::new(
-                ErrorKind::Other,
-                format!("Flatpak remote returned {} for icon download", res.status()),
-            ));
-        }
+    tokio::io::copy(&mut reader, &mut icon_file).await?;
 
-        let mut reader = StreamReader::new(
-            res.bytes_stream()
-                .map(|result| result.map_err(|err| Error::new(ErrorKind::Other, err))),
-        );
-
-        if let Ok(mut cache_writer) = cacache::Writer::create(".image_cache", &cache_key).await {
-            tokio::io::copy(&mut reader, &mut cache_writer).await?;
-            cache_writer.commit().await.ok();
-        }
-
-        let mut icon_file =
-            tokio::fs::File::create(format!("_apps/{}/{}", dir, path.to_string_lossy()))
-                .await
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
-
-        tokio::io::copy(&mut reader, &mut icon_file).await?;
-
-        return Ok(());
-    }
-
-    Err(Error::new(ErrorKind::Other, "Unable to download file"))
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    use reqwest::header::CACHE_CONTROL;
     use wiremock::matchers::{method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -329,22 +287,22 @@ mod tests {
     async fn test_download_icon() -> Result<(), Error> {
         let mock_server = MockServer::start().await;
 
-        let http_client = Client::new();
-
-        Mock::given(method("HEAD"))
-            .and(path(
-                "/repo/appstream/x86_64/icons/64x64/com.github.fakeorg.fakeapp.png",
-            ))
-            .respond_with(ResponseTemplate::new(200).append_header(ETAG, "1234"))
-            .expect(2)
-            .mount(&mock_server)
-            .await;
+        let http_client = ClientBuilder::new(Client::new())
+            .with(Cache(HttpCache {
+                mode: CacheMode::Default,
+                manager: CACacheManager::default(),
+                options: None,
+            }))
+            .build();
 
         Mock::given(method("GET"))
             .and(path(
                 "/repo/appstream/x86_64/icons/64x64/com.github.fakeorg.fakeapp.png",
             ))
-            .respond_with(ResponseTemplate::new(200).append_header(ETAG, "1234"))
+            .respond_with(
+                ResponseTemplate::new(200).append_header(CACHE_CONTROL, "public, max-age=5356800"),
+            )
+            // Only expect 1 request, the 2nd should be served from a cache
             .expect(1)
             .mount(&mock_server)
             .await;
