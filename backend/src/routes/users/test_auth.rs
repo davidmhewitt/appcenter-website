@@ -2,7 +2,7 @@ use actix_web::{get, HttpResponse};
 
 use crate::extractors::AuthedUser;
 
-#[tracing::instrument(name = "Test Auth")]
+#[tracing::instrument(name = "Test Auth", skip(_user))]
 #[utoipa::path(
     path = "/users/test_auth",
     responses(
@@ -11,6 +11,6 @@ use crate::extractors::AuthedUser;
     )
 )]
 #[get("/test_auth")]
-async fn test_auth(_: AuthedUser) -> actix_web::HttpResponse {
+async fn test_auth(_user: AuthedUser) -> actix_web::HttpResponse {
     HttpResponse::Ok().finish()
 }

@@ -49,6 +49,7 @@ export default function Provider({ children }: Props) {
   const logout = async () => {
     await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/logout`, {
       method: 'POST',
+      credentials: 'include',
     })
     setUser(false)
     router.push('/')
