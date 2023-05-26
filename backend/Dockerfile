@@ -17,7 +17,7 @@ RUN cargo install --path background-worker
 
 FROM debian:bullseye-slim
 WORKDIR /app
-COPY --from=builder /usr/local/cargo/bin/backend /usr/local/cargo/bin/background-worker /app
+COPY --from=builder /usr/local/cargo/bin/backend /usr/local/cargo/bin/background-worker /app/
 COPY settings/base.yaml settings/production.yaml /app/settings/
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
