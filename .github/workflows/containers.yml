@@ -20,7 +20,7 @@ jobs:
 
       - name: 'Build Backend Container'
         run: |
-          docker build backend --tag ghcr.io/${{github.actor}}/backend:latest
+          docker build backend --tag ghcr.io/${{github.actor}}/appcenter-website/backend:latest
           docker push ghcr.io/${{github.actor}}/backend:latest
 
   push-frontend:
@@ -36,7 +36,7 @@ jobs:
           username: ${{github.actor}}
           password: ${{secrets.GITHUB_TOKEN}}
 
-      - name: 'Build Backend Container'
+      - name: 'Build Frontend Container'
         run: |
-          docker build frontend --tag ghcr.io/${{github.actor}}/frontend:latest
+          docker build frontend --tag ghcr.io/${{github.actor}}/appcenter-website/frontend:latest
           docker push ghcr.io/${{github.actor}}/frontend:latest
