@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   backend:
-    build: backend
+    image: "ghcr.io/davidmhewitt/appcenter-website/backend:latest"
     restart: always
     depends_on:
       postgres:
@@ -31,11 +31,14 @@ services:
       - "traefik.http.routers.backend.entrypoints=web"
 
   frontend:
-    build: frontend
+    image: "ghcr.io/davidmhewitt/appcenter-website/frontend:latest"
     restart: always
     depends_on:
       backend:
         condition: service_healthy
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: "${NEXT_PUBLIC_API_BASE_URL}"
+      SERVER_SIDE_API_URL: "${SERVER_SIDE_API_URL}"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`) && PathPrefix(`/`)"
