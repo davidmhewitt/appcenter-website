@@ -57,7 +57,7 @@ export default async function Page({
 }: {
   params: { lang: string }
 }) {
-  const { t } = await useTranslation(lang, ['common'])
+  const { t } = await useTranslation(['common'], lang)
   const added = getRecentlyAdded()
   const updated = getRecentlyUpdated()
 

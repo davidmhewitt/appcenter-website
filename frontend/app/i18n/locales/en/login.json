@@ -1,0 +1,11 @@
+{
+  "page-title": "Sign in to your account",
+  "form-labels": {
+    "email-address": "Email Address",
+    "password": "Password",
+    "sign-in-button": "Sign in"
+  },
+  "no-account": "Don't have an account?",
+  "register-action": "Register",
+  "github-login": "Login with GitHub"
+}

@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as Yup from 'yup'
 
-import githubLogo from '../../../public/github-mark-white.svg'
+import githubLogo from '@/public/github-mark-white.svg'
 
 import { useTranslation } from '@/app/i18n/client'
 import { useSearchParams } from 'next/navigation'
@@ -278,12 +278,12 @@ export default function Register({
 
               <p className="mt-10 text-center text-sm text-gray-500">
                 Already have an account?&nbsp;
-                <a
-                  href="#"
+                <Link
+                  href="/login"
                   className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
                 >
                   Login
-                </a>
+                </Link>
               </p>
             </>
           )}
