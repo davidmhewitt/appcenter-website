@@ -18,10 +18,14 @@ jobs:
           username: ${{github.actor}}
           password: ${{secrets.GITHUB_TOKEN}}
 
-      - name: 'Build Backend Container'
-        run: |
-          docker build backend --tag ghcr.io/${{github.actor}}/appcenter-website/backend:latest
-          docker push ghcr.io/${{github.actor}}/appcenter-website/backend:latest
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: backend
+          push: true
+          tags: ghcr.io/${{github.actor}}/appcenter-website/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   push-frontend:
     runs-on: ubuntu-latest
@@ -39,4 +43,4 @@ jobs:
       - name: 'Build Frontend Container'
         run: |
           docker build frontend --tag ghcr.io/${{github.actor}}/appcenter-website/frontend:latest
-          docker push ghcr.io/${{github.actor}}/appcenter-website/backend:latest
+          docker push ghcr.io/${{github.actor}}/appcenter-website/frontend:latest
