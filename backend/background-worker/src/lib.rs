@@ -16,7 +16,7 @@ fn new_git_worker() -> GitWorker {
     .expect("Unable to create git worker")
 }
 
-pub static GIT_WORKER: Lazy<GitWorker> = Lazy::new(|| new_git_worker());
+pub static GIT_WORKER: Lazy<GitWorker> = Lazy::new(new_git_worker);
 pub static QUEUE: Lazy<Queue> = Lazy::new(|| {
     let settings = common::settings::get_settings().expect("Failed to read settings.");
     let manager = r2d2::ConnectionManager::<PgConnection>::new(settings.database.url);

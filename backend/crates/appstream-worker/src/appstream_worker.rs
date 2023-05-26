@@ -319,7 +319,7 @@ mod tests {
             &Some(64),
             &Some(64),
             &http_client,
-            &Path::new("com.github.fakeorg.fakeapp.png"),
+            Path::new("com.github.fakeorg.fakeapp.png"),
         )
         .await?;
 
@@ -328,7 +328,7 @@ mod tests {
             &Some(64),
             &Some(64),
             &http_client,
-            &Path::new("com.github.fakeorg.fakeapp.png"),
+            Path::new("com.github.fakeorg.fakeapp.png"),
         )
         .await?;
 
@@ -424,6 +424,8 @@ mod tests {
         .await
         .expect("Unable to spawn blocking task");
 
-        assert!(logs_contain("Error downloading appstream icon 'com.example.bar.png'"));
+        assert!(logs_contain(
+            "Error downloading appstream icon 'com.example.bar.png'"
+        ));
     }
 }

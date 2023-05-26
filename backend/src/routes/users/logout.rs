@@ -1,4 +1,4 @@
-use crate::{extractors::AuthedUser, types::ErrorTranslationKey};
+use crate::extractors::AuthedUser;
 
 #[tracing::instrument(name = "Log out user", skip(session, _user))]
 #[actix_web::post("/logout")]

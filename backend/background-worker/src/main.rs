@@ -13,7 +13,7 @@ pub const MIGRATIONS: EmbeddedMigrations = diesel_migrations::embed_migrations!(
 fn main() {
     let settings = common::settings::get_settings().expect("Failed to read settings.");
 
-    let subscriber = common::telemetry::get_subscriber(settings.clone().debug);
+    let subscriber = common::telemetry::get_subscriber(settings.debug);
     common::telemetry::init_subscriber(subscriber);
 
     let mut connection = PgConnection::establish(&settings.database.url)

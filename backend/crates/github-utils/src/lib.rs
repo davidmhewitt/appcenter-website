@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use once_cell::sync::Lazy;
-use secrecy::{SecretString, ExposeSecret};
+use secrecy::{ExposeSecret, SecretString};
 
 #[derive(Debug)]
 pub enum GithubOwner {

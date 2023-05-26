@@ -16,7 +16,7 @@ pub async fn submit(user: AuthedUser, submission: Json<AppUpdateSubmission>) -> 
         user.uuid,
     );
 
-    if let Err(_) = background_worker::insert_task(&task) {
+    if background_worker::insert_task(&task).is_err() {
         return HttpResponse::InternalServerError().finish();
     }
 
