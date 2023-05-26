@@ -1,6 +1,6 @@
 # AppCenter Website
 
-This is the code behind the AppCenter website, including the app browser and the developer dashboard. It is separated into a Rust backend and a NextJS/Tailwind frontend. These can be worked on separately, see the individual `frontend` and `backend` folder's README files for details.
+This is the WIP code behind the (hopefully) new AppCenter website, including the app browser and the developer dashboard. It is separated into a Rust backend and a NextJS/Tailwind frontend.
 
 ## Running
 
