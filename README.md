@@ -2,19 +2,56 @@
 
 This is the code behind the AppCenter website, including the app browser and the developer dashboard. It is separated into a Rust backend and a NextJS/Tailwind frontend. These can be worked on separately, see the individual `frontend` and `backend` folder's README files for details.
 
-## Development
+## Running
 
-For hacking on the frontend with dummy data, see the README in the `frontend/` folder.
+Set up a development environment using one of the methods below. Then either:
 
-Otherwise, to run both the backend and frontend together, you will first need to define some secrets in a `.env` file. We can generate the mandatory ones with the following:
+### Run the Frontend (With Mock Data)
+
+In multiple terminal tabs/windows:
 
 ```
-echo APP_SECRET__SECRET_KEY=\'`openssl rand 32 | openssl enc -A -base64`\' >> .env
-echo APP_SECRET__HMAC_SECRET=\'`openssl rand 64 | openssl enc -A -base64`\' >> .env
-echo PG_PASSWORD=\'`openssl rand -base64 20`\' >> .env
+cd frontend
+npm ci
+npm run mocks
 ```
 
-If you want to test the git integration (GitHub login or submitting apps), you will need to define some GitHub secrets in the `.env` file:
+```
+cd frontend
+npm run dev
+```
+
+Visit http://localhost:3000
+
+### Run the Frontend (with real data from the backend)
+
+In multiple terminal windows:
+
+```
+cd backend
+cargo run -p background-worker
+```
+
+```
+cd backend
+cargo run
+```
+
+```
+cd frontend
+npm ci
+npm run dev
+```
+
+Visit http://localhost:3000
+
+## Setting up a development environment (the easy way)
+
+The recommended way to set up a development environment is to use the devcontainer config for VSCode (or any other editor that supports the devcontainer spec). When prompted whether to use the "Local" or "Remote" config, use "Local". The "Remote" config is for use with GitHub codespaces. This will build a containerised development environment with the necessary Rust and Node toolchains and the required Postgres and Redis services.
+
+### Setting up GitHub integration
+
+If you want to test the GitHub integration (GitHub login or submitting apps), you will need to define some GitHub secrets in the `backend/.env` file:
 
 ```
 APP_GITHUB__CLIENT_ID=
@@ -29,9 +66,27 @@ APP_GITHUB__REVIEWS_URL=
 - `APP_GITHUB__ACCESS_TOKEN` is a PAT for the `APP_GITHUB__USERNAME` account. It should have `public_repo` scope as a minimum.
 - `APP_GITHUB__REVIEWS_URL` is the HTTPS url of the Git repository that will serve as the `appcenter-reviews` repository for submitting app PRs to. This can be a fork of https://github.com/elementary/appcenter-reviews for testing.
 
+### Database Migrations
 
-Once the secrets are defined, you can use the Docker Compose file in the root of the repository:
+If you need to make any changes to the backend database schema, you will need to install `diesel` with `cargo install diesel`
+
+## Setting up a development environment (the manual way)
+
+### Requirements
+
+- Rust >= 1.66 (at the time of writing, may be more in the future)
+- Node >= 14 (but 19 recommended, as this is used for development)
+- Redis server
+- Postgres server
+
+### Environment variables
+
+In `backend/.env`, configure the following variables to appropriate values for your environment:
 
 ```
-docker-compose up
+DATABASE_URL=postgresql://appcenter:appcenter@db/appcenter_website
+APP_DATABASE__URL=postgresql://appcenter:appcenter@db/appcenter_website
+APP_REDIS__URI=redis://redis
 ```
+
+You may also want to configure the GitHub environment variables as described above.
