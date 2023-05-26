@@ -35,5 +35,11 @@ services:
     ports:
       - 6379:6739
 
+  email:
+    image: rnwood/smtp4dev
+    restart: unless-stopped
+    ports:
+      - 2580:80
+
 volumes:
   postgres-data: null

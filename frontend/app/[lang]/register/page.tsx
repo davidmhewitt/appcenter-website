@@ -73,7 +73,7 @@ export default function Register({
     }
 
     const JSONdata = JSON.stringify(submitData)
-    const endpoint = '/api/users/register'
+    const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/register`
 
     const options = {
       method: 'POST',
@@ -167,7 +167,7 @@ export default function Register({
             <>
               <form
                 onSubmit={onSubmit}
-                action="/api/users/register"
+                action={`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/register`}
                 method="POST"
               >
                 <div className="flex">

@@ -4,14 +4,14 @@ application:
   base_url: "http://127.0.0.1"
 
 email:
-  host: "localhost"
-  port: 2525
+  host: "email"
+  port: 25
   authentication: false
   host_user: ""
   host_user_password: ""
 
 secret:
-  secret_key: "BbcZo5lSA95SnbjUuKI+Y1D7+AZAznQsgMk="
+  secret_key: "j7/ervPYTe/lJFaHJSJr+BXX34iKDj8UKWjRCaNsVe0="
   token_expiration: 30
   hmac_secret: "ul+PZhWfIv8JVx+QLMGjiJPwabGidir0GRX86VsCPM5d0TSL2AITaGruCKfvtDoKosdSL1fpEPVDVsHRZzG/yg=="
 
