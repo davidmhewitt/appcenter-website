@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use once_cell::sync::Lazy;
 use secrecy::{ExposeSecret, SecretString};
+use url::Url;
 
 #[derive(Debug)]
 pub enum GithubOwner {
@@ -37,7 +38,28 @@ pub async fn create_pull_request(
     dst_branch: &str,
     body: &str,
 ) -> Result<()> {
-    OCTO.pulls("davidmhewitt", "appcenter-reviews")
+    let settings = common::settings::get_settings().expect("Unable to get settings");
+
+    let url = Url::parse(&settings.github.reviews_url)?;
+    let path_segments = match url.path_segments() {
+        Some(s) => s,
+        None => {
+            return Err(anyhow!("Unable to get path segments from URL"));
+        }
+    }
+    .collect::<Vec<&str>>();
+
+    let path_org_name = path_segments
+        .first()
+        .ok_or(anyhow!("Couldn't get reviews repo owner"))?;
+    let path_repo_name = path_segments.get(1).ok_or(anyhow!("Couldn't get reviews repo name"))?;
+    let path_repo_name = if path_repo_name.ends_with(".git") {
+        path_repo_name.strip_suffix(".git").unwrap()
+    } else {
+        path_repo_name
+    };
+
+    OCTO.pulls(*path_org_name, path_repo_name)
         .create(title, src_branch, dst_branch)
         .body(body)
         .send()
