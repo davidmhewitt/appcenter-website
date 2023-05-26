@@ -12,7 +12,7 @@ FROM chef as builder
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
-RUN cargo install --path .
+RUN cargo install --no-default-features --path .
 RUN cargo install --path background-worker
 
 FROM debian:bullseye-slim

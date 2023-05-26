@@ -1,3 +1,4 @@
+#[cfg(feature = "cors")]
 use actix_cors::Cors;
 use actix_files as fs;
 use actix_session::config::PersistentSession;
@@ -69,6 +70,7 @@ async fn run(
     tracing::event!(target: "backend", tracing::Level::INFO, "Listening on http://{}:{}/", &settings.application.host, &settings.application.port);
 
     let server = actix_web::HttpServer::new(move || {
+        #[cfg(feature = "cors")]
         let cors = Cors::default()
             .allowed_origin("http://localhost:3000")
             .allowed_methods(vec!["GET", "POST"])
@@ -76,7 +78,8 @@ async fn run(
             .allow_any_header()
             .max_age(3600);
 
-        actix_web::App::new()
+        #[cfg(feature = "cors")]
+        return actix_web::App::new()
             .wrap(
                 actix_session::SessionMiddleware::builder(
                     actix_session::storage::CookieSessionStore::default(),
@@ -89,6 +92,27 @@ async fn run(
                 .build(),
             )
             .wrap(cors)
+            .service(crate::routes::health_check)
+            .configure(crate::routes::auth_routes_config)
+            .configure(crate::routes::apps_routes_config)
+            .configure(crate::routes::dashboard_routes_config)
+            .service(fs::Files::new("/static/apps", "_apps"))
+            .app_data(pool.clone())
+            .app_data(redis_pool_data.clone());
+
+        #[cfg(not(feature = "cors"))]
+        actix_web::App::new()
+            .wrap(
+                actix_session::SessionMiddleware::builder(
+                    actix_session::storage::CookieSessionStore::default(),
+                    secret_key.clone(),
+                )
+                .session_lifecycle(
+                    PersistentSession::default().session_ttl(Duration::seconds(SECS_IN_WEEK)),
+                )
+                .cookie_secure(!settings.debug)
+                .build(),
+            )
             .service(crate::routes::health_check)
             .configure(crate::routes::auth_routes_config)
             .configure(crate::routes::apps_routes_config)
