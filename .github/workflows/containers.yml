@@ -7,6 +7,9 @@ on:
 jobs:
   push-backend:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v3
@@ -32,6 +35,9 @@ jobs:
 
   push-frontend:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v3
