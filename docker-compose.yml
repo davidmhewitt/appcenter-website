@@ -27,7 +27,7 @@ services:
       start_period: 40s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`frontend.localhost`) && ( PathPrefix(`/api`) || PathPrefix(`/static/apps`) )"
+      - "traefik.http.routers.backend.rule=Host(`${HTTP_HOST}`) && ( PathPrefix(`/api`) || PathPrefix(`/static/apps`) )"
       - "traefik.http.routers.backend.entrypoints=web"
 
   frontend:
@@ -41,7 +41,7 @@ services:
       SERVER_SIDE_API_URL: "${SERVER_SIDE_API_URL}"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`) && PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.rule=Host(`${HTTP_HOST}`) && PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
 
   redis:

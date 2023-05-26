@@ -21,6 +21,8 @@ COPY --from=builder /usr/local/cargo/bin/backend /usr/local/cargo/bin/background
 COPY settings/base.yaml settings/production.yaml /app/settings/
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+RUN mkdir /app/_apps
+
 RUN apt-get update && apt-get install -y ca-certificates curl libpq5 supervisor && rm -rf /var/lib/apt/lists/*
 
 ENV APP_ENVIRONMENT=production

@@ -21,6 +21,11 @@ const nextConfig = {
         port: '3100',
         pathname: '/static/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'appcenter-beta.elementary.io',
+        pathname: '/static/**',
+      },
     ],
   },
 }
