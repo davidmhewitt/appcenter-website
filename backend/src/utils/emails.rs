@@ -133,12 +133,12 @@ pub async fn send_multipart_email(
     let confirmation_link = {
         if is_for_password_change {
             format!(
-                "{}/users/password/confirm/change_password?token={}",
+                "{}/api/users/password/confirm/change_password?token={}",
                 web_address, issued_token,
             )
         } else {
             format!(
-                "{}/users/register/confirm/?token={}",
+                "{}/api/users/register/confirm?token={}",
                 web_address, issued_token,
             )
         }
