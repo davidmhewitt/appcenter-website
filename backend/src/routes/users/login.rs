@@ -87,7 +87,9 @@ pub(crate) async fn get_user_who_is_active_with_password(
 
 #[cfg(test)]
 mod tests {
+    use diesel::{PgConnection, Connection};
     use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncConnection};
+    use diesel_migrations::MigrationHarness;
 
     use crate::utils::auth::password::hash;
 
@@ -98,6 +100,12 @@ mod tests {
         use common::schema::users::dsl::*;
 
         let settings = common::settings::get_settings().expect("Failed to read settings.");
+
+        let mut connection = PgConnection::establish(&settings.database.url)
+            .expect("Unable to connect to database to run migrations");
+        connection
+            .run_pending_migrations(crate::startup::MIGRATIONS)
+            .expect("Unable to run database migrations");
 
         let manager =
             AsyncDieselConnectionManager::<AsyncPgConnection>::new(&settings.database.url);
