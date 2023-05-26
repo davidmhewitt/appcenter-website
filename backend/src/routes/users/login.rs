@@ -1,3 +1,4 @@
+use actix_web::HttpResponse;
 use anyhow::Result;
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
@@ -14,13 +15,20 @@ pub struct LoginUser {
 }
 
 #[tracing::instrument(name = "Logging a user in", skip( pool, user, session), fields(user_email = %user.email))]
-#[actix_web::post("/login/")]
+#[actix_web::post("/login")]
 async fn login_user(
     pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
-    user: actix_web::web::Json<LoginUser>,
+    user: actix_web::web::Form<LoginUser>,
     session: actix_session::Session,
 ) -> actix_web::HttpResponse {
-    match get_user_who_is_active(&pool, &user.email).await {
+    let settings = common::settings::get_settings().expect("Failed to read settings.");
+
+    let mut con = match pool.get().await {
+        Ok(c) => c,
+        Err(_) => return HttpResponse::InternalServerError().finish(),
+    };
+
+    match get_user_who_is_active_with_password(&mut con, &user.email).await {
         Ok(loggedin_user) => match tokio::task::spawn_blocking(move || {
             crate::utils::auth::password::verify_password(
                 &loggedin_user.password.unwrap(),
@@ -40,12 +48,9 @@ async fn login_user(
                     .insert(crate::types::USER_EMAIL_KEY, &loggedin_user.email)
                     .expect("`user_email` cannot be inserted into session");
 
-                actix_web::HttpResponse::Ok().json(crate::types::UserVisible {
-                    id: loggedin_user.id,
-                    email: loggedin_user.email,
-                    is_active: loggedin_user.is_active,
-                    is_admin: loggedin_user.is_admin,
-                })
+                actix_web::HttpResponse::SeeOther()
+                    .insert_header((actix_web::http::header::LOCATION, settings.frontend_url))
+                    .finish()
             }
             Err(e) => {
                 tracing::event!(target: "argon2",tracing::Level::ERROR, "Failed to authenticate user: {:#?}", e);
@@ -65,19 +70,89 @@ async fn login_user(
     }
 }
 
-#[tracing::instrument(name = "Getting a user from DB.", skip(pool, email),fields(user_email = %email))]
-pub(crate) async fn get_user_who_is_active(
-    pool: &Pool<AsyncPgConnection>,
-    email: &String,
+#[tracing::instrument(name = "Getting a user from DB.", skip(con))]
+pub(crate) async fn get_user_who_is_active_with_password(
+    con: &mut AsyncPgConnection,
+    user_email: &str,
 ) -> Result<common::models::User> {
     use common::schema::users::dsl::*;
 
-    let mut con = pool.get().await?;
-
     Ok(users
-        .filter(email.eq(email))
+        .filter(email.eq(user_email))
         .filter(is_active.eq(true))
-        .limit(1)
-        .get_result::<User>(&mut con)
+        .filter(password.is_not_null())
+        .get_result::<User>(con)
         .await?)
+}
+
+#[cfg(test)]
+mod tests {
+    use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncConnection};
+
+    use crate::utils::auth::password::hash;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn two_users_same_password() {
+        use common::schema::users::dsl::*;
+
+        let settings = common::settings::get_settings().expect("Failed to read settings.");
+
+        let manager =
+            AsyncDieselConnectionManager::<AsyncPgConnection>::new(&settings.database.url);
+
+        let pool = Pool::builder()
+            .build(manager)
+            .await
+            .expect("Unable to build database pool");
+
+        let mut con = pool
+            .get()
+            .await
+            .expect("Unable to get connection from pool");
+
+        con.begin_test_transaction()
+            .await
+            .expect("Couldn't start test transaction");
+
+        diesel::insert_into(users)
+            .values((
+                email.eq("test100@example.com"),
+                password.eq(hash("Password123!")),
+                is_active.eq(true),
+            ))
+            .execute(&mut con)
+            .await
+            .expect("Unable to insert user");
+
+        diesel::insert_into(users)
+            .values((
+                email.eq("test101@example.com"),
+                password.eq(hash("Password123!")),
+                is_active.eq(true),
+            ))
+            .execute(&mut con)
+            .await
+            .expect("Unable to insert user");
+
+        diesel::insert_into(users)
+            .values((email.eq("test102@example.com"), is_active.eq(true)))
+            .execute(&mut con)
+            .await
+            .expect("Unable to insert user");
+
+        let user1 = get_user_who_is_active_with_password(&mut con, "test100@example.com")
+            .await
+            .expect("Unable to get user 1");
+        let user2 = get_user_who_is_active_with_password(&mut con, "test101@example.com")
+            .await
+            .expect("Unable to get user 2");
+        let _user3 = get_user_who_is_active_with_password(&mut con, "test102@example.com")
+            .await
+            .expect_err("Shouldn't have returned a passwordless user");
+
+        assert_eq!(user1.email, "test100@example.com");
+        assert_eq!(user2.email, "test101@example.com");
+    }
 }

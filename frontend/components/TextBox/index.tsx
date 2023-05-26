@@ -23,6 +23,7 @@ export default function TextBox(props: TextBoxProps) {
       <div className="mt-2">
         <input
           id={props.name}
+          name={props.name}
           type={props.type}
           autoComplete={props.autoComplete}
           {...props.register}

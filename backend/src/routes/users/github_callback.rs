@@ -1,8 +1,11 @@
 use actix_session::Session;
 use actix_web::http::header::{ACCEPT, USER_AGENT};
 use actix_web::web;
+use anyhow::Result;
+use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::pooled_connection::bb8::Pool;
 use diesel_async::AsyncPgConnection;
+use diesel_async::RunQueryDsl;
 use oauth2::reqwest::async_http_client;
 use oauth2::TokenResponse;
 use oauth2::{
@@ -15,7 +18,7 @@ use serde_variant::to_variant_name;
 
 use crate::routes::users::register::insert_user_into_db;
 use crate::types::ErrorTranslationKey;
-use common::models::{NewGithubAuth, NewUser};
+use common::models::{NewGithubAuth, NewUser, User};
 
 #[derive(Debug, Deserialize)]
 pub struct CodeResponse {
@@ -178,8 +181,17 @@ pub async fn github_callback(
             }
         };
 
-        if let Ok(user) = crate::routes::users::login::get_user_who_is_active(&pool, primary).await
-        {
+        let mut con = match pool.get().await {
+            Ok(c) => c,
+            Err(_) => {
+                return error_redirect(
+                    &settings.frontend_url,
+                    ErrorTranslationKey::GenericRegistrationProblem,
+                )
+            }
+        };
+
+        if let Ok(user) = get_user_who_is_active(&mut con, primary).await {
             session.remove("_github_oauth_csrf");
             session.renew();
             session
@@ -260,4 +272,18 @@ fn error_redirect(
             ),
         ))
         .finish()
+}
+
+#[tracing::instrument(name = "Getting a user from DB.", skip(con))]
+pub(crate) async fn get_user_who_is_active(
+    con: &mut AsyncPgConnection,
+    user_email: &str,
+) -> Result<common::models::User> {
+    use common::schema::users::dsl::*;
+
+    Ok(users
+        .filter(email.eq(user_email))
+        .filter(is_active.eq(true))
+        .get_result::<User>(con)
+        .await?)
 }

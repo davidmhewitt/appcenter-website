@@ -11,6 +11,7 @@ export default async function Login({
   params: { lang: string }
 }) {
   const { t } = await useTranslation('login', lang)
+
   return (
     <>
       <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
@@ -21,7 +22,10 @@ export default async function Login({
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-          <form action="#" method="POST">
+          <form
+            action={`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login`}
+            method="POST"
+          >
             <TextBox
               name="email"
               autoComplete="email"
