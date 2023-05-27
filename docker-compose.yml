@@ -29,6 +29,8 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${HTTP_HOST}`) && ( PathPrefix(`/api`) || PathPrefix(`/static/apps`) )"
       - "traefik.http.routers.backend.tls=true"
+    volumes:
+      - backend_appdata:/app/_apps
 
   frontend:
     image: "ghcr.io/davidmhewitt/appcenter-website/frontend:latest"
@@ -52,6 +54,8 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
+    volumes:
+      - redisdata:/data
 
   postgres:
     image: "postgres:15.3"
@@ -65,6 +69,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   traefik:
     image: "traefik:v2.10"
@@ -80,3 +86,8 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./certs-traefik.yaml:/etc/traefik/dynamic/certs-traefik.yaml"
       - "./certs/:/etc/certs"
+
+volumes:
+  backend_appdata:
+  pgdata:
+  redisdata:
