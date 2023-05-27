@@ -1,11 +1,13 @@
 mod apps;
 pub mod dashboard;
 mod health;
+pub mod payments;
 pub mod users;
 
 pub use apps::apps_routes_config;
 pub use dashboard::dashboard_routes_config;
 pub use health::health_check;
+pub use payments::payments_routes_config;
 pub use users::auth_routes_config;
 
 #[cfg_attr(feature = "openapi", derive(utoipa::OpenApi))]

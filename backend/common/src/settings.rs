@@ -12,6 +12,7 @@ pub struct Settings {
     pub secret: Secret,
     pub email: EmailSettings,
     pub github: GithubSettings,
+    pub stripe: StripeSettings,
     pub frontend_url: String,
 }
 
@@ -61,6 +62,11 @@ pub struct GithubSettings {
     pub username: String,
     pub access_token: SecretString,
     pub local_repo_path: PathBuf,
+}
+
+#[derive(serde::Deserialize, Clone)]
+pub struct StripeSettings {
+    pub secret_key: SecretString,
 }
 
 /// The possible runtime environment for our application.

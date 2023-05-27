@@ -37,6 +37,7 @@ actix-session = { version = "0.7", features = ["cookie-session"] }
 actix-web = "4"
 anyhow = "1.0"
 argon2 = "0.5"
+async-stripe = { version = "0.22.2", features = ["runtime-tokio-hyper", "checkout", "connect"], default-features = false }
 background-worker = { path = "background-worker" }
 base64 = "0.21"
 common = { path = "common" }
