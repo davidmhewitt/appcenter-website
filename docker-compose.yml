@@ -28,8 +28,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${HTTP_HOST}`) && ( PathPrefix(`/api`) || PathPrefix(`/static/apps`) )"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefic.http.routers.frontend.tls=true"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefic.http.routers.backend.tls=true"
 
   frontend:
     image: "ghcr.io/davidmhewitt/appcenter-website/frontend:latest"
