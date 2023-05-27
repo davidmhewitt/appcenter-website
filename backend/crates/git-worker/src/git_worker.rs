@@ -1,11 +1,17 @@
 use anyhow::Result;
 use common::models::RepoAppFile;
-use std::{collections::HashMap, ffi::OsStr, fs::File, path::PathBuf, sync::Mutex};
+use std::{
+    collections::HashMap,
+    ffi::OsStr,
+    fs::File,
+    path::PathBuf,
+    sync::Mutex,
+};
 use time::OffsetDateTime;
 
 use git2::{
     build::CheckoutBuilder, FetchOptions, IndexAddOption, ObjectType, PushOptions, RemoteCallbacks,
-    Repository, Sort,
+    Repository, Signature, Sort,
 };
 use secrecy::SecretString;
 
@@ -192,7 +198,13 @@ impl GitWorker {
         Ok(())
     }
 
-    pub fn add_and_commit(&self, file_names: &[&str], message: &str) -> Result<()> {
+    pub fn add_and_commit(
+        &self,
+        file_names: &[&str],
+        message: &str,
+        username: &str,
+        email: &str,
+    ) -> Result<()> {
         let repo = self.repo.lock().unwrap();
 
         let mut index = repo.index().map_err(Error::Git)?;
@@ -201,7 +213,12 @@ impl GitWorker {
             .add_all(file_names, IndexAddOption::DEFAULT, None)
             .map_err(Error::Git)?;
         let oid = index.write_tree().map_err(Error::Git)?;
-        let sig = repo.signature().map_err(Error::Git)?;
+        let sig = Signature::new(
+            username,
+            email,
+            &git2::Time::new(time::OffsetDateTime::now_utc().unix_timestamp(), 0),
+        )
+        .map_err(Error::Git)?;
         let tree = repo.find_tree(oid).map_err(Error::Git)?;
 
         let obj = repo
@@ -395,7 +412,7 @@ mod tests {
         File::create(local_dir.path().join("second_file.txt"))
             .expect("Couldn't create empty test file for git");
 
-        worker.add_and_commit(&["second_file.txt"], "commit")?;
+        worker.add_and_commit(&["second_file.txt"], "commit", "elementaryBot", "builds@elementary.io")?;
         worker.push("main")?;
 
         let local_dir = tempdir().expect("Couldn't create temporary local dir");

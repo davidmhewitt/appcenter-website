@@ -108,7 +108,12 @@ impl Runnable for SubmitAppUpdate {
             });
         }
 
-        if let Err(e) = GIT_WORKER.add_and_commit(&["applications"], &commit_message) {
+        if let Err(e) = GIT_WORKER.add_and_commit(
+            &["applications"],
+            &commit_message,
+            &settings.github.username,
+            "builds@elementary.io",
+        ) {
             tracing::error!("Error committing app: {}", e);
             if let Err(e) = GIT_WORKER.checkout_branch("main") {
                 tracing::error!("Error changing local branch: {}", e);
