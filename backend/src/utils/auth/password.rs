@@ -4,7 +4,6 @@ use argon2::{
 };
 use secrecy::{ExposeSecret, SecretString};
 
-#[tracing::instrument(name = "Hashing user password", skip(password))]
 pub fn hash(password: &str) -> String {
     let salt = SaltString::generate(&mut OsRng);
     Argon2::default()
@@ -13,7 +12,6 @@ pub fn hash(password: &str) -> String {
         .to_string()
 }
 
-#[tracing::instrument(name = "Verifying user password", skip(password, hash))]
 pub fn verify_password(
     hash: &str,
     password: &SecretString,

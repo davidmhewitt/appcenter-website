@@ -8,7 +8,7 @@ use crate::{extractors::AuthedUser, types::dashboard::AppUpdateSubmission};
     request_body = AppUpdateSubmission,
 )]
 #[post("/submit_app_update")]
-#[tracing::instrument(name = "Submitting app update", skip(user))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Submitting app update", skip(user)))]
 pub async fn submit(user: AuthedUser, submission: Json<AppUpdateSubmission>) -> HttpResponse {
     let task = SubmitAppUpdate::new(
         submission.app_id.to_owned(),

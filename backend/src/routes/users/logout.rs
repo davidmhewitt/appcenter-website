@@ -1,6 +1,6 @@
 use crate::extractors::AuthedUser;
 
-#[tracing::instrument(name = "Log out user", skip(session, _user))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Log out user", skip(session, _user)))]
 #[actix_web::post("/logout")]
 pub async fn log_out(
     session: actix_session::Session,

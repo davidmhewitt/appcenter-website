@@ -2,7 +2,7 @@ use actix_session::Session;
 use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, CsrfToken, Scope, TokenUrl};
 use secrecy::ExposeSecret;
 
-#[tracing::instrument(name = "Github Login", skip(session))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Github Login", skip(session)))]
 #[actix_web::get("/github/login")]
 pub async fn github_login(session: Session) -> actix_web::HttpResponse {
     let settings = common::settings::get_settings().expect("Failed to read settings.");

@@ -15,7 +15,7 @@ const SESSION_KEY_PREFIX: &str = "valid_session_key_for_";
 /// A session_key is also encoded. This key is used to destroy the token
 /// as soon as it's been verified. Depending on its usage, the token issued
 /// has at most an hour to live. Which means, it is destroyed after its time-to-live.
-#[tracing::instrument(name = "Issue pasetors token", skip(redis_connection))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Issue pasetors token", skip(redis_connection)))]
 pub async fn issue_confirmation_token_pasetors(
     user_id: uuid::Uuid,
     redis_connection: &mut deadpool_redis::redis::aio::Connection,
@@ -107,7 +107,7 @@ pub async fn issue_confirmation_token_pasetors(
 /// Verifies and destroys a token. A token is destroyed immediately
 /// it has successfully been verified and all encoded data extracted.
 /// Redis is used for such destruction.
-#[tracing::instrument(name = "Verify pasetors token", skip(token, redis_connection))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Verify pasetors token", skip(token, redis_connection)))]
 pub async fn verify_confirmation_token_pasetor(
     token: String,
     redis_connection: &mut deadpool_redis::redis::aio::Connection,
