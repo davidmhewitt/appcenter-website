@@ -28,8 +28,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${HTTP_HOST}`) && ( PathPrefix(`/api`) || PathPrefix(`/static/apps`) )"
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefic.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls=true"
 
   frontend:
     image: "ghcr.io/davidmhewitt/appcenter-website/frontend:latest"
@@ -43,8 +42,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${HTTP_HOST}`) && PathPrefix(`/`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefic.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls=true"
 
   redis:
     image: "redis:7.0"
