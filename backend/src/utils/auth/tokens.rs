@@ -22,7 +22,6 @@ pub struct SessionIdAndToken {
 
 pub fn generate_paseto_token(
     user_id: uuid::Uuid,
-    is_for_password_change: bool,
     settings: &Secret,
 ) -> Result<SessionIdAndToken> {
     let session_key: String = {
@@ -71,7 +70,7 @@ pub fn generate_paseto_token(
     })
 }
 
-#[tracing::instrument(name = "Issue PASETO token", skip(redis_connection, settings))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Issue PASETO token", skip(redis_connection, settings)))]
 pub async fn issue_confirmation_token_pasetors(
     user_id: uuid::Uuid,
     redis_connection: &mut deadpool_redis::redis::aio::Connection,
@@ -80,7 +79,7 @@ pub async fn issue_confirmation_token_pasetors(
 ) -> Result<String> {
     let expiration_in_minutes = settings.token_expiration;
 
-    let token = generate_paseto_token(user_id, is_for_password_change, settings)?;
+    let token = generate_paseto_token(user_id, settings)?;
 
     let redis_key = {
         if is_for_password_change {
@@ -240,7 +239,7 @@ mod tests {
 
         let uid = uuid::Uuid::new_v4();
 
-        let token = generate_paseto_token(uid, false, &settings)?;
+        let token = generate_paseto_token(uid, &settings)?;
 
         let result = verify_paseto_token(&token.token, &settings)?;
 
@@ -271,7 +270,7 @@ mod tests {
 
         let uid = uuid::Uuid::new_v4();
 
-        let token = generate_paseto_token(uid, false, &settings)?;
+        let token = generate_paseto_token(uid, &settings)?;
 
         // Regenerate secrets to invalidate token
         let secret_key: String = {
