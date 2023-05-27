@@ -28,7 +28,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${HTTP_HOST}`) && ( PathPrefix(`/api`) || PathPrefix(`/static/apps`) )"
-      - "traefik.http.routers.backend.entrypoints=web, websecure"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefic.http.routers.frontend.tls=true"
 
   frontend:
     image: "ghcr.io/davidmhewitt/appcenter-website/frontend:latest"
@@ -42,7 +43,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${HTTP_HOST}`) && PathPrefix(`/`)"
-      - "traefik.http.routers.frontend.entrypoints=web, websecure"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefic.http.routers.frontend.tls=true"
 
   redis:
     image: "redis:7.0"
@@ -73,10 +75,8 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.file.directory=/etc/traefik/dynamic"
-      - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
     ports:
-      - "80:80"
       - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
