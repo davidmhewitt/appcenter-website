@@ -3,10 +3,10 @@ use background_worker::tasks::SubmitAppUpdate;
 
 use crate::{extractors::AuthedUser, types::dashboard::AppUpdateSubmission};
 
-#[utoipa::path(
+#[cfg_attr(feature = "openapi", utoipa::path(
     path = "/dashboard/submit_app_update",
     request_body = AppUpdateSubmission,
-)]
+))]
 #[post("/submit_app_update")]
 #[cfg_attr(not(coverage), tracing::instrument(name = "Submitting app update", skip(user)))]
 pub async fn submit(user: AuthedUser, submission: Json<AppUpdateSubmission>) -> HttpResponse {

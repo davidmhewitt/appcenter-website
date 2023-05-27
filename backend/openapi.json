@@ -1375,16 +1375,22 @@
                   "example": {
                     "value": [
                       {
+                        "first_seen": null,
                         "id": "com.github.davidmhewitt.torrential",
+                        "is_published": true,
                         "is_verified": true,
-                        "repository": "https://github.com/davidmhewitt/torrential.git",
-                        "version": "3.0.1"
+                        "last_submitted_version": "3.0.1",
+                        "last_update": null,
+                        "repository": "https://github.com/davidmhewitt/torrential.git"
                       },
                       {
+                        "first_seen": null,
                         "id": "io.elementary.photos",
+                        "is_published": true,
                         "is_verified": false,
-                        "repository": "https://github.com/elementary/photos.git",
-                        "version": null
+                        "last_submitted_version": null,
+                        "last_update": null,
+                        "repository": "https://github.com/elementary/photos.git"
                       }
                     ]
                   }

@@ -1,5 +1,3 @@
-use utoipa::OpenApi;
-
 mod apps;
 pub mod dashboard;
 mod health;
@@ -10,8 +8,8 @@ pub use dashboard::dashboard_routes_config;
 pub use health::health_check;
 pub use users::auth_routes_config;
 
-#[derive(OpenApi)]
-#[openapi(
+#[cfg_attr(feature = "openapi", derive(utoipa::OpenApi))]
+#[cfg_attr(feature = "openapi", openapi(
     paths(
         users::test_auth::test_auth,
         apps::all_ids::all_ids,
@@ -29,5 +27,5 @@ pub use users::auth_routes_config;
         crate::types::dashboard::CreateApp,
         crate::types::dashboard::AppUpdateSubmission,
     ))
-)]
+))]
 pub struct ApiDoc;

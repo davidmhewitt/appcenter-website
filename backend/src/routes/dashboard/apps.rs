@@ -12,7 +12,7 @@ use crate::types::dashboard::CreateApp;
 use crate::types::{ErrorResponse, ErrorTranslationKey};
 use common::models::App;
 
-#[utoipa::path(
+#[cfg_attr(feature = "openapi", utoipa::path(
     path = "/dashboard/apps",
     responses(
         (
@@ -45,7 +45,7 @@ use common::models::App;
             )
         )
     )
-)]
+))]
 #[get("/apps")]
 #[cfg_attr(not(coverage), tracing::instrument(name = "Fetching apps for dashboard", skip(user, pool)))]
 pub async fn get_apps(user: AuthedUser, pool: Data<Pool<AsyncPgConnection>>) -> HttpResponse {
@@ -88,10 +88,10 @@ pub async fn get_apps_from_db(
         .await?)
 }
 
-#[utoipa::path(
+#[cfg_attr(feature = "openapi", utoipa::path(
     path = "/dashboard/apps",
     request_body = CreateApp,
-)]
+))]
 #[post("/apps")]
 #[cfg_attr(not(coverage), tracing::instrument(name = "Adding dashboard app", skip(user, pool)))]
 pub async fn add_app(

@@ -3,9 +3,11 @@ use common::models::App;
 use diesel::{query_dsl::methods::FilterDsl, ExpressionMethods};
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
 
+#[cfg(feature = "openapi")]
+
 const EXAMPLE_JSON: &str = include_str!("examples/all_ids.json");
 
-#[utoipa::path(
+#[cfg_attr(feature = "openapi", utoipa::path(
     path = "/apps/all_ids",
     responses(
         (
@@ -17,7 +19,7 @@ const EXAMPLE_JSON: &str = include_str!("examples/all_ids.json");
             )
         ),
     )
-)]
+))]
 #[cfg_attr(not(coverage), tracing::instrument(name = "Getting all app ids", skip(pool)))]
 #[get("/all_ids")]
 pub async fn all_ids(pool: Data<Pool<AsyncPgConnection>>) -> actix_web::HttpResponse {

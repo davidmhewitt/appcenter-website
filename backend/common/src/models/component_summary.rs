@@ -2,10 +2,12 @@ use std::collections::BTreeMap;
 
 use appstream::Component;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize, ToSchema)]
-#[schema(example = json!({"C": "Welcome", "ja": "いらっしゃいませ"}))]
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+#[cfg_attr(feature = "openapi", schema(example = json!({"C": "Welcome", "ja": "いらっしゃいませ"})))]
 pub struct TranslatableString(pub BTreeMap<String, String>);
 
 impl TranslatableString {
@@ -14,20 +16,21 @@ impl TranslatableString {
     }
 }
 
-#[derive(Serialize, Deserialize, ToSchema)]
-
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct Icon {
-    #[schema(example = "com.github.alexkdeveloper.bmi.png")]
+    #[cfg_attr(feature = "openapi", schema(example = "com.github.alexkdeveloper.bmi.png"))]
     path: String,
-    #[schema(example = 64)]
+    #[cfg_attr(feature = "openapi", schema(example = 64))]
     width: Option<u32>,
-    #[schema(example = 64)]
+    #[cfg_attr(feature = "openapi", schema(example = 64))]
     height: Option<u32>,
 }
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct ComponentSummary {
-    #[schema(example = "com.github.davidmhewitt.torrential")]
+    #[cfg_attr(feature = "openapi", schema(example = "com.github.davidmhewitt.torrential"))]
     id: String,
     name: TranslatableString,
     summary: Option<TranslatableString>,

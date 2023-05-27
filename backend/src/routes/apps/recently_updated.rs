@@ -4,9 +4,10 @@ use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl}
 
 use common::models::{App, ComponentSummary};
 
+#[cfg(feature = "openapi")]
 const EXAMPLE_JSON: &str = include_str!("examples/recently_updated.json");
 
-#[utoipa::path(
+#[cfg_attr(feature = "openapi", utoipa::path(
     path = "/apps/recently_updated",
     responses(
         (
@@ -18,7 +19,7 @@ const EXAMPLE_JSON: &str = include_str!("examples/recently_updated.json");
             )
         ),
     )
-)]
+))]
 #[cfg_attr(not(coverage), tracing::instrument(name = "Getting recently updated apps", skip(pool, redis_pool)))]
 #[get("/recently_updated")]
 pub async fn recently_updated(
