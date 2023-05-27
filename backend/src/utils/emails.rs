@@ -110,7 +110,7 @@ pub async fn send_multipart_email(
         user_id,
         redis_connection,
         is_for_password_change,
-        settings.secret.token_expiration,
+        &settings.secret,
     )
     .await
     {
@@ -143,8 +143,6 @@ pub async fn send_multipart_email(
             )
         }
     };
-    let current_date_time = chrono::Local::now();
-    let dt = current_date_time + chrono::Duration::minutes(settings.secret.token_expiration);
 
     let template = crate::ENV.get_template(template_name).unwrap();
     let ctx = minijinja::context! {
@@ -152,7 +150,6 @@ pub async fn send_multipart_email(
         confirmation_link => &confirmation_link,
         domain => &settings.frontend_url,
         expiration_time => &settings.secret.token_expiration,
-        exact_time => &dt.format("%A %B %d, %Y at %r").to_string()
     };
     let html_text = template.render(ctx).unwrap();
 
