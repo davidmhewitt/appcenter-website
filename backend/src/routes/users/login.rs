@@ -14,7 +14,7 @@ pub struct LoginUser {
     password: SecretString,
 }
 
-#[tracing::instrument(name = "Logging a user in", skip( pool, user, session), fields(user_email = %user.email))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Logging a user in", skip(pool, user, session), fields(user_email = %user.email)))]
 #[actix_web::post("/login")]
 async fn login_user(
     pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
@@ -70,7 +70,7 @@ async fn login_user(
     }
 }
 
-#[tracing::instrument(name = "Getting a user from DB.", skip(con))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Getting a user from DB.", skip(con)))]
 pub(crate) async fn get_user_who_is_active_with_password(
     con: &mut AsyncPgConnection,
     user_email: &str,

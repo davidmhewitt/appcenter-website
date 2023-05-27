@@ -1,7 +1,7 @@
 use lettre::AsyncTransport;
 use secrecy::ExposeSecret;
 
-#[tracing::instrument(
+#[cfg_attr(not(coverage), tracing::instrument(
     name = "Generic e-mail sending function.",
     skip(
         recipient_email,
@@ -12,7 +12,7 @@ use secrecy::ExposeSecret;
     fields(
         recipient_email = %recipient_email,
     )
-)]
+))]
 pub async fn send_email(
     sender_email: Option<String>,
     recipient_email: String,
@@ -85,14 +85,14 @@ pub async fn send_email(
     }
 }
 
-#[tracing::instrument(
+#[cfg_attr(not(coverage), tracing::instrument(
     name = "Generic multipart e-mail sending function.",
     skip(redis_connection),
     fields(
         recipient_user_id = %user_id,
         recipient_email = %recipient_email,
     )
-)]
+))]
 pub async fn send_multipart_email(
     subject: String,
     user_id: uuid::Uuid,

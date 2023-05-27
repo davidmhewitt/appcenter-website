@@ -20,7 +20,6 @@ pub struct SessionIdAndToken {
     token: String,
 }
 
-#[tracing::instrument(name = "Generate PASETO token", skip(settings))]
 pub fn generate_paseto_token(
     user_id: uuid::Uuid,
     is_for_password_change: bool,
@@ -127,7 +126,6 @@ pub struct SessionIdAndUuid {
     uuid: uuid::Uuid,
 }
 
-#[tracing::instrument(name = "Verify PASETO token", skip(token, settings))]
 pub fn verify_paseto_token(
     token: &str,
     settings: &Secret,
@@ -179,7 +177,7 @@ pub fn verify_paseto_token(
 /// Verifies and destroys a token. A token is destroyed immediately
 /// it has successfully been verified and all encoded data extracted.
 /// Redis is used for such destruction.
-#[tracing::instrument(name = "Verify pasetors token", skip(token, redis_connection))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Verify pasetors token", skip(token, redis_connection)))]
 pub async fn verify_confirmation_token_pasetor(
     token: String,
     redis_connection: &mut deadpool_redis::redis::aio::Connection,

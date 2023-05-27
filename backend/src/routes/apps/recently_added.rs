@@ -19,7 +19,7 @@ const EXAMPLE_JSON: &str = include_str!("examples/recently_added.json");
         ),
     )
 )]
-#[tracing::instrument(name = "Getting recently updated apps", skip(pool, redis_pool))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Getting recently updated apps", skip(pool, redis_pool)))]
 #[get("/recently_added")]
 pub async fn recently_added(
     pool: Data<Pool<AsyncPgConnection>>,

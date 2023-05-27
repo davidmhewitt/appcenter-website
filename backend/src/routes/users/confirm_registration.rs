@@ -9,7 +9,7 @@ pub struct Parameters {
     token: String,
 }
 
-#[tracing::instrument(name = "Activating a new user", skip(pool, parameters, redis_pool))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Activating a new user", skip(pool, parameters, redis_pool)))]
 #[actix_web::get("/register/confirm")]
 pub async fn confirm(
     parameters: actix_web::web::Query<Parameters>,
@@ -86,9 +86,9 @@ pub async fn confirm(
     }
 }
 
-#[tracing::instrument(name = "Mark a user active", skip(pool), fields(
+#[cfg_attr(not(coverage), tracing::instrument(name = "Mark a user active", skip(pool), fields(
     new_user_user_id = %user_id
-))]
+)))]
 pub async fn activate_new_user(pool: &Pool<AsyncPgConnection>, user_id: uuid::Uuid) -> Result<()> {
     use common::schema::users;
     use common::schema::users::dsl::*;

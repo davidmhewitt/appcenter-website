@@ -2,7 +2,7 @@ use actix_web::{get, HttpResponse};
 
 use crate::extractors::AuthedUser;
 
-#[tracing::instrument(name = "Test Auth", skip(_user))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Test Auth", skip(_user)))]
 #[utoipa::path(
     path = "/users/test_auth",
     responses(
