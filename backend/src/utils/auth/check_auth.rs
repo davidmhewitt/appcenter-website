@@ -36,19 +36,19 @@ pub async fn check_auth(
     None
 }
 
-#[cfg_attr(not(coverage), tracing::instrument(name = "Getting a user from DB.", skip(pool, email),fields(user_email = %email)))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Getting a user from DB.", skip(pool, user_email)))]
 async fn get_active_user_by_email_and_id(
     pool: &Pool<AsyncPgConnection>,
-    id: &Uuid,
-    email: &String,
+    user_id: &Uuid,
+    user_email: &String,
 ) -> Result<User> {
     use common::schema::users::dsl::*;
 
     let mut con = pool.get().await?;
     let result = users
         .filter(is_active.eq(true))
-        .filter(id.eq(id))
-        .filter(email.eq(email))
+        .filter(id.eq(user_id))
+        .filter(email.eq(user_email))
         .get_result::<User>(&mut con)
         .await?;
 
