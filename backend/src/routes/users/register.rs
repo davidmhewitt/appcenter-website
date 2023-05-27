@@ -18,11 +18,11 @@ pub struct NewUserRequest {
     password: String,
 }
 
-#[tracing::instrument(name = "Adding a new user",
+#[cfg_attr(not(coverage), tracing::instrument(name = "Adding a new user",
 skip( pool, new_user, redis_pool),
 fields(
     new_user_email = %new_user.email,
-))]
+)))]
 #[actix_web::post("/register")]
 pub async fn register_user(
     pool: actix_web::web::Data<Pool<AsyncPgConnection>>,

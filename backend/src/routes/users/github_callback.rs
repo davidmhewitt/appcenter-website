@@ -39,7 +39,7 @@ pub struct GithubUser {
     id: Number,
 }
 
-#[tracing::instrument(name = "Github Callback", skip(session, response))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Github Callback", skip(session, response)))]
 #[actix_web::get("/github/callback")]
 pub async fn github_callback(
     pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
@@ -274,7 +274,7 @@ fn error_redirect(
         .finish()
 }
 
-#[tracing::instrument(name = "Getting a user from DB.", skip(con))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Getting a user from DB.", skip(con)))]
 pub(crate) async fn get_user_who_is_active(
     con: &mut AsyncPgConnection,
     user_email: &str,

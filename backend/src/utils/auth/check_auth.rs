@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use common::models::*;
 
-#[tracing::instrument(name = "Check Auth", skip(session, pool))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Check Auth", skip(session, pool)))]
 pub async fn check_auth(
     session: Session,
     pool: &actix_web::web::Data<Pool<AsyncPgConnection>>,
@@ -36,7 +36,7 @@ pub async fn check_auth(
     None
 }
 
-#[tracing::instrument(name = "Getting a user from DB.", skip(pool, email),fields(user_email = %email))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Getting a user from DB.", skip(pool, email),fields(user_email = %email)))]
 async fn get_active_user_by_email_and_id(
     pool: &Pool<AsyncPgConnection>,
     id: &Uuid,
