@@ -18,7 +18,7 @@ const EXAMPLE_JSON: &str = include_str!("examples/all_ids.json");
         ),
     )
 )]
-#[tracing::instrument(name = "Getting all app ids", skip(pool))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Getting all app ids", skip(pool)))]
 #[get("/all_ids")]
 pub async fn all_ids(pool: Data<Pool<AsyncPgConnection>>) -> actix_web::HttpResponse {
     use common::schema::apps::dsl::*;

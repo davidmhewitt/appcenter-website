@@ -47,7 +47,7 @@ use common::models::App;
     )
 )]
 #[get("/apps")]
-#[tracing::instrument(name = "Fetching apps for dashboard", skip(user, pool))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Fetching apps for dashboard", skip(user, pool)))]
 pub async fn get_apps(user: AuthedUser, pool: Data<Pool<AsyncPgConnection>>) -> HttpResponse {
     let mut con = match pool.get().await {
         Ok(c) => c,
@@ -93,7 +93,7 @@ pub async fn get_apps_from_db(
     request_body = CreateApp,
 )]
 #[post("/apps")]
-#[tracing::instrument(name = "Adding dashboard app", skip(user, pool))]
+#[cfg_attr(not(coverage), tracing::instrument(name = "Adding dashboard app", skip(user, pool)))]
 pub async fn add_app(
     user: AuthedUser,
     pool: Data<Pool<AsyncPgConnection>>,
