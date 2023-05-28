@@ -75,6 +75,7 @@ fn calculate_fee(amount: u32) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use actix_web::{test::TestRequest, App};
 
     #[test]
     fn test_fee_calculations() {
@@ -83,5 +84,34 @@ mod tests {
         assert_eq!(51, calculate_fee(170));
         assert_eq!(60, calculate_fee(200));
         assert_eq!(150, calculate_fee(500));
+    }
+
+    #[actix_web::test]
+    async fn test_start_payment() -> Result<(), actix_web::Error> {
+        let subscriber = common::telemetry::get_subscriber(false);
+        common::telemetry::init_subscriber(subscriber);
+
+        let stripe_client = actix_web::web::Data::new(stripe::Client::from_url(
+            "http://stripe:12111",
+            "sk_test_123",
+        ));
+        let mut app =
+            actix_web::test::init_service(App::new().service(start).app_data(stripe_client)).await;
+
+        let req = TestRequest::post()
+            .set_json(AppPaymentRequest {
+                app_name: "Torrential".into(),
+                app_id: "com.github.davidmhewitt.torrential".into(),
+                amount: 300,
+                stripe_connect_id: "1234".into(),
+            })
+            .uri("/start")
+            .to_request();
+        let response = actix_web::test::try_call_service(&mut app, req).await?;
+
+        assert!(response.status().is_redirection());
+        assert!(response.headers().contains_key("Location"));
+
+        Ok(())
     }
 }

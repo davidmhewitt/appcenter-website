@@ -20,6 +20,10 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+      stripe:
+        image: stripe/stripe-mock:latest
+        ports:
+          - 12111:12111
 
     name: Rust build
     runs-on: ubuntu-latest
@@ -32,8 +36,6 @@ jobs:
           workspaces: "backend"
       - name: Build
         run: |
-          git config --global user.name "David Hewitt"
-          git config --global user.email "davidmhewitt@gmail.com"
           git config --global init.defaultBranch main
           cd backend
           cargo build --workspace --all-features

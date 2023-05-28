@@ -1,8 +1,8 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct AppPaymentRequest {
     #[cfg_attr(feature = "openapi", schema(example = "Torrential"))]

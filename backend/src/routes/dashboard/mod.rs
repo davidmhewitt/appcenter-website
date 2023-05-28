@@ -1,4 +1,5 @@
 pub mod apps;
+pub mod setup_stripe_connect;
 pub mod submit_app_update;
 
 pub fn dashboard_routes_config(cfg: &mut actix_web::web::ServiceConfig) {

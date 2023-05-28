@@ -10,7 +10,7 @@ use common::models::*;
 pub async fn check_auth(
     session: Session,
     pool: &actix_web::web::Data<Pool<AsyncPgConnection>>,
-) -> Option<Uuid> {
+) -> Option<User> {
     let id = match session.get::<Uuid>(crate::types::USER_ID_KEY) {
         Ok(u) => match u {
             Some(u) => u,
@@ -26,11 +26,10 @@ pub async fn check_auth(
         Err(_) => return None,
     };
 
-    if get_active_user_by_email_and_id(pool, &id, &email)
+    if let Ok(user) = get_active_user_by_email_and_id(pool, &id, &email)
         .await
-        .is_ok()
     {
-        return Some(id);
+        return Some(user);
     }
 
     None
