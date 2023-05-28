@@ -92,7 +92,7 @@ mod tests {
         common::telemetry::init_subscriber(subscriber);
 
         let stripe_client = actix_web::web::Data::new(stripe::Client::from_url(
-            "http://stripe:12111",
+            option_env!("STRIPE_MOCKS_URL").unwrap_or("http://stripe:12111"),
             "sk_test_123",
         ));
         let mut app =

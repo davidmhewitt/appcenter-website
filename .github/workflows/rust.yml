@@ -45,6 +45,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://appcenter:appcenter@localhost/appcenter_website
           APP_DATABASE__URL: postgresql://appcenter:appcenter@localhost/appcenter_website
+          STRIPE_MOCKS_URL: http://localhost:12111
         run: cd backend && cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
