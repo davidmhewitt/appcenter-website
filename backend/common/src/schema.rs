@@ -36,6 +36,7 @@ diesel::table! {
         error_message -> Nullable<Text>,
         state -> FangTaskState,
         task_type -> Varchar,
+        #[max_length = 64]
         uniq_hash -> Nullable<Bpchar>,
         retries -> Int4,
         scheduled_at -> Timestamptz,
@@ -50,6 +51,13 @@ diesel::table! {
         github_user_id -> Nullable<Text>,
         github_access_token -> Nullable<Text>,
         github_refresh_token -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    stripe_accounts (user_id) {
+        user_id -> Uuid,
+        stripe_account_id -> Text,
     }
 }
 
@@ -76,6 +84,7 @@ diesel::table! {
 diesel::joinable!(app_owners -> apps (app_id));
 diesel::joinable!(app_owners -> users (user_id));
 diesel::joinable!(github_auth -> users (user_id));
+diesel::joinable!(stripe_accounts -> users (user_id));
 diesel::joinable!(user_profile -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
@@ -83,6 +92,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     apps,
     fang_tasks,
     github_auth,
+    stripe_accounts,
     user_profile,
     users,
 );

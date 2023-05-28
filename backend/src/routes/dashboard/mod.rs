@@ -1,5 +1,6 @@
 pub mod apps;
 pub mod create_stripe_account;
+pub mod link_stripe_account;
 pub mod submit_app_update;
 
 pub fn dashboard_routes_config(cfg: &mut actix_web::web::ServiceConfig) {
