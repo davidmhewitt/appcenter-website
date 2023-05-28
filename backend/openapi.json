@@ -1418,6 +1418,34 @@
         "responses": {}
       }
     },
+    "/dashboard/stripe_account": {
+      "get": {
+        "tags": [
+          "dashboard::stripe_account"
+        ],
+        "operationId": "get_stripe_account",
+        "responses": {
+          "200": {
+            "description": "Stripe account details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeAccount"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "account_id": "acct_1NCliJPBGjCwUDHc",
+                      "charges_enabled": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/dashboard/submit_app_update": {
       "post": {
         "tags": [
@@ -1571,6 +1599,23 @@
             "example": 64,
             "nullable": true,
             "minimum": 0.0
+          }
+        }
+      },
+      "StripeAccount": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "charges_enabled"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "example": "acct_1NCliJPBGjCwUDHc"
+          },
+          "charges_enabled": {
+            "type": "boolean",
+            "example": true
           }
         }
       },
