@@ -3,7 +3,7 @@ use diesel::ExpressionMethods;
 use diesel_async::{pooled_connection::bb8::{PooledConnection, Pool}, AsyncPgConnection, RunQueryDsl};
 use stripe::{Account, AccountId, Client, CreateAccount, StripeError};
 
-use crate::extractors::AuthedUser;
+use crate::{extractors::AuthedUser, types::{ErrorResponse, ErrorTranslationKey}};
 
 #[post("/create_stripe_account")]
 #[cfg_attr(
@@ -31,7 +31,13 @@ pub async fn create(
         }
     };
 
-    add_stripe_account_to_db(&mut con, user.uuid, &account.id).await;
+    if let Err(e) = add_stripe_account_to_db(&mut con, user.uuid, &account.id).await {
+        tracing::error!("Error adding stripe account to database: {}", e);
+        return HttpResponse::InternalServerError().json(ErrorResponse {
+            error: "Error adding stripe account to database".into(),
+            translation_key: ErrorTranslationKey::GenericServerProblem,
+        });
+    }
 
     HttpResponse::Ok().finish()
 }

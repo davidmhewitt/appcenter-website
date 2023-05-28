@@ -1,5 +1,7 @@
 #[derive(Debug, PartialEq, serde::Serialize)]
 pub enum ErrorTranslationKey {
+    #[serde(rename = "generic-problem")]
+    GenericServerProblem,
     #[serde(rename = "confirmation.generic-problem")]
     GenericConfirmationProblem,
     #[serde(rename = "confirmation.token-used")]
@@ -24,6 +26,8 @@ pub enum ErrorTranslationKey {
     AddAppInvalidRepositoryUrl,
     #[serde(rename = "submit-app-update.unable-to-get-url")]
     SubmitAppUpdateCannotGetUrl,
+    #[serde(rename = "stripe-link.no-account")]
+    StripeLinkNoAccount,
 }
 
 #[derive(serde::Serialize)]
