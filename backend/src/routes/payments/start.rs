@@ -74,6 +74,8 @@ fn calculate_fee(amount: u32) -> u32 {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::stripe_test;
+
     use super::*;
     use actix_web::{test::TestRequest, App};
 
@@ -90,11 +92,8 @@ mod tests {
     async fn test_start_payment() -> Result<(), actix_web::Error> {
         let subscriber = common::telemetry::get_subscriber(false);
         common::telemetry::init_subscriber(subscriber);
+        let stripe_client = actix_web::web::Data::new(stripe_test::stripe_client());
 
-        let stripe_client = actix_web::web::Data::new(stripe::Client::from_url(
-            option_env!("STRIPE_MOCKS_URL").unwrap_or("http://stripe:12111"),
-            "sk_test_123",
-        ));
         let mut app =
             actix_web::test::init_service(App::new().service(start).app_data(stripe_client)).await;
 

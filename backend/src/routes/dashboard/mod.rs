@@ -1,5 +1,5 @@
 pub mod apps;
-pub mod setup_stripe_connect;
+pub mod create_stripe_account;
 pub mod submit_app_update;
 
 pub fn dashboard_routes_config(cfg: &mut actix_web::web::ServiceConfig) {
@@ -7,6 +7,7 @@ pub fn dashboard_routes_config(cfg: &mut actix_web::web::ServiceConfig) {
         actix_web::web::scope("/api/dashboard")
             .service(apps::add_app)
             .service(apps::get_apps)
+            .service(create_stripe_account::create)
             .service(submit_app_update::submit),
     );
 }
