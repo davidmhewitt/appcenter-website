@@ -90,8 +90,6 @@ mod tests {
 
     #[actix_web::test]
     async fn test_start_payment() -> Result<(), actix_web::Error> {
-        let subscriber = common::telemetry::get_subscriber(false);
-        common::telemetry::init_subscriber(subscriber);
         let stripe_client = actix_web::web::Data::new(stripe_test::stripe_client());
 
         let mut app =

@@ -39,8 +39,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_create_account() -> anyhow::Result<()> {
-        let subscriber = common::telemetry::get_subscriber(false);
-        common::telemetry::init_subscriber(subscriber);
         let stripe_client = stripe_test::stripe_client();
 
         let account = create_stripe_account(&stripe_client, "test@example.com").await?;
