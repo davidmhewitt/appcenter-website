@@ -24,22 +24,32 @@ interface App {
   version: string
 }
 
+interface StripeAccount {
+  account_id: string
+  charges_enabled: boolean
+}
+
 export default function Dashboard({
   params: { lang },
 }: {
   params: { lang: string }
 }) {
-  const { data, mutate, isLoading } = useSWR<App[]>(
-    '/api/dashboard/apps',
-    fetcher
-  )
-  const apps = data
+  const {
+    data: apps,
+    mutate: appsMutator,
+    isLoading: appsLoading,
+  } = useSWR<App[]>('/api/dashboard/apps', fetcher)
 
+  const {
+    data: stripeAccount,
+    mutate: stripeMutator,
+    isLoading: stripeLoading,
+  } = useSWR<StripeAccount>('/api/dashboard/stripe_account', fetcher)
   return (
     <>
       <div className="my-3 lg:mx-auto lg:max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="flex justify-end">
-          <AddAppPopoverButton mutator={mutate} />
+          <AddAppPopoverButton mutator={appsMutator} />
         </div>
         <div className="flex flex-col">
           <div className="sm:-mx-6 lg:-mx-8 grow">
@@ -59,7 +69,7 @@ export default function Dashboard({
                   </tr>
                 </thead>
                 <tbody>
-                  {!isLoading &&
+                  {!appsLoading &&
                     apps?.map(({ id, is_verified, version }, index) => (
                       <tr
                         key={index}
@@ -84,6 +94,17 @@ export default function Dashboard({
             </div>
           </div>
         </div>
+        <h5 className="mb-2 mt-0 text-xl font-medium leading-tight text-primary">
+          Monetisation
+        </h5>
+        <p>
+          <b>Stripe Account Key: </b>
+          {stripeAccount?.account_id}
+        </p>
+        <p>
+          <b>Stripe Account Enabled: </b>
+          {stripeAccount?.charges_enabled ? 'true' : 'false'}
+        </p>
       </div>
     </>
   )
