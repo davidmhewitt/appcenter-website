@@ -9,6 +9,7 @@ pub fn dashboard_routes_config(cfg: &mut actix_web::web::ServiceConfig) {
             .service(apps::add_app)
             .service(apps::get_apps)
             .service(create_stripe_account::create)
+            .service(link_stripe_account::link)
             .service(submit_app_update::submit),
     );
 }

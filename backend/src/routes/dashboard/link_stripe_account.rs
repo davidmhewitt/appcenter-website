@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use actix_web::{post, HttpResponse};
+use actix_web::{get, HttpResponse};
 use diesel::{result::Error::NotFound, ExpressionMethods, QueryDsl};
 use diesel_async::{
     pooled_connection::bb8::{Pool, PooledConnection},
@@ -13,7 +13,7 @@ use crate::{
     types::{ErrorResponse, ErrorTranslationKey},
 };
 
-#[post("/link_stripe_account")]
+#[get("/link_stripe_account")]
 #[cfg_attr(
     not(coverage),
     tracing::instrument(name = "Linking stripe connect account", skip(stripe_client, user))
@@ -23,6 +23,8 @@ pub async fn link(
     user: AuthedUser,
     pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
 ) -> HttpResponse {
+    let settings = common::settings::get_settings().expect("Failed to read settings.");
+
     let mut con = match pool.get().await {
         Ok(c) => c,
         Err(e) => {
@@ -48,7 +50,19 @@ pub async fn link(
         }
     };
 
-    let link_result = match link_stripe_account(&stripe_client, &account_id, None, None).await {
+    let base_url = url::Url::parse(&settings.frontend_url).expect("invalid frontend url");
+
+    let link_result = match link_stripe_account(
+        &stripe_client,
+        &account_id,
+        &base_url
+            .join("api/dashboard/link_stripe_account")
+            .unwrap()
+            .to_string(),
+        &base_url.join("dashboard").unwrap().to_string(),
+    )
+    .await
+    {
         Ok(a) => a,
         Err(e) => {
             tracing::error!("Error linking stripe account: {}", e);
@@ -67,15 +81,15 @@ pub async fn link(
 async fn link_stripe_account(
     stripe_client: &Client,
     account_id: &str,
-    refresh_url: Option<&str>,
-    return_url: Option<&str>,
+    refresh_url: &str,
+    return_url: &str,
 ) -> anyhow::Result<AccountLink> {
     let params = CreateAccountLink {
         account: AccountId::from_str(account_id)?,
         collect: Default::default(),
         expand: Default::default(),
-        return_url,
-        refresh_url,
+        return_url: Some(return_url),
+        refresh_url: Some(refresh_url),
         type_: stripe::AccountLinkType::AccountOnboarding,
     };
 
@@ -110,7 +124,13 @@ mod tests {
     async fn test_link_account() -> anyhow::Result<()> {
         let stripe_client = stripe_test::stripe_client();
 
-        link_stripe_account(&stripe_client, "acct_1234", None, None).await?;
+        link_stripe_account(
+            &stripe_client,
+            "acct_1234",
+            "http://localhost:3100/api/dashboard/link_stripe_account",
+            "http://localhost:3000/dashboard",
+        )
+        .await?;
 
         Ok(())
     }

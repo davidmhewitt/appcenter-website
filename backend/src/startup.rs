@@ -59,9 +59,9 @@ async fn run(
         .create_pool(Some(deadpool_redis::Runtime::Tokio1))
         .expect("Cannot create deadpool redis");
 
-    let stripe_client = actix_web::web::Data::new(
-        stripe::Client::new(settings.stripe.secret_key.expose_secret())
-    );
+    let stripe_client = actix_web::web::Data::new(stripe::Client::new(
+        settings.stripe.secret_key.expose_secret(),
+    ));
 
     let redis_pool_data = actix_web::web::Data::new(redis_pool);
 
