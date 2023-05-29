@@ -30,134 +30,130 @@
                     "type": "string"
                   }
                 },
-                "examples": {
-                  "example": {
-                    "value": [
-                      "com.github.akiraux.akira",
-                      "com.github.alecaddd.sequeler",
-                      "com.github.alecaddd.taxi",
-                      "com.github.alexkdeveloper.bmi",
-                      "com.github.alexkdeveloper.dfc",
-                      "com.github.alexkdeveloper.guessnumber",
-                      "com.github.alexkdeveloper.pasgen",
-                      "com.github.alexkdeveloper.raddiola",
-                      "com.github.alexkdeveloper.tictactoy",
-                      "com.github.avojak.iridium",
-                      "com.github.avojak.paint-spill",
-                      "com.github.avojak.warble",
-                      "com.github.bcedu.valasimplehttpserver",
-                      "com.github.bernardodsanderson.vido",
-                      "com.github.bluesabre.darkbar",
-                      "com.github.brain_child.moobo",
-                      "com.github.calo001.fondo",
-                      "com.github.calo001.luna",
-                      "com.github.candiedoperation.ordne",
-                      "com.github.cassidyjames.clairvoyant",
-                      "com.github.cassidyjames.dippi",
-                      "com.github.cassidyjames.palette",
-                      "com.github.cassidyjames.principles",
-                      "com.github.childishgiant.mixer",
-                      "com.github.ckruse.ColorMate.desktop",
-                      "com.github.dahenson.agenda",
-                      "com.github.danrabbit.harvey.desktop",
-                      "com.github.danrabbit.lookbook",
-                      "com.github.davidmhewitt.torrential",
-                      "com.github.dbhowell.peeq",
-                      "com.github.dcharles525.crypt",
-                      "com.github.donadigo.appeditor.desktop",
-                      "com.github.donadigo.eddy",
-                      "com.github.dr_styki.screenrec",
-                      "com.github.eksanos.eksanos",
-                      "com.github.elfenware.badger",
-                      "com.github.elfenware.obliviate",
-                      "com.github.fleury08.prettifier",
-                      "com.github.gabutakut.gabutdm",
-                      "com.github.gijsgoudzwaard.image-optimizer",
-                      "com.github.hezral.clips",
-                      "com.github.hezral.inspektor",
-                      "com.github.hezral.keystrokes",
-                      "com.github.hezral.quickword",
-                      "com.github.hezral.stashed",
-                      "com.github.jeremypw.gnonograms",
-                      "com.github.jeysonflores.hasher",
-                      "com.github.jeysonflores.switcher",
-                      "com.github.jmoerman.goforit",
-                      "com.github.lafydev.animage",
-                      "com.github.leggettc18.leopod",
-                      "com.github.linuxhubit.catfacts",
-                      "com.github.linuxhubit.gitscover",
-                      "com.github.linuxhubit.shouldidoit",
-                      "com.github.louis77.tuner",
-                      "com.github.malothebault.trivia",
-                      "com.github.manexim.insomnia",
-                      "com.github.manexim.typewriter",
-                      "com.github.marbetschar.time-limit",
-                      "com.github.matfantinel.moneta",
-                      "com.github.matfantinel.reminduck",
-                      "com.github.matthiasjg.trimirjournal",
-                      "com.github.muriloventuroso.easyssh",
-                      "com.github.oowoosh0.pomodoro",
-                      "com.github.peteruithoven.resizer",
-                      "com.github.phase1geo.annotator",
-                      "com.github.phase1geo.minder",
-                      "com.github.phase1geo.outliner",
-                      "com.github.phase1geo.textshine",
-                      "com.github.philip_scott.notes-up",
-                      "com.github.philip_scott.spice-up",
-                      "com.github.phoneybadger.picker",
-                      "com.github.phoneybadger.trimmer",
-                      "com.github.raibtoffoletto.litteris",
-                      "com.github.rajkumaar23.badgie",
-                      "com.github.rajsolai.response",
-                      "com.github.rajsolai.textsnatcher",
-                      "com.github.rkoesters.xkcd-gtk",
-                      "com.github.ryonakano.atlas",
-                      "com.github.ryonakano.konbucase",
-                      "com.github.ryonakano.louper",
-                      "com.github.ryonakano.pinit",
-                      "com.github.ryonakano.reco",
-                      "com.github.sdv43.whaler",
-                      "com.github.sergius02.qrit",
-                      "com.github.sgpthomas.hourglass",
-                      "com.github.skarva.lockbox",
-                      "com.github.subhadeepjasu.enigma",
-                      "com.github.subhadeepjasu.ensembles",
-                      "com.github.subhadeepjasu.pebbles",
-                      "com.github.suzie97.communique",
-                      "com.github.syfds.soundy",
-                      "com.github.tenderowl.frog",
-                      "com.github.tenderowl.norka",
-                      "com.github.tenderowl.turtle",
-                      "com.github.torikulhabib.niki",
-                      "com.github.treagod.spectator",
-                      "com.github.watsonprojects.easydocs",
-                      "com.github.zelikos.rannum",
-                      "com.github.ztefn.haguichi",
-                      "com.manexim.codecard",
-                      "com.manexim.home",
-                      "hr.from.josipantolis.life",
-                      "hr.from.josipantolis.sage",
-                      "hr.from.josipantolis.starfish",
-                      "io.elementary.calculator",
-                      "io.elementary.calendar",
-                      "io.elementary.camera",
-                      "io.elementary.capnet-assist",
-                      "io.elementary.iconbrowser",
-                      "io.elementary.mail",
-                      "io.elementary.music",
-                      "io.elementary.screenshot",
-                      "io.elementary.tasks",
-                      "io.elementary.videos",
-                      "io.github.danirabbit.nimbus",
-                      "io.github.jhaygood86.big-purple-remote",
-                      "io.github.jhaygood86.mauborgne",
-                      "org.gnome.Epiphany.desktop",
-                      "org.gnome.Evince",
-                      "org.gnome.FileRoller",
-                      "org.small_tech.comet"
-                    ]
-                  }
-                }
+                "example": [
+                  "com.github.akiraux.akira",
+                  "com.github.alecaddd.sequeler",
+                  "com.github.alecaddd.taxi",
+                  "com.github.alexkdeveloper.bmi",
+                  "com.github.alexkdeveloper.dfc",
+                  "com.github.alexkdeveloper.guessnumber",
+                  "com.github.alexkdeveloper.pasgen",
+                  "com.github.alexkdeveloper.raddiola",
+                  "com.github.alexkdeveloper.tictactoy",
+                  "com.github.avojak.iridium",
+                  "com.github.avojak.paint-spill",
+                  "com.github.avojak.warble",
+                  "com.github.bcedu.valasimplehttpserver",
+                  "com.github.bernardodsanderson.vido",
+                  "com.github.bluesabre.darkbar",
+                  "com.github.brain_child.moobo",
+                  "com.github.calo001.fondo",
+                  "com.github.calo001.luna",
+                  "com.github.candiedoperation.ordne",
+                  "com.github.cassidyjames.clairvoyant",
+                  "com.github.cassidyjames.dippi",
+                  "com.github.cassidyjames.palette",
+                  "com.github.cassidyjames.principles",
+                  "com.github.childishgiant.mixer",
+                  "com.github.ckruse.ColorMate.desktop",
+                  "com.github.dahenson.agenda",
+                  "com.github.danrabbit.harvey.desktop",
+                  "com.github.danrabbit.lookbook",
+                  "com.github.davidmhewitt.torrential",
+                  "com.github.dbhowell.peeq",
+                  "com.github.dcharles525.crypt",
+                  "com.github.donadigo.appeditor.desktop",
+                  "com.github.donadigo.eddy",
+                  "com.github.dr_styki.screenrec",
+                  "com.github.eksanos.eksanos",
+                  "com.github.elfenware.badger",
+                  "com.github.elfenware.obliviate",
+                  "com.github.fleury08.prettifier",
+                  "com.github.gabutakut.gabutdm",
+                  "com.github.gijsgoudzwaard.image-optimizer",
+                  "com.github.hezral.clips",
+                  "com.github.hezral.inspektor",
+                  "com.github.hezral.keystrokes",
+                  "com.github.hezral.quickword",
+                  "com.github.hezral.stashed",
+                  "com.github.jeremypw.gnonograms",
+                  "com.github.jeysonflores.hasher",
+                  "com.github.jeysonflores.switcher",
+                  "com.github.jmoerman.goforit",
+                  "com.github.lafydev.animage",
+                  "com.github.leggettc18.leopod",
+                  "com.github.linuxhubit.catfacts",
+                  "com.github.linuxhubit.gitscover",
+                  "com.github.linuxhubit.shouldidoit",
+                  "com.github.louis77.tuner",
+                  "com.github.malothebault.trivia",
+                  "com.github.manexim.insomnia",
+                  "com.github.manexim.typewriter",
+                  "com.github.marbetschar.time-limit",
+                  "com.github.matfantinel.moneta",
+                  "com.github.matfantinel.reminduck",
+                  "com.github.matthiasjg.trimirjournal",
+                  "com.github.muriloventuroso.easyssh",
+                  "com.github.oowoosh0.pomodoro",
+                  "com.github.peteruithoven.resizer",
+                  "com.github.phase1geo.annotator",
+                  "com.github.phase1geo.minder",
+                  "com.github.phase1geo.outliner",
+                  "com.github.phase1geo.textshine",
+                  "com.github.philip_scott.notes-up",
+                  "com.github.philip_scott.spice-up",
+                  "com.github.phoneybadger.picker",
+                  "com.github.phoneybadger.trimmer",
+                  "com.github.raibtoffoletto.litteris",
+                  "com.github.rajkumaar23.badgie",
+                  "com.github.rajsolai.response",
+                  "com.github.rajsolai.textsnatcher",
+                  "com.github.rkoesters.xkcd-gtk",
+                  "com.github.ryonakano.atlas",
+                  "com.github.ryonakano.konbucase",
+                  "com.github.ryonakano.louper",
+                  "com.github.ryonakano.pinit",
+                  "com.github.ryonakano.reco",
+                  "com.github.sdv43.whaler",
+                  "com.github.sergius02.qrit",
+                  "com.github.sgpthomas.hourglass",
+                  "com.github.skarva.lockbox",
+                  "com.github.subhadeepjasu.enigma",
+                  "com.github.subhadeepjasu.ensembles",
+                  "com.github.subhadeepjasu.pebbles",
+                  "com.github.suzie97.communique",
+                  "com.github.syfds.soundy",
+                  "com.github.tenderowl.frog",
+                  "com.github.tenderowl.norka",
+                  "com.github.tenderowl.turtle",
+                  "com.github.torikulhabib.niki",
+                  "com.github.treagod.spectator",
+                  "com.github.watsonprojects.easydocs",
+                  "com.github.zelikos.rannum",
+                  "com.github.ztefn.haguichi",
+                  "com.manexim.codecard",
+                  "com.manexim.home",
+                  "hr.from.josipantolis.life",
+                  "hr.from.josipantolis.sage",
+                  "hr.from.josipantolis.starfish",
+                  "io.elementary.calculator",
+                  "io.elementary.calendar",
+                  "io.elementary.camera",
+                  "io.elementary.capnet-assist",
+                  "io.elementary.iconbrowser",
+                  "io.elementary.mail",
+                  "io.elementary.music",
+                  "io.elementary.screenshot",
+                  "io.elementary.tasks",
+                  "io.elementary.videos",
+                  "io.github.danirabbit.nimbus",
+                  "io.github.jhaygood86.big-purple-remote",
+                  "io.github.jhaygood86.mauborgne",
+                  "org.gnome.Epiphany.desktop",
+                  "org.gnome.Evince",
+                  "org.gnome.FileRoller",
+                  "org.small_tech.comet"
+                ]
               }
             }
           }
@@ -181,442 +177,438 @@
                     "$ref": "#/components/schemas/ComponentSummary"
                   }
                 },
-                "examples": {
-                  "example": {
-                    "value": [
+                "example": [
+                  {
+                    "icons": [
                       {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "hr.from.josipantolis.life.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "hr.from.josipantolis.life.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "hr.from.josipantolis.life",
-                        "name": {
-                          "C": "Life"
-                        },
-                        "summary": {
-                          "C": "Conway's Game of Life"
-                        }
+                        "height": 64,
+                        "path": "hr.from.josipantolis.life.png",
+                        "width": 64
                       },
                       {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.eksanos.eksanos.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.eksanos.eksanos.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.eksanos.eksanos",
-                        "name": {
-                          "C": "Eksanos"
-                        },
-                        "summary": {
-                          "C": "A simple TicTacToe app"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.phoneybadger.picker.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.phoneybadger.picker.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.phoneybadger.picker",
-                        "name": {
-                          "C": "Picker"
-                        },
-                        "summary": {
-                          "C": "A simple color picker"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.oowoosh0.pomodoro.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.oowoosh0.pomodoro.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.oowoosh0.pomodoro",
-                        "name": {
-                          "C": "Pomodoro"
-                        },
-                        "summary": {
-                          "C": "A simple timer for the pomodoro time management technique."
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.hezral.clips.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.hezral.clips.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.hezral.clips",
-                        "name": {
-                          "C": "Clips"
-                        },
-                        "summary": {
-                          "C": "Multi format clipboard manager"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.avojak.paint-spill.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.avojak.paint-spill.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.avojak.paint-spill",
-                        "name": {
-                          "C": "Paint Spill"
-                        },
-                        "summary": {
-                          "C": "The color-filling puzzle game"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.sdv43.whaler.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.sdv43.whaler.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.sdv43.whaler",
-                        "name": {
-                          "C": "Whaler"
-                        },
-                        "summary": {
-                          "C": "Docker Container Management",
-                          "fr": "Gestion des conteneurs Docker",
-                          "it": "Gestione dei container Docker",
-                          "ru": "Управление Docker контейнерами"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.phoneybadger.trimmer.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.phoneybadger.trimmer.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.phoneybadger.trimmer",
-                        "name": {
-                          "C": "Trimmer"
-                        },
-                        "summary": {
-                          "C": "Video trimming utility"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.malothebault.trivia.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.malothebault.trivia.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.malothebault.trivia",
-                        "name": {
-                          "C": "Trivia"
-                        },
-                        "summary": {
-                          "C": "A fun quiz game"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.pasgen.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.pasgen.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.pasgen",
-                        "name": {
-                          "C": "Pasgen"
-                        },
-                        "summary": {
-                          "C": "Simple password generator"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.guessnumber.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.guessnumber.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.guessnumber",
-                        "name": {
-                          "C": "Guess the number!"
-                        },
-                        "summary": {
-                          "C": "A simple number guessing game"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.rajsolai.textsnatcher.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.rajsolai.textsnatcher.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.rajsolai.textsnatcher",
-                        "name": {
-                          "C": "TextSnatcher"
-                        },
-                        "summary": {
-                          "C": "Snatch Text with just a Drag"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.avojak.warble.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.avojak.warble.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.avojak.warble",
-                        "name": {
-                          "C": "Warble"
-                        },
-                        "summary": {
-                          "C": "The word-guessing game"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.manexim.codecard.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.manexim.codecard.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.manexim.codecard",
-                        "name": {
-                          "C": "Codecard"
-                        },
-                        "summary": {
-                          "C": "Share snippets of code as a pretty image, e.g. for social media."
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "hr.from.josipantolis.sage.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "hr.from.josipantolis.sage.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "hr.from.josipantolis.sage",
-                        "name": {
-                          "C": "Sage"
-                        },
-                        "summary": {
-                          "C": "Break the code, achieve mastery"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.jeysonflores.switcher.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.jeysonflores.switcher.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.jeysonflores.switcher",
-                        "name": {
-                          "C": "Switcher"
-                        },
-                        "summary": {
-                          "C": "Change your wallpaper according to you desktop mode!"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.bmi.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.bmi.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.bmi",
-                        "name": {
-                          "C": "BMI",
-                          "fr": "IMC"
-                        },
-                        "summary": {
-                          "C": "Simple BMI Calculator",
-                          "fr": "Un simple calculateur d'IMC",
-                          "nl": "Een eenvoudige BMI-berekenhulpmiddel"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "org.small_tech.comet.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "org.small_tech.comet.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "org.small_tech.comet",
-                        "name": {
-                          "C": "Comet"
-                        },
-                        "summary": {
-                          "C": "Write better Git commit messages",
-                          "nl": "Schrijf betere Git commit berichten",
-                          "tr": "Daha iyi Git işleme mesajları yaz."
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.tictactoy.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.tictactoy.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.tictactoy",
-                        "name": {
-                          "C": "TicTacToy"
-                        },
-                        "summary": {
-                          "C": "Simple TIC-TAC-toe game",
-                          "nl": "Eenvoudig boter-kaas-en-eierenspel",
-                          "ru": "Простая игра в крестики-нолики"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.gabutakut.gabutdm.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.gabutakut.gabutdm.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.gabutakut.gabutdm",
-                        "name": {
-                          "C": "Gabut Download Manager"
-                        },
-                        "summary": {
-                          "C": "Simple and Faster Download Manager"
-                        }
+                        "height": 128,
+                        "path": "hr.from.josipantolis.life.png",
+                        "width": 128
                       }
-                    ]
+                    ],
+                    "id": "hr.from.josipantolis.life",
+                    "name": {
+                      "C": "Life"
+                    },
+                    "summary": {
+                      "C": "Conway's Game of Life"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.eksanos.eksanos.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.eksanos.eksanos.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.eksanos.eksanos",
+                    "name": {
+                      "C": "Eksanos"
+                    },
+                    "summary": {
+                      "C": "A simple TicTacToe app"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.phoneybadger.picker.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.phoneybadger.picker.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.phoneybadger.picker",
+                    "name": {
+                      "C": "Picker"
+                    },
+                    "summary": {
+                      "C": "A simple color picker"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.oowoosh0.pomodoro.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.oowoosh0.pomodoro.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.oowoosh0.pomodoro",
+                    "name": {
+                      "C": "Pomodoro"
+                    },
+                    "summary": {
+                      "C": "A simple timer for the pomodoro time management technique."
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.hezral.clips.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.hezral.clips.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.hezral.clips",
+                    "name": {
+                      "C": "Clips"
+                    },
+                    "summary": {
+                      "C": "Multi format clipboard manager"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.avojak.paint-spill.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.avojak.paint-spill.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.avojak.paint-spill",
+                    "name": {
+                      "C": "Paint Spill"
+                    },
+                    "summary": {
+                      "C": "The color-filling puzzle game"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.sdv43.whaler.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.sdv43.whaler.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.sdv43.whaler",
+                    "name": {
+                      "C": "Whaler"
+                    },
+                    "summary": {
+                      "C": "Docker Container Management",
+                      "fr": "Gestion des conteneurs Docker",
+                      "it": "Gestione dei container Docker",
+                      "ru": "Управление Docker контейнерами"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.phoneybadger.trimmer.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.phoneybadger.trimmer.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.phoneybadger.trimmer",
+                    "name": {
+                      "C": "Trimmer"
+                    },
+                    "summary": {
+                      "C": "Video trimming utility"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.malothebault.trivia.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.malothebault.trivia.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.malothebault.trivia",
+                    "name": {
+                      "C": "Trivia"
+                    },
+                    "summary": {
+                      "C": "A fun quiz game"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.pasgen.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.pasgen.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.pasgen",
+                    "name": {
+                      "C": "Pasgen"
+                    },
+                    "summary": {
+                      "C": "Simple password generator"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.guessnumber.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.guessnumber.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.guessnumber",
+                    "name": {
+                      "C": "Guess the number!"
+                    },
+                    "summary": {
+                      "C": "A simple number guessing game"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.rajsolai.textsnatcher.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.rajsolai.textsnatcher.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.rajsolai.textsnatcher",
+                    "name": {
+                      "C": "TextSnatcher"
+                    },
+                    "summary": {
+                      "C": "Snatch Text with just a Drag"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.avojak.warble.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.avojak.warble.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.avojak.warble",
+                    "name": {
+                      "C": "Warble"
+                    },
+                    "summary": {
+                      "C": "The word-guessing game"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.manexim.codecard.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.manexim.codecard.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.manexim.codecard",
+                    "name": {
+                      "C": "Codecard"
+                    },
+                    "summary": {
+                      "C": "Share snippets of code as a pretty image, e.g. for social media."
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "hr.from.josipantolis.sage.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "hr.from.josipantolis.sage.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "hr.from.josipantolis.sage",
+                    "name": {
+                      "C": "Sage"
+                    },
+                    "summary": {
+                      "C": "Break the code, achieve mastery"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.jeysonflores.switcher.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.jeysonflores.switcher.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.jeysonflores.switcher",
+                    "name": {
+                      "C": "Switcher"
+                    },
+                    "summary": {
+                      "C": "Change your wallpaper according to you desktop mode!"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.bmi.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.bmi.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.bmi",
+                    "name": {
+                      "C": "BMI",
+                      "fr": "IMC"
+                    },
+                    "summary": {
+                      "C": "Simple BMI Calculator",
+                      "fr": "Un simple calculateur d'IMC",
+                      "nl": "Een eenvoudige BMI-berekenhulpmiddel"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "org.small_tech.comet.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "org.small_tech.comet.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "org.small_tech.comet",
+                    "name": {
+                      "C": "Comet"
+                    },
+                    "summary": {
+                      "C": "Write better Git commit messages",
+                      "nl": "Schrijf betere Git commit berichten",
+                      "tr": "Daha iyi Git işleme mesajları yaz."
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.tictactoy.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.tictactoy.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.tictactoy",
+                    "name": {
+                      "C": "TicTacToy"
+                    },
+                    "summary": {
+                      "C": "Simple TIC-TAC-toe game",
+                      "nl": "Eenvoudig boter-kaas-en-eierenspel",
+                      "ru": "Простая игра в крестики-нолики"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.gabutakut.gabutdm.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.gabutakut.gabutdm.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.gabutakut.gabutdm",
+                    "name": {
+                      "C": "Gabut Download Manager"
+                    },
+                    "summary": {
+                      "C": "Simple and Faster Download Manager"
+                    }
                   }
-                }
+                ]
               }
             }
           }
@@ -640,714 +632,710 @@
                     "$ref": "#/components/schemas/ComponentSummary"
                   }
                 },
-                "examples": {
-                  "example": {
-                    "value": [
+                "example": [
+                  {
+                    "icons": [
                       {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "io.github.danirabbit.nimbus.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "io.github.danirabbit.nimbus.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "io.github.danirabbit.nimbus",
-                        "name": {
-                          "C": "Nimbus"
-                        },
-                        "summary": {
-                          "C": "See outside without going there",
-                          "da": "Se udenfor uden at gå derud",
-                          "fr": "Voir à l'extérieur sans y aller",
-                          "ja": "外に出ずに天気を確認しましょう",
-                          "pt": "Veja o que está la fora sem se deslocar"
-                        }
+                        "height": 64,
+                        "path": "io.github.danirabbit.nimbus.png",
+                        "width": 64
                       },
                       {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.phase1geo.minder.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.phase1geo.minder.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.phase1geo.minder",
-                        "name": {
-                          "C": "Minder"
-                        },
-                        "summary": {
-                          "C": "Create, develop and visualize your ideas",
-                          "fr": "Créez, développez et visualisez vos idées",
-                          "pt": "Crie, desenvolva e visualize as suas ideias",
-                          "ru": "Создавайте, развивайте и визуализуйте идеи"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.davidmhewitt.torrential.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.davidmhewitt.torrential.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.davidmhewitt.torrential",
-                        "name": {
-                          "C": "Torrential"
-                        },
-                        "summary": {
-                          "C": "Download torrents in style"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.ryonakano.atlas.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.ryonakano.atlas.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.ryonakano.atlas",
-                        "name": {
-                          "C": "Atlas",
-                          "it": "Atals"
-                        },
-                        "summary": {
-                          "C": "View where to go",
-                          "fr": "Visualisez où vous souhaitez vous rendre",
-                          "it": "Visualizza dove vuoi andare",
-                          "ja": "行きたい場所を見ましょう",
-                          "lt": "Nustatykime kelionės tikslą",
-                          "nl": "Bekijk waar je heen moet",
-                          "pl": "Wyświetl, dokąd iść",
-                          "pt": "Veja para onde ir",
-                          "ru": "Смотрите куда идти",
-                          "sk": "Zobrazte si, kam chcete ísť",
-                          "tr": "Nereye gideceğinizi görün",
-                          "uk": "Переглядайте, куди йти"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.ryonakano.reco.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.ryonakano.reco.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.ryonakano.reco",
-                        "name": {
-                          "C": "Reco"
-                        },
-                        "summary": {
-                          "C": "Record talks to remember the contents later",
-                          "es": "Grabe charlas para recordar el contenido después",
-                          "fr": "Enregistrez des discussions pour vous en rappeler le contenu plus tard",
-                          "it": "Registra i discorsi per ricordare i contenuti in seguito",
-                          "ja": "後で内容を思い出せるように会話を録音します",
-                          "lt": "Įrašinėti pokalbius, siekiant vėliau prisiminti jų turinį",
-                          "nl": "Neem gesprekken op om ze later terug te luisteren",
-                          "pl": "Nagrywaj mowę, żeby pamiętać treści później",
-                          "pt": "Gravar conversas para recordar o conteúdo mais tarde",
-                          "pt_BR": "Gravar conversas para recordar o conteúdo mais tarde",
-                          "ru": "Записывайте разговоры, чтобы помнить информацию позднее",
-                          "sk": "Nahrajte si rozhovory, aby ste si neskôr spomenuli na ich obsah",
-                          "tr": "İçeriğini daha sonra hatırlamak için konuşmaları kaydedin",
-                          "uk": "Записуйте розмови, щоб запам’ятати їхній зміст на майбутнє"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.ryonakano.louper.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.ryonakano.louper.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.ryonakano.louper",
-                        "name": {
-                          "C": "Louper",
-                          "nl": "Vergrootglas"
-                        },
-                        "summary": {
-                          "C": "Magnify the selected text",
-                          "fr": "Agrandissez le texte sélectionné",
-                          "it": "Ingrandisci il testo selezionato",
-                          "ja": "選択したテキストを拡大します",
-                          "nl": "Vergroot geselecteerde tekst",
-                          "pt": "Amplia o texto selecionado",
-                          "ru": "Увеличивает выделенный текст",
-                          "sk": "Zväčšite vybraný text",
-                          "tr": "Seçili metni büyüt",
-                          "uk": "Збільшення вибраного тексту"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.ryonakano.konbucase.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.ryonakano.konbucase.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.ryonakano.konbucase",
-                        "name": {
-                          "C": "KonbuCase",
-                          "lt": "KonveCase"
-                        },
-                        "summary": {
-                          "C": "Convert case in your text",
-                          "fr": "Modifiez la casse de votre texte",
-                          "it": "Converti le maiuscole nel tuo testo",
-                          "ja": "テキストの記法を変換します",
-                          "lt": "Keisti atvejį tekste",
-                          "nb_NO": "Konverter mellom små og store bokstaver",
-                          "nl": "Zet tekst met verschillende lettergroottes om naar normale tekst",
-                          "pt": "Converta palavras em caixa alta ou baixa",
-                          "ru": "Конвертируйте регистр вашего текста",
-                          "sk": "Upravte veľkosti jednotlivých písmen v texte",
-                          "tr": "Metinlerdeki büyük küçük harfleri düzenleyin",
-                          "uk": "Перетворення регістру вашого тексту"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.rkoesters.xkcd-gtk.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.rkoesters.xkcd-gtk.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.rkoesters.xkcd-gtk",
-                        "name": {
-                          "C": "Comic Sticks"
-                        },
-                        "summary": {
-                          "C": "Read xkcd: a webcomic of romance, sarcasm, math, and language",
-                          "fr": "Lisez xkcd : une bande dessinée de romance, de sarcasme, de maths et de langue en ligne",
-                          "it": "Leggi xkcd: un webcomic di romanticismo, sarcasmo, matematica e lingua",
-                          "nl": "Lees xkcd: een online-strip over romantiek, sarcasme, wiskunde en taal",
-                          "pt": "Ler xkcd: um romance de banda desenhada da internet, sarcasmo, matemática e linguagem",
-                          "tr": "xkcd'yi okuyun: aşk, iğneleme, matematik ve dil ile ilgi bir web çizgi romanı"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.pasgen.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.pasgen.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.pasgen",
-                        "name": {
-                          "C": "Pasgen"
-                        },
-                        "summary": {
-                          "C": "Simple password generator"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "io.github.jhaygood86.mauborgne.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "io.github.jhaygood86.mauborgne.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "io.github.jhaygood86.mauborgne",
-                        "name": {
-                          "C": "Maurborgne"
-                        },
-                        "summary": {
-                          "C": "2FA OTP Code Generator",
-                          "fr": "Générateur de code A2F à usage unique",
-                          "it": "Generatore di codice OTP 2FA",
-                          "ja": "二段階認証用のワンタイムパスワードコードの生成アプリ",
-                          "nb_NO": "Tofaktor-éngangspassord-kodegenerator",
-                          "pt": "Gerador de código OTP 2FA",
-                          "pt_BR": "Gerador de código OTP 2FA",
-                          "ru": "Генератор кодов двухфакторной аутентификации"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.ztefn.haguichi.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.ztefn.haguichi.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.ztefn.haguichi",
-                        "name": {
-                          "C": "Haguichi"
-                        },
-                        "summary": {
-                          "C": "A graphical frontend for Hamachi",
-                          "ast": "Un frontal gráficu p'Hamachi",
-                          "bg": "Графичен интерфейс за Hamachi",
-                          "cs": "Grafické rozhraní pro Hamachi",
-                          "de": "Eine grafische Oberfläche für Hamachi",
-                          "es": "Una interfaz gráfica para Hamachi",
-                          "fr": "Une interface graphique pour Hamachi",
-                          "id": "Tampilan grafis bagi Hamachi",
-                          "it": "Un frontend grafico per Hamachi",
-                          "ja": "Hamachi 用のグラフィカルフロントエンド",
-                          "kk": "Hamachi бағдарламасы үшін графикалық қабықша",
-                          "lt": "Hamachi grafinė naudotojo sąsaja",
-                          "nl": "Een grafische schil voor Hamachi",
-                          "pl": "Graficzny interfejs dla Hamachi",
-                          "pt": "Uma interface gráfica para o Hamachi",
-                          "pt_BR": "Uma interface gráfica para o Hamachi",
-                          "ru": "Графическая оболочка к Hamachi",
-                          "sk": "Grafické rozhranie pre Hamachi",
-                          "sv": "Ett grafiskt gränssnitt för Hamachi",
-                          "tr": "Hamachi için görsel arayüz",
-                          "uk": "Графічна оболонка Hamachi"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.sgpthomas.hourglass.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.sgpthomas.hourglass.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.sgpthomas.hourglass",
-                        "name": {
-                          "C": "Hourglass"
-                        },
-                        "summary": {
-                          "C": "Set alarms, timers, and stopwatches",
-                          "fr": "Définissez des alames, des minuteurs et des chronomètres",
-                          "ja": "アラームやタイマー、ストップウォッチを使用します",
-                          "pt": "Defina alarmes, temporizadores e cronômetros",
-                          "ru": "Ставьте будильники, таймеры и секундомеры"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.childishgiant.mixer.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.childishgiant.mixer.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.childishgiant.mixer",
-                        "name": {
-                          "C": "Mixer",
-                          "fr": "Mixeur",
-                          "tr": "Karıştırıcı"
-                        },
-                        "summary": {
-                          "C": "Change the volume of apps",
-                          "fr": "Modifier le volume des applications",
-                          "tr": "Uygulamaların sesini değiştir"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.raddiola.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.raddiola.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.raddiola",
-                        "name": {
-                          "C": "Raddiola"
-                        },
-                        "summary": {
-                          "C": "The simplest radio that can be",
-                          "fr": "La radio la plus simple qu'il soit",
-                          "nl": "De eenvoudigst denkbare radiotoepassing"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.guessnumber.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.guessnumber.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.guessnumber",
-                        "name": {
-                          "C": "Guess the number!"
-                        },
-                        "summary": {
-                          "C": "A simple number guessing game"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.tictactoy.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.tictactoy.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.tictactoy",
-                        "name": {
-                          "C": "TicTacToy"
-                        },
-                        "summary": {
-                          "C": "Simple TIC-TAC-toe game",
-                          "nl": "Eenvoudig boter-kaas-en-eierenspel",
-                          "ru": "Простая игра в крестики-нолики"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "io.elementary.capnet-assist.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "io.elementary.capnet-assist.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "io.elementary.capnet-assist",
-                        "name": {
-                          "C": "Captive Network Assistant",
-                          "ar": "مساعد بوابة الدخول الإلكترونية",
-                          "bs": "Pomoćnik za mrežu putem captive portala",
-                          "ca": "Assistent de xarxa captiva",
-                          "ckb": "یاریدەدەری تۆڕی کۆنتڕۆڵکراو",
-                          "cs": "Pomocník pro uzavřené síťové portály (captive portal)",
-                          "da": "Captive Netværksassistent",
-                          "de": "Assistent für Netzwerke mit Vorschaltseite",
-                          "eo": "Asistanto pri konekta portalo",
-                          "es": "Asistente de portal cautivo",
-                          "fi": "Verkon kirjautumisportaalin avustin",
-                          "fr": "Assistant au réseau captif",
-                          "gl": "Asistente de portal cativo",
-                          "he": "מסייע שובה רשת",
-                          "hu": "Rögzített portál asszisztens",
-                          "it": "Assistente Captive Network",
-                          "ja": "キャプティブネットワークアシスタント",
-                          "ko": "캡티브 네트워크 어시스턴트",
-                          "lt": "Belaisvio tinklo pagelbiklis",
-                          "mr": "कॅप्टिव्ह नेटवर्क सहाय्यक",
-                          "nb": "Assistent for fangstnettverk",
-                          "nl": "Besloten netwerk assistent",
-                          "nn": "Assistent for nettverkfangstportalar",
-                          "oc": "Assistent de ret captiu",
-                          "pa": "ਕੈਪਟਿਵ ਨੈੱਟਵਰਕ ਅਸਿਸਟੈਂਟ",
-                          "pl": "Asystent uwierzytelniania sieciowego",
-                          "pt": "Assistente de rede cativa",
-                          "pt_BR": "Assistente de Rede Captive",
-                          "ro": "Asistent pentru rețea captivă",
-                          "ru": "Помощник авторизации в сети",
-                          "sk": "Asistent prihlasovania do sietí",
-                          "sl": "Pomočnik za prestrezna omrežja",
-                          "sr": "Помоћник затворене мреже",
-                          "sv": "Captive nätverksassistent",
-                          "tr": "Giriş Portalı Yardımcısı",
-                          "uk": "Помічник автентифікації у мережі",
-                          "vi": "Trợ lý mạng lưu động",
-                          "zh": "强制网页助理",
-                          "zh_CN": "专属网络助理"
-                        },
-                        "summary": {
-                          "C": "Connect to captive network portals",
-                          "ar": "اتصل ببوابات الدخول الإلكترونية",
-                          "bs": "Spojite se na mrežu putem portala",
-                          "ca": "Connecta a portals de xarxa captius",
-                          "ckb": "پەیوەست بوون بە دەروازە تۆڕییە کۆنتڕۆڵکراوەکان",
-                          "cs": "Připojte se k uzavřeným síťovým portálům",
-                          "da": "Opret forbindelse til captive netværksportaler",
-                          "de": "Verbindung zu einem Netzwerk mit Vorschaltseite herstellen",
-                          "eo": "Konektanta retajn konektajn portalojn",
-                          "es": "Conéctese a un portal cautivo de red",
-                          "fi": "Yhdistä kirjautumisportaaliverkkoihin",
-                          "fr": "Se connecter aux portails captifs",
-                          "gl": "Conectarse a un portal cativo de rede",
-                          "he": "התחברות לשערי גישה של שובי רשת",
-                          "hu": "Kapcsolódás a rögzített portálokon keresztül",
-                          "it": "Collegarsi a captive portal di rete",
-                          "ja": "キャプティブネットワークポータルに接続します",
-                          "ko": "캡티브 네트워크 포털에 연결",
-                          "lt": "Prisijungti prie belaisvio tinklo portalų",
-                          "mr": "कॅप्टिव्ह पोर्टलला जोडा",
-                          "nb": "Koble til nettverkfangstportaler",
-                          "nl": "Maak verbinding met een besloten netwerk via een portaal",
-                          "nn": "Kople til nettverkfangstportalar",
-                          "oc": "Se connectar als portals de ret captius",
-                          "pl": "Połącz z uwierzytelnianymi portalami sieciowymi",
-                          "pt": "Ligar a portais de rede cativos",
-                          "pt_BR": "Conecte-se a portais de rede captive",
-                          "ru": "Подключение к сервису авторизации в публичной сети",
-                          "sk": "Pripojte sa k uzatvoreným sieťovým portálom",
-                          "sl": "Povežite se na omrežje prestreznih portalov",
-                          "sr": "Повежите се на портале затворене мреже",
-                          "sv": "Anslut till captive nätverkportaler",
-                          "tr": "Giriş portallarına bağlan",
-                          "uk": "Під'єднайтеся до автентифікованих мережних порталів",
-                          "vi": "Kết nối với các cổng mạng lưu động",
-                          "zh": "连接至网页助理",
-                          "zh_CN": "连接到网络认证界面"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "io.elementary.calculator.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "io.elementary.calculator.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "io.elementary.calculator",
-                        "name": {
-                          "C": "Calculator",
-                          "ar": "الحاسبة",
-                          "bg": "Калкулатор",
-                          "bn": "ক্যালকুলেটর",
-                          "bs": "Kalkulator",
-                          "ca": "Calculadora",
-                          "ckb": "بژمێر",
-                          "cs": "Kalkulačka",
-                          "da": "Lommeregner",
-                          "de": "Rechner",
-                          "el": "Αριθμομηχανή",
-                          "eo": "Kalkulilo",
-                          "es": "Calculadora",
-                          "et": "Kalkulaator",
-                          "fi": "Laskin",
-                          "fr": "Calculatrice",
-                          "gl": "Calculadora",
-                          "he": "מחשבון",
-                          "hi": "गणक",
-                          "hr": "Kalkulator",
-                          "hu": "Számológép",
-                          "id": "Kalkulator",
-                          "it": "Calcolatrice",
-                          "ja": "電卓",
-                          "ko": "계산기",
-                          "ku": "Makîneya Hesaban",
-                          "lt": "Skaičiuotuvas",
-                          "mr": "कॅल्कुलेटर",
-                          "ms": "Kalkulator",
-                          "my": "ဂဏန်းတွက်စက်",
-                          "nb": "Kalkulator",
-                          "nl": "Rekenmachine",
-                          "nn": "Kalkulator",
-                          "pa": "ਕੈਲਕੂਲੇਟਰ",
-                          "pl": "Kalkulator",
-                          "pt": "Calculadora",
-                          "pt_BR": "Calculadora",
-                          "ru": "Калькулятор",
-                          "sa": "गणकयंत्र",
-                          "si": "ගණකය",
-                          "sk": "Kalkulačka",
-                          "sl": "Računalo",
-                          "sq": "Llogaritëse",
-                          "sr": "Дигитрон",
-                          "sv": "Kalkylator",
-                          "szl": "Kalkulatōr",
-                          "tl": "Talatuusan",
-                          "tr": "Hesap Makinesi",
-                          "ug": "ھېسابلىغۇچ",
-                          "uk": "Калькулятор",
-                          "uz": "Kalkulyator",
-                          "vi": "Máy tính",
-                          "zh": "计算器",
-                          "zh_CN": "计算器",
-                          "zh_TW": "計算機"
-                        },
-                        "summary": {
-                          "C": "Solve simple equations",
-                          "ar": "حل معادلات بسيطة",
-                          "bg": "Решаване на прости уравнения",
-                          "bn": "সাধারণ সমীকরণ সমাধান করুন",
-                          "bs": "Riješi jednostavne jednačine",
-                          "ca": "Resoleu equacions simples",
-                          "ckb": "شیکاکردنی هاوکێشە سادەکان",
-                          "cs": "Řešte jednoduché výpočty",
-                          "da": "Løs enkle ligninger",
-                          "de": "Einfache Gleichungen lösen",
-                          "eo": "Solvi simplajn ekvaciojn",
-                          "es": "Resuelva ecuaciones simples",
-                          "et": "lahenda lihtne võrrand",
-                          "fi": "Ratkaise laskutoimituksia",
-                          "fr": "Résoudre de simples équations",
-                          "gl": "Resolva ecuacións simples",
-                          "he": "פתרון משוואות פשוטות",
-                          "hi": "साधारण समीकरण को हल करें",
-                          "hr": "Riješite jednostavne jednadžbe",
-                          "hu": "Egyszerű műveletek megoldása",
-                          "id": "Selesaikan persamaan sederhana",
-                          "it": "Risolvi semplici equazioni",
-                          "ja": "簡単な式を計算します",
-                          "ko": "간단한 방정식 풀이",
-                          "ku": "naşî hevsengî çareserkirin",
-                          "lt": "Spręsti paprastas lygtis",
-                          "mr": "साधारण समीकरणे सोडवा",
-                          "my": "ရိုးရိုးညီမျှခြင်းတွေကို ဖြေရှင်းမယ်",
-                          "nb": "Løs enkle ligninger",
-                          "nl": "Los simpele vergelijkingen op",
-                          "nn": "Løys enkle likningar",
-                          "pa": "ਸਾਦੇ ਸਮੀਕਰਨ ਹੱਲ ਕਰੋ",
-                          "pl": "Rozwiązuj proste równania",
-                          "pt": "Resolva equações simples",
-                          "pt_BR": "Resolva equações simples",
-                          "ro": "Rezolvă ecuații simple",
-                          "ru": "Решайте простые уравнения",
-                          "sk": "Riešte jednoduché výpočty",
-                          "sl": "Preprost kalkulator",
-                          "sq": "Zgjidh ekuacione të thjeshta",
-                          "sr": "Решите једноставне једначине",
-                          "sv": "Lös enkla ekvationer",
-                          "szl": "Rozwiōnzuj proste rōwnania",
-                          "tl": "Maglutas ng mga simpleng ekwasyon",
-                          "tr": "Basit denklemleri çöz",
-                          "ug": "ئاددىي ئىپادىلەرنى ھىسابلاش",
-                          "uk": "Розв'язуйте прості рівняння",
-                          "uz": "Oddiy tenglamalarni yechish",
-                          "vi": "Giải các phương trình đơn giản",
-                          "zh_CN": "解决简单的公式计算",
-                          "zh_TW": "解決簡單運算"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.bmi.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.bmi.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.bmi",
-                        "name": {
-                          "C": "BMI",
-                          "fr": "IMC"
-                        },
-                        "summary": {
-                          "C": "Simple BMI Calculator",
-                          "fr": "Un simple calculateur d'IMC",
-                          "nl": "Een eenvoudige BMI-berekenhulpmiddel"
-                        }
-                      },
-                      {
-                        "icons": [
-                          {
-                            "height": 64,
-                            "path": "com.github.alexkdeveloper.dfc.png",
-                            "width": 64
-                          },
-                          {
-                            "height": 128,
-                            "path": "com.github.alexkdeveloper.dfc.png",
-                            "width": 128
-                          }
-                        ],
-                        "id": "com.github.alexkdeveloper.dfc",
-                        "name": {
-                          "C": "Desktopius"
-                        },
-                        "summary": {
-                          "C": "Simple app for create a desktop files",
-                          "fr": "Une simple application pour créer des fichiers desktop",
-                          "nl": "Een eenvoudige toepassing voor het maken van .desktop-bestanden",
-                          "ru": "Простое приложение для создания desktop файлов"
-                        }
+                        "height": 128,
+                        "path": "io.github.danirabbit.nimbus.png",
+                        "width": 128
                       }
-                    ]
+                    ],
+                    "id": "io.github.danirabbit.nimbus",
+                    "name": {
+                      "C": "Nimbus"
+                    },
+                    "summary": {
+                      "C": "See outside without going there",
+                      "da": "Se udenfor uden at gå derud",
+                      "fr": "Voir à l'extérieur sans y aller",
+                      "ja": "外に出ずに天気を確認しましょう",
+                      "pt": "Veja o que está la fora sem se deslocar"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.phase1geo.minder.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.phase1geo.minder.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.phase1geo.minder",
+                    "name": {
+                      "C": "Minder"
+                    },
+                    "summary": {
+                      "C": "Create, develop and visualize your ideas",
+                      "fr": "Créez, développez et visualisez vos idées",
+                      "pt": "Crie, desenvolva e visualize as suas ideias",
+                      "ru": "Создавайте, развивайте и визуализуйте идеи"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.davidmhewitt.torrential.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.davidmhewitt.torrential.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.davidmhewitt.torrential",
+                    "name": {
+                      "C": "Torrential"
+                    },
+                    "summary": {
+                      "C": "Download torrents in style"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.ryonakano.atlas.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.ryonakano.atlas.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.ryonakano.atlas",
+                    "name": {
+                      "C": "Atlas",
+                      "it": "Atals"
+                    },
+                    "summary": {
+                      "C": "View where to go",
+                      "fr": "Visualisez où vous souhaitez vous rendre",
+                      "it": "Visualizza dove vuoi andare",
+                      "ja": "行きたい場所を見ましょう",
+                      "lt": "Nustatykime kelionės tikslą",
+                      "nl": "Bekijk waar je heen moet",
+                      "pl": "Wyświetl, dokąd iść",
+                      "pt": "Veja para onde ir",
+                      "ru": "Смотрите куда идти",
+                      "sk": "Zobrazte si, kam chcete ísť",
+                      "tr": "Nereye gideceğinizi görün",
+                      "uk": "Переглядайте, куди йти"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.ryonakano.reco.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.ryonakano.reco.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.ryonakano.reco",
+                    "name": {
+                      "C": "Reco"
+                    },
+                    "summary": {
+                      "C": "Record talks to remember the contents later",
+                      "es": "Grabe charlas para recordar el contenido después",
+                      "fr": "Enregistrez des discussions pour vous en rappeler le contenu plus tard",
+                      "it": "Registra i discorsi per ricordare i contenuti in seguito",
+                      "ja": "後で内容を思い出せるように会話を録音します",
+                      "lt": "Įrašinėti pokalbius, siekiant vėliau prisiminti jų turinį",
+                      "nl": "Neem gesprekken op om ze later terug te luisteren",
+                      "pl": "Nagrywaj mowę, żeby pamiętać treści później",
+                      "pt": "Gravar conversas para recordar o conteúdo mais tarde",
+                      "pt_BR": "Gravar conversas para recordar o conteúdo mais tarde",
+                      "ru": "Записывайте разговоры, чтобы помнить информацию позднее",
+                      "sk": "Nahrajte si rozhovory, aby ste si neskôr spomenuli na ich obsah",
+                      "tr": "İçeriğini daha sonra hatırlamak için konuşmaları kaydedin",
+                      "uk": "Записуйте розмови, щоб запам’ятати їхній зміст на майбутнє"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.ryonakano.louper.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.ryonakano.louper.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.ryonakano.louper",
+                    "name": {
+                      "C": "Louper",
+                      "nl": "Vergrootglas"
+                    },
+                    "summary": {
+                      "C": "Magnify the selected text",
+                      "fr": "Agrandissez le texte sélectionné",
+                      "it": "Ingrandisci il testo selezionato",
+                      "ja": "選択したテキストを拡大します",
+                      "nl": "Vergroot geselecteerde tekst",
+                      "pt": "Amplia o texto selecionado",
+                      "ru": "Увеличивает выделенный текст",
+                      "sk": "Zväčšite vybraný text",
+                      "tr": "Seçili metni büyüt",
+                      "uk": "Збільшення вибраного тексту"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.ryonakano.konbucase.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.ryonakano.konbucase.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.ryonakano.konbucase",
+                    "name": {
+                      "C": "KonbuCase",
+                      "lt": "KonveCase"
+                    },
+                    "summary": {
+                      "C": "Convert case in your text",
+                      "fr": "Modifiez la casse de votre texte",
+                      "it": "Converti le maiuscole nel tuo testo",
+                      "ja": "テキストの記法を変換します",
+                      "lt": "Keisti atvejį tekste",
+                      "nb_NO": "Konverter mellom små og store bokstaver",
+                      "nl": "Zet tekst met verschillende lettergroottes om naar normale tekst",
+                      "pt": "Converta palavras em caixa alta ou baixa",
+                      "ru": "Конвертируйте регистр вашего текста",
+                      "sk": "Upravte veľkosti jednotlivých písmen v texte",
+                      "tr": "Metinlerdeki büyük küçük harfleri düzenleyin",
+                      "uk": "Перетворення регістру вашого тексту"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.rkoesters.xkcd-gtk.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.rkoesters.xkcd-gtk.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.rkoesters.xkcd-gtk",
+                    "name": {
+                      "C": "Comic Sticks"
+                    },
+                    "summary": {
+                      "C": "Read xkcd: a webcomic of romance, sarcasm, math, and language",
+                      "fr": "Lisez xkcd : une bande dessinée de romance, de sarcasme, de maths et de langue en ligne",
+                      "it": "Leggi xkcd: un webcomic di romanticismo, sarcasmo, matematica e lingua",
+                      "nl": "Lees xkcd: een online-strip over romantiek, sarcasme, wiskunde en taal",
+                      "pt": "Ler xkcd: um romance de banda desenhada da internet, sarcasmo, matemática e linguagem",
+                      "tr": "xkcd'yi okuyun: aşk, iğneleme, matematik ve dil ile ilgi bir web çizgi romanı"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.pasgen.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.pasgen.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.pasgen",
+                    "name": {
+                      "C": "Pasgen"
+                    },
+                    "summary": {
+                      "C": "Simple password generator"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "io.github.jhaygood86.mauborgne.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "io.github.jhaygood86.mauborgne.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "io.github.jhaygood86.mauborgne",
+                    "name": {
+                      "C": "Maurborgne"
+                    },
+                    "summary": {
+                      "C": "2FA OTP Code Generator",
+                      "fr": "Générateur de code A2F à usage unique",
+                      "it": "Generatore di codice OTP 2FA",
+                      "ja": "二段階認証用のワンタイムパスワードコードの生成アプリ",
+                      "nb_NO": "Tofaktor-éngangspassord-kodegenerator",
+                      "pt": "Gerador de código OTP 2FA",
+                      "pt_BR": "Gerador de código OTP 2FA",
+                      "ru": "Генератор кодов двухфакторной аутентификации"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.ztefn.haguichi.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.ztefn.haguichi.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.ztefn.haguichi",
+                    "name": {
+                      "C": "Haguichi"
+                    },
+                    "summary": {
+                      "C": "A graphical frontend for Hamachi",
+                      "ast": "Un frontal gráficu p'Hamachi",
+                      "bg": "Графичен интерфейс за Hamachi",
+                      "cs": "Grafické rozhraní pro Hamachi",
+                      "de": "Eine grafische Oberfläche für Hamachi",
+                      "es": "Una interfaz gráfica para Hamachi",
+                      "fr": "Une interface graphique pour Hamachi",
+                      "id": "Tampilan grafis bagi Hamachi",
+                      "it": "Un frontend grafico per Hamachi",
+                      "ja": "Hamachi 用のグラフィカルフロントエンド",
+                      "kk": "Hamachi бағдарламасы үшін графикалық қабықша",
+                      "lt": "Hamachi grafinė naudotojo sąsaja",
+                      "nl": "Een grafische schil voor Hamachi",
+                      "pl": "Graficzny interfejs dla Hamachi",
+                      "pt": "Uma interface gráfica para o Hamachi",
+                      "pt_BR": "Uma interface gráfica para o Hamachi",
+                      "ru": "Графическая оболочка к Hamachi",
+                      "sk": "Grafické rozhranie pre Hamachi",
+                      "sv": "Ett grafiskt gränssnitt för Hamachi",
+                      "tr": "Hamachi için görsel arayüz",
+                      "uk": "Графічна оболонка Hamachi"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.sgpthomas.hourglass.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.sgpthomas.hourglass.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.sgpthomas.hourglass",
+                    "name": {
+                      "C": "Hourglass"
+                    },
+                    "summary": {
+                      "C": "Set alarms, timers, and stopwatches",
+                      "fr": "Définissez des alames, des minuteurs et des chronomètres",
+                      "ja": "アラームやタイマー、ストップウォッチを使用します",
+                      "pt": "Defina alarmes, temporizadores e cronômetros",
+                      "ru": "Ставьте будильники, таймеры и секундомеры"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.childishgiant.mixer.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.childishgiant.mixer.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.childishgiant.mixer",
+                    "name": {
+                      "C": "Mixer",
+                      "fr": "Mixeur",
+                      "tr": "Karıştırıcı"
+                    },
+                    "summary": {
+                      "C": "Change the volume of apps",
+                      "fr": "Modifier le volume des applications",
+                      "tr": "Uygulamaların sesini değiştir"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.raddiola.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.raddiola.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.raddiola",
+                    "name": {
+                      "C": "Raddiola"
+                    },
+                    "summary": {
+                      "C": "The simplest radio that can be",
+                      "fr": "La radio la plus simple qu'il soit",
+                      "nl": "De eenvoudigst denkbare radiotoepassing"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.guessnumber.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.guessnumber.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.guessnumber",
+                    "name": {
+                      "C": "Guess the number!"
+                    },
+                    "summary": {
+                      "C": "A simple number guessing game"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.tictactoy.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.tictactoy.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.tictactoy",
+                    "name": {
+                      "C": "TicTacToy"
+                    },
+                    "summary": {
+                      "C": "Simple TIC-TAC-toe game",
+                      "nl": "Eenvoudig boter-kaas-en-eierenspel",
+                      "ru": "Простая игра в крестики-нолики"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "io.elementary.capnet-assist.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "io.elementary.capnet-assist.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "io.elementary.capnet-assist",
+                    "name": {
+                      "C": "Captive Network Assistant",
+                      "ar": "مساعد بوابة الدخول الإلكترونية",
+                      "bs": "Pomoćnik za mrežu putem captive portala",
+                      "ca": "Assistent de xarxa captiva",
+                      "ckb": "یاریدەدەری تۆڕی کۆنتڕۆڵکراو",
+                      "cs": "Pomocník pro uzavřené síťové portály (captive portal)",
+                      "da": "Captive Netværksassistent",
+                      "de": "Assistent für Netzwerke mit Vorschaltseite",
+                      "eo": "Asistanto pri konekta portalo",
+                      "es": "Asistente de portal cautivo",
+                      "fi": "Verkon kirjautumisportaalin avustin",
+                      "fr": "Assistant au réseau captif",
+                      "gl": "Asistente de portal cativo",
+                      "he": "מסייע שובה רשת",
+                      "hu": "Rögzített portál asszisztens",
+                      "it": "Assistente Captive Network",
+                      "ja": "キャプティブネットワークアシスタント",
+                      "ko": "캡티브 네트워크 어시스턴트",
+                      "lt": "Belaisvio tinklo pagelbiklis",
+                      "mr": "कॅप्टिव्ह नेटवर्क सहाय्यक",
+                      "nb": "Assistent for fangstnettverk",
+                      "nl": "Besloten netwerk assistent",
+                      "nn": "Assistent for nettverkfangstportalar",
+                      "oc": "Assistent de ret captiu",
+                      "pa": "ਕੈਪਟਿਵ ਨੈੱਟਵਰਕ ਅਸਿਸਟੈਂਟ",
+                      "pl": "Asystent uwierzytelniania sieciowego",
+                      "pt": "Assistente de rede cativa",
+                      "pt_BR": "Assistente de Rede Captive",
+                      "ro": "Asistent pentru rețea captivă",
+                      "ru": "Помощник авторизации в сети",
+                      "sk": "Asistent prihlasovania do sietí",
+                      "sl": "Pomočnik za prestrezna omrežja",
+                      "sr": "Помоћник затворене мреже",
+                      "sv": "Captive nätverksassistent",
+                      "tr": "Giriş Portalı Yardımcısı",
+                      "uk": "Помічник автентифікації у мережі",
+                      "vi": "Trợ lý mạng lưu động",
+                      "zh": "强制网页助理",
+                      "zh_CN": "专属网络助理"
+                    },
+                    "summary": {
+                      "C": "Connect to captive network portals",
+                      "ar": "اتصل ببوابات الدخول الإلكترونية",
+                      "bs": "Spojite se na mrežu putem portala",
+                      "ca": "Connecta a portals de xarxa captius",
+                      "ckb": "پەیوەست بوون بە دەروازە تۆڕییە کۆنتڕۆڵکراوەکان",
+                      "cs": "Připojte se k uzavřeným síťovým portálům",
+                      "da": "Opret forbindelse til captive netværksportaler",
+                      "de": "Verbindung zu einem Netzwerk mit Vorschaltseite herstellen",
+                      "eo": "Konektanta retajn konektajn portalojn",
+                      "es": "Conéctese a un portal cautivo de red",
+                      "fi": "Yhdistä kirjautumisportaaliverkkoihin",
+                      "fr": "Se connecter aux portails captifs",
+                      "gl": "Conectarse a un portal cativo de rede",
+                      "he": "התחברות לשערי גישה של שובי רשת",
+                      "hu": "Kapcsolódás a rögzített portálokon keresztül",
+                      "it": "Collegarsi a captive portal di rete",
+                      "ja": "キャプティブネットワークポータルに接続します",
+                      "ko": "캡티브 네트워크 포털에 연결",
+                      "lt": "Prisijungti prie belaisvio tinklo portalų",
+                      "mr": "कॅप्टिव्ह पोर्टलला जोडा",
+                      "nb": "Koble til nettverkfangstportaler",
+                      "nl": "Maak verbinding met een besloten netwerk via een portaal",
+                      "nn": "Kople til nettverkfangstportalar",
+                      "oc": "Se connectar als portals de ret captius",
+                      "pl": "Połącz z uwierzytelnianymi portalami sieciowymi",
+                      "pt": "Ligar a portais de rede cativos",
+                      "pt_BR": "Conecte-se a portais de rede captive",
+                      "ru": "Подключение к сервису авторизации в публичной сети",
+                      "sk": "Pripojte sa k uzatvoreným sieťovým portálom",
+                      "sl": "Povežite se na omrežje prestreznih portalov",
+                      "sr": "Повежите се на портале затворене мреже",
+                      "sv": "Anslut till captive nätverkportaler",
+                      "tr": "Giriş portallarına bağlan",
+                      "uk": "Під'єднайтеся до автентифікованих мережних порталів",
+                      "vi": "Kết nối với các cổng mạng lưu động",
+                      "zh": "连接至网页助理",
+                      "zh_CN": "连接到网络认证界面"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "io.elementary.calculator.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "io.elementary.calculator.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "io.elementary.calculator",
+                    "name": {
+                      "C": "Calculator",
+                      "ar": "الحاسبة",
+                      "bg": "Калкулатор",
+                      "bn": "ক্যালকুলেটর",
+                      "bs": "Kalkulator",
+                      "ca": "Calculadora",
+                      "ckb": "بژمێر",
+                      "cs": "Kalkulačka",
+                      "da": "Lommeregner",
+                      "de": "Rechner",
+                      "el": "Αριθμομηχανή",
+                      "eo": "Kalkulilo",
+                      "es": "Calculadora",
+                      "et": "Kalkulaator",
+                      "fi": "Laskin",
+                      "fr": "Calculatrice",
+                      "gl": "Calculadora",
+                      "he": "מחשבון",
+                      "hi": "गणक",
+                      "hr": "Kalkulator",
+                      "hu": "Számológép",
+                      "id": "Kalkulator",
+                      "it": "Calcolatrice",
+                      "ja": "電卓",
+                      "ko": "계산기",
+                      "ku": "Makîneya Hesaban",
+                      "lt": "Skaičiuotuvas",
+                      "mr": "कॅल्कुलेटर",
+                      "ms": "Kalkulator",
+                      "my": "ဂဏန်းတွက်စက်",
+                      "nb": "Kalkulator",
+                      "nl": "Rekenmachine",
+                      "nn": "Kalkulator",
+                      "pa": "ਕੈਲਕੂਲੇਟਰ",
+                      "pl": "Kalkulator",
+                      "pt": "Calculadora",
+                      "pt_BR": "Calculadora",
+                      "ru": "Калькулятор",
+                      "sa": "गणकयंत्र",
+                      "si": "ගණකය",
+                      "sk": "Kalkulačka",
+                      "sl": "Računalo",
+                      "sq": "Llogaritëse",
+                      "sr": "Дигитрон",
+                      "sv": "Kalkylator",
+                      "szl": "Kalkulatōr",
+                      "tl": "Talatuusan",
+                      "tr": "Hesap Makinesi",
+                      "ug": "ھېسابلىغۇچ",
+                      "uk": "Калькулятор",
+                      "uz": "Kalkulyator",
+                      "vi": "Máy tính",
+                      "zh": "计算器",
+                      "zh_CN": "计算器",
+                      "zh_TW": "計算機"
+                    },
+                    "summary": {
+                      "C": "Solve simple equations",
+                      "ar": "حل معادلات بسيطة",
+                      "bg": "Решаване на прости уравнения",
+                      "bn": "সাধারণ সমীকরণ সমাধান করুন",
+                      "bs": "Riješi jednostavne jednačine",
+                      "ca": "Resoleu equacions simples",
+                      "ckb": "شیکاکردنی هاوکێشە سادەکان",
+                      "cs": "Řešte jednoduché výpočty",
+                      "da": "Løs enkle ligninger",
+                      "de": "Einfache Gleichungen lösen",
+                      "eo": "Solvi simplajn ekvaciojn",
+                      "es": "Resuelva ecuaciones simples",
+                      "et": "lahenda lihtne võrrand",
+                      "fi": "Ratkaise laskutoimituksia",
+                      "fr": "Résoudre de simples équations",
+                      "gl": "Resolva ecuacións simples",
+                      "he": "פתרון משוואות פשוטות",
+                      "hi": "साधारण समीकरण को हल करें",
+                      "hr": "Riješite jednostavne jednadžbe",
+                      "hu": "Egyszerű műveletek megoldása",
+                      "id": "Selesaikan persamaan sederhana",
+                      "it": "Risolvi semplici equazioni",
+                      "ja": "簡単な式を計算します",
+                      "ko": "간단한 방정식 풀이",
+                      "ku": "naşî hevsengî çareserkirin",
+                      "lt": "Spręsti paprastas lygtis",
+                      "mr": "साधारण समीकरणे सोडवा",
+                      "my": "ရိုးရိုးညီမျှခြင်းတွေကို ဖြေရှင်းမယ်",
+                      "nb": "Løs enkle ligninger",
+                      "nl": "Los simpele vergelijkingen op",
+                      "nn": "Løys enkle likningar",
+                      "pa": "ਸਾਦੇ ਸਮੀਕਰਨ ਹੱਲ ਕਰੋ",
+                      "pl": "Rozwiązuj proste równania",
+                      "pt": "Resolva equações simples",
+                      "pt_BR": "Resolva equações simples",
+                      "ro": "Rezolvă ecuații simple",
+                      "ru": "Решайте простые уравнения",
+                      "sk": "Riešte jednoduché výpočty",
+                      "sl": "Preprost kalkulator",
+                      "sq": "Zgjidh ekuacione të thjeshta",
+                      "sr": "Решите једноставне једначине",
+                      "sv": "Lös enkla ekvationer",
+                      "szl": "Rozwiōnzuj proste rōwnania",
+                      "tl": "Maglutas ng mga simpleng ekwasyon",
+                      "tr": "Basit denklemleri çöz",
+                      "ug": "ئاددىي ئىپادىلەرنى ھىسابلاش",
+                      "uk": "Розв'язуйте прості рівняння",
+                      "uz": "Oddiy tenglamalarni yechish",
+                      "vi": "Giải các phương trình đơn giản",
+                      "zh_CN": "解决简单的公式计算",
+                      "zh_TW": "解決簡單運算"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.bmi.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.bmi.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.bmi",
+                    "name": {
+                      "C": "BMI",
+                      "fr": "IMC"
+                    },
+                    "summary": {
+                      "C": "Simple BMI Calculator",
+                      "fr": "Un simple calculateur d'IMC",
+                      "nl": "Een eenvoudige BMI-berekenhulpmiddel"
+                    }
+                  },
+                  {
+                    "icons": [
+                      {
+                        "height": 64,
+                        "path": "com.github.alexkdeveloper.dfc.png",
+                        "width": 64
+                      },
+                      {
+                        "height": 128,
+                        "path": "com.github.alexkdeveloper.dfc.png",
+                        "width": 128
+                      }
+                    ],
+                    "id": "com.github.alexkdeveloper.dfc",
+                    "name": {
+                      "C": "Desktopius"
+                    },
+                    "summary": {
+                      "C": "Simple app for create a desktop files",
+                      "fr": "Une simple application pour créer des fichiers desktop",
+                      "nl": "Een eenvoudige toepassing voor het maken van .desktop-bestanden",
+                      "ru": "Простое приложение для создания desktop файлов"
+                    }
                   }
-                }
+                ]
               }
             }
           }
@@ -1371,30 +1359,26 @@
                     "$ref": "#/components/schemas/App"
                   }
                 },
-                "examples": {
-                  "example": {
-                    "value": [
-                      {
-                        "first_seen": null,
-                        "id": "com.github.davidmhewitt.torrential",
-                        "is_published": true,
-                        "is_verified": true,
-                        "last_submitted_version": "3.0.1",
-                        "last_update": null,
-                        "repository": "https://github.com/davidmhewitt/torrential.git"
-                      },
-                      {
-                        "first_seen": null,
-                        "id": "io.elementary.photos",
-                        "is_published": true,
-                        "is_verified": false,
-                        "last_submitted_version": null,
-                        "last_update": null,
-                        "repository": "https://github.com/elementary/photos.git"
-                      }
-                    ]
+                "example": [
+                  {
+                    "first_seen": null,
+                    "id": "com.github.davidmhewitt.torrential",
+                    "is_published": true,
+                    "is_verified": true,
+                    "last_submitted_version": "3.0.1",
+                    "last_update": null,
+                    "repository": "https://github.com/davidmhewitt/torrential.git"
+                  },
+                  {
+                    "first_seen": null,
+                    "id": "io.elementary.photos",
+                    "is_published": true,
+                    "is_verified": false,
+                    "last_submitted_version": null,
+                    "last_update": null,
+                    "repository": "https://github.com/elementary/photos.git"
                   }
-                }
+                ]
               }
             }
           }
