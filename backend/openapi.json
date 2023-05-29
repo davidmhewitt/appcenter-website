@@ -1367,7 +1367,8 @@
                     "is_verified": true,
                     "last_submitted_version": "3.0.1",
                     "last_update": null,
-                    "repository": "https://github.com/davidmhewitt/torrential.git"
+                    "repository": "https://github.com/davidmhewitt/torrential.git",
+                    "stripe_connect_id": "acct_1NCliJPBGjCwUDHc"
                   },
                   {
                     "first_seen": null,
@@ -1376,7 +1377,8 @@
                     "is_verified": false,
                     "last_submitted_version": null,
                     "last_update": null,
-                    "repository": "https://github.com/elementary/photos.git"
+                    "repository": "https://github.com/elementary/photos.git",
+                    "stripe_connect_id": null
                   }
                 ]
               }

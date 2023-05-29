@@ -29,6 +29,7 @@ use common::models::App;
                         first_seen: None,
                         last_update: None,
                         is_published: true,
+                        stripe_connect_id: Some("acct_1NCliJPBGjCwUDHc".into()),
                     },
                     App {
                         id: "io.elementary.photos".into(),
@@ -38,6 +39,7 @@ use common::models::App;
                         first_seen: None,
                         last_update: None,
                         is_published: true,
+                        stripe_connect_id: None,
                     }
                 ]
             )
