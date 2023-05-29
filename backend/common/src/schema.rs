@@ -23,6 +23,7 @@ diesel::table! {
         first_seen -> Nullable<Timestamptz>,
         last_update -> Nullable<Timestamptz>,
         is_published -> Bool,
+        stripe_connect_id -> Nullable<Text>,
     }
 }
 

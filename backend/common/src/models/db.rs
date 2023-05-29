@@ -39,6 +39,7 @@ pub struct App {
     pub first_seen: Option<time::OffsetDateTime>,
     pub last_update: Option<time::OffsetDateTime>,
     pub is_published: bool,
+    pub stripe_connect_id: Option<String>,
 }
 
 #[derive(Insertable, Queryable, PartialEq, Debug, Clone)]

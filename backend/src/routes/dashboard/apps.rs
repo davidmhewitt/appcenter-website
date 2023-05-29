@@ -83,6 +83,7 @@ pub async fn get_apps_from_db(
             first_seen,
             last_update,
             is_published,
+            stripe_connect_id,
         ))
         .filter(user_id.eq(uuid))
         .get_results::<App>(con)
