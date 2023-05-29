@@ -19,35 +19,36 @@ use common::models::App;
             status = 200,
             description = "A list of apps owned by the current user",
             body = Vec<App>,
-            examples(
-                ("example" = (value = json!(vec!
-                    [
-                        App {
-                            id: "com.github.davidmhewitt.torrential".into(),
-                            repository: "https://github.com/davidmhewitt/torrential.git".into(),
-                            is_verified: true,
-                            last_submitted_version: Some("3.0.1".into()),
-                            first_seen: None,
-                            last_update: None,
-                            is_published: true,
-                        },
-                        App {
-                            id: "io.elementary.photos".into(),
-                            repository: "https://github.com/elementary/photos.git".into(),
-                            is_verified: false,
-                            last_submitted_version: None,
-                            first_seen: None,
-                            last_update: None,
-                            is_published: true,
-                        }
-                    ]
-                )))
+            example =
+                json!(vec![
+                    App {
+                        id: "com.github.davidmhewitt.torrential".into(),
+                        repository: "https://github.com/davidmhewitt/torrential.git".into(),
+                        is_verified: true,
+                        last_submitted_version: Some("3.0.1".into()),
+                        first_seen: None,
+                        last_update: None,
+                        is_published: true,
+                    },
+                    App {
+                        id: "io.elementary.photos".into(),
+                        repository: "https://github.com/elementary/photos.git".into(),
+                        is_verified: false,
+                        last_submitted_version: None,
+                        first_seen: None,
+                        last_update: None,
+                        is_published: true,
+                    }
+                ]
             )
         )
     )
 ))]
 #[get("/apps")]
-#[cfg_attr(not(coverage), tracing::instrument(name = "Fetching apps for dashboard", skip(user, pool)))]
+#[cfg_attr(
+    not(coverage),
+    tracing::instrument(name = "Fetching apps for dashboard", skip(user, pool))
+)]
 pub async fn get_apps(user: AuthedUser, pool: Data<Pool<AsyncPgConnection>>) -> HttpResponse {
     let mut con = match pool.get().await {
         Ok(c) => c,
@@ -93,7 +94,10 @@ pub async fn get_apps_from_db(
     request_body = CreateApp,
 ))]
 #[post("/apps")]
-#[cfg_attr(not(coverage), tracing::instrument(name = "Adding dashboard app", skip(user, pool)))]
+#[cfg_attr(
+    not(coverage),
+    tracing::instrument(name = "Adding dashboard app", skip(user, pool))
+)]
 pub async fn add_app(
     user: AuthedUser,
     pool: Data<Pool<AsyncPgConnection>>,

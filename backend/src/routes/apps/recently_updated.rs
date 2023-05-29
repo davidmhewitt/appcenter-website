@@ -14,13 +14,14 @@ const EXAMPLE_JSON: &str = include_str!("examples/recently_updated.json");
             status = 200,
             description = "List of recently updated applications",
             body = Vec<ComponentSummary>,
-            examples(
-                ("example" = (value = json!(serde_json::from_str::<Vec<ComponentSummary>>(EXAMPLE_JSON).unwrap())))
-            )
+            example = json!(serde_json::from_str::<Vec<ComponentSummary>>(EXAMPLE_JSON).unwrap())
         ),
     )
 ))]
-#[cfg_attr(not(coverage), tracing::instrument(name = "Getting recently updated apps", skip(pool, redis_pool)))]
+#[cfg_attr(
+    not(coverage),
+    tracing::instrument(name = "Getting recently updated apps", skip(pool, redis_pool))
+)]
 #[get("/recently_updated")]
 pub async fn recently_updated(
     pool: Data<Pool<AsyncPgConnection>>,
