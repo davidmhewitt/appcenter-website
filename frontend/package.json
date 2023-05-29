@@ -33,7 +33,7 @@
     "postcss": "8.4.23",
     "react": "18.2.0",
     "react-click-away-listener": "^2.2.3",
-    "react-hook-form": "^7.43.9",
+    "react-hook-form": "^7.44.2",
     "react-i18next": "^12.2.2",
     "react-responsive-carousel": "^3.2.23",
     "sharp": "^0.32.1",
