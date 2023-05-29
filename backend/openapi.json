@@ -1416,13 +1416,9 @@
                 "schema": {
                   "$ref": "#/components/schemas/StripeAccount"
                 },
-                "examples": {
-                  "example": {
-                    "value": {
-                      "account_id": "acct_1NCliJPBGjCwUDHc",
-                      "charges_enabled": true
-                    }
-                  }
+                "example": {
+                  "account_id": "acct_1NCliJPBGjCwUDHc",
+                  "charges_enabled": true
                 }
               }
             }

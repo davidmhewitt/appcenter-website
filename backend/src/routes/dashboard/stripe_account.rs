@@ -20,13 +20,11 @@ use crate::{
             status = 200,
             description = "Stripe account details",
             body = StripeAccount,
-            examples(
-                ("example" = (value = json!(
-                    StripeAccount {
-                        account_id: "acct_1NCliJPBGjCwUDHc".to_string(),
-                        charges_enabled: true,
-                    }
-                )))
+            example = json!(
+                StripeAccount {
+                    account_id: "acct_1NCliJPBGjCwUDHc".to_string(),
+                    charges_enabled: true,
+                }
             )
         ),
     )
