@@ -47,7 +47,7 @@ diesel_migrations = { version = "2.1", features = ["postgres"] }
 github-utils = { path = "crates/github-utils" }
 hex = "0.4"
 lettre = { version = "0.10", features = ["builder", "tokio1-native-tls"] }
-minijinja = { version = "0.32", features = ["source"] }
+minijinja = { version = "0.33", features = ["source"] }
 oauth2 = "4.4"
 once_cell = "1.17"
 pasetors = "0.6"
