@@ -75,7 +75,7 @@ If you need to make any changes to the backend database schema, you will need to
 ### Requirements
 
 - Rust >= 1.66 (at the time of writing, may be more in the future)
-- Node >= 14 (but 19 recommended, as this is used for development)
+- Node >= 14 (but 18 recommended, as this is used for development)
 - Redis server
 - Postgres server
 
