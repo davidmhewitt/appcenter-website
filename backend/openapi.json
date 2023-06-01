@@ -1401,7 +1401,24 @@
           },
           "required": true
         },
-        "responses": {}
+        "responses": {
+          "200": {
+            "description": "App successfully added"
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error while adding app"
+          }
+        }
       }
     },
     "/dashboard/stripe_account": {
@@ -1444,7 +1461,14 @@
           },
           "required": true
         },
-        "responses": {}
+        "responses": {
+          "200": {
+            "description": "App update submitted for processing"
+          },
+          "500": {
+            "description": "Error occurred while submitting app for processing"
+          }
+        }
       }
     },
     "/users/test_auth": {
@@ -1471,24 +1495,44 @@
         "required": [
           "id",
           "repository",
-          "is_verified"
+          "is_verified",
+          "is_published"
         ],
         "properties": {
+          "first_seen": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/time.OffsetDateTime"
+              }
+            ],
+            "nullable": true
+          },
           "id": {
-            "type": "string",
-            "example": "com.github.davidmhewitt.torrential"
+            "type": "string"
+          },
+          "is_published": {
+            "type": "boolean"
           },
           "is_verified": {
-            "type": "boolean",
-            "example": true
+            "type": "boolean"
+          },
+          "last_submitted_version": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_update": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/time.OffsetDateTime"
+              }
+            ],
+            "nullable": true
           },
           "repository": {
-            "type": "string",
-            "example": "https://github.com/davidmhewitt/torrential.git"
+            "type": "string"
           },
-          "version": {
+          "stripe_connect_id": {
             "type": "string",
-            "example": "3.0.0",
             "nullable": true
           }
         }
@@ -1557,6 +1601,41 @@
             "example": "https://github.com/davidmhewitt/torrential.git"
           }
         }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error",
+          "translation_key"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "translation_key": {
+            "$ref": "#/components/schemas/ErrorTranslationKey"
+          }
+        }
+      },
+      "ErrorTranslationKey": {
+        "type": "string",
+        "enum": [
+          "generic.problem",
+          "confirmation.generic-problem",
+          "confirmation.token-used",
+          "registration.generic-problem",
+          "registration.user-already-exists",
+          "registration.no-email-permission",
+          "login.username-password-mismatch",
+          "login.user-nonexistent",
+          "logout.generic-problem",
+          "add-app.generic-problem",
+          "add-app.non-matching-github-rdnn",
+          "add-app.invalid-repository-url",
+          "submit-app-update.unable-to-get-url",
+          "stripe-link.no-account",
+          "generic.app-not-found"
+        ]
       },
       "Icon": {
         "type": "object",

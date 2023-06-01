@@ -25,11 +25,13 @@ pub use users::auth_routes_config;
             dashboard::submit_app_update::submit,
         ),
         components(schemas(
+            common::models::App,
             common::models::ComponentSummary,
             common::models::TranslatableString,
             common::models::Icon,
             common::models::StripeAccount,
-            crate::types::dashboard::App,
+            crate::types::general::ErrorResponse,
+            crate::types::general::ErrorTranslationKey,
             crate::types::dashboard::CreateApp,
             crate::types::dashboard::AppUpdateSubmission,
         ))

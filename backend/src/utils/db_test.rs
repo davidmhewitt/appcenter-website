@@ -41,3 +41,40 @@ pub async fn create_user(con: &mut AsyncPgConnection, active: bool) -> anyhow::R
 
     Ok(new_user_id)
 }
+
+pub async fn create_app(
+    con: &mut AsyncPgConnection,
+    owner: Option<&uuid::Uuid>,
+) -> anyhow::Result<String> {
+    use common::schema::app_owners::dsl::*;
+    use common::schema::apps::dsl::*;
+
+    let random_id: String = {
+        let mut buff = [0_u8; 8];
+        OsRng.fill_bytes(&mut buff);
+        format!("com.example.{}", hex::encode(buff))
+    };
+
+    diesel::insert_into(apps)
+        .values((
+            id.eq(&random_id),
+            repository.eq(format!("https://github.com/apps/{}", &random_id)),
+        ))
+        .on_conflict_do_nothing()
+        .execute(con)
+        .await?;
+
+    if let Some(owner) = owner {
+        diesel::insert_into(app_owners)
+            .values((
+                user_id.eq(owner),
+                app_id.eq(&random_id),
+                verified_owner.eq(true),
+            ))
+            .on_conflict_do_nothing()
+            .execute(con)
+            .await?;
+    }
+
+    Ok(random_id)
+}

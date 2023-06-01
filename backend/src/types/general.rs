@@ -1,4 +1,9 @@
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 #[derive(Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+
 pub enum ErrorTranslationKey {
     #[serde(rename = "generic.problem")]
     GenericServerProblem,
@@ -33,6 +38,7 @@ pub enum ErrorTranslationKey {
 }
 
 #[derive(serde::Serialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct ErrorResponse {
     pub error: String,
     pub translation_key: ErrorTranslationKey,

@@ -95,6 +95,11 @@ pub async fn get_apps_from_db(
 #[cfg_attr(feature = "openapi", utoipa::path(
     path = "/dashboard/apps",
     request_body = CreateApp,
+    responses(
+        (status = 200, description = "App successfully added"),
+        (status = 400, body = ErrorResponse),
+        (status = 500, description = "Server error while adding app")
+    )
 ))]
 #[post("/apps")]
 #[cfg_attr(
