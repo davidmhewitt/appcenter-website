@@ -103,12 +103,11 @@ async fn get_stripe_account_for_app(
 ) -> anyhow::Result<String> {
     use common::schema::apps::dsl::*;
 
-    Ok(apps
-        .filter(id.eq(app_id))
+    apps.filter(id.eq(app_id))
         .select(stripe_connect_id)
         .get_result::<Option<String>>(con)
         .await?
-        .ok_or(anyhow!("Couldn't find app"))?)
+        .ok_or(anyhow!("Couldn't find app"))
 }
 
 #[cfg(test)]

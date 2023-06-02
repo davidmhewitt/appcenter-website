@@ -55,11 +55,11 @@ pub async fn link(
     let link_result = match link_stripe_account(
         &stripe_client,
         &account_id,
-        &base_url
+        base_url
             .join("api/dashboard/link_stripe_account")
             .unwrap()
-            .to_string(),
-        &base_url.join("dashboard").unwrap().to_string(),
+            .as_ref(),
+        base_url.join("dashboard").unwrap().as_ref(),
     )
     .await
     {
@@ -106,13 +106,11 @@ pub async fn get_stripe_account_id_for_user(
 ) -> Result<String, diesel::result::Error> {
     use common::schema::stripe_accounts::dsl::*;
 
-    let account_id = stripe_accounts
+    stripe_accounts
         .filter(user_id.eq(user))
         .select(stripe_account_id)
         .get_result::<String>(con)
-        .await;
-
-    account_id
+        .await
 }
 
 #[cfg(test)]

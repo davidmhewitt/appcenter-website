@@ -58,7 +58,7 @@ async fn create_stripe_account(
         ..Default::default()
     };
 
-    Account::create(&stripe_client, account).await
+    Account::create(stripe_client, account).await
 }
 
 #[cfg_attr(
