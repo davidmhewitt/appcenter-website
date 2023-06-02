@@ -23,6 +23,7 @@ pub use users::auth_routes_config;
             dashboard::apps::get_apps,
             dashboard::stripe_account::get_stripe_account,
             dashboard::submit_app_update::submit,
+            payments::start::start,
         ),
         components(schemas(
             common::models::App,

@@ -1471,6 +1471,56 @@
         }
       }
     },
+    "/payments/start": {
+      "get": {
+        "tags": [
+          "payments::start"
+        ],
+        "operationId": "start",
+        "parameters": [
+          {
+            "name": "app_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "description": "The amount to pay for the app in cents USD",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0.0
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Checkout session successfully created, follow redirection",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stripe checkout URL the user's browser should be redirected to"
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/test_auth": {
       "get": {
         "tags": [

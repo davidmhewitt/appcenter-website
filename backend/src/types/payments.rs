@@ -1,17 +1,12 @@
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "openapi")]
-use utoipa::ToSchema;
+use utoipa::IntoParams;
 
 #[derive(Deserialize, Serialize, Debug)]
-#[cfg_attr(feature = "openapi", derive(ToSchema))]
+#[cfg_attr(feature = "openapi", derive(IntoParams))]
 pub struct AppPaymentRequest {
-    #[cfg_attr(feature = "openapi", schema(example = "Torrential"))]
     pub app_name: String,
-    #[cfg_attr(
-        feature = "openapi",
-        schema(example = "com.github.davidmhewitt.torrential")
-    )]
     pub app_id: String,
-    #[cfg_attr(feature = "openapi", schema(example = 300))]
+    /// The amount to pay for the app in cents USD
     pub amount: u32,
 }

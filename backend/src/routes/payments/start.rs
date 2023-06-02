@@ -14,6 +14,20 @@ use stripe::{
 
 use crate::types::payments::AppPaymentRequest;
 
+#[cfg_attr(feature = "openapi", utoipa::path(
+    path = "/payments/start",
+    params(AppPaymentRequest),
+    responses(
+        (
+            status = 303,
+            description = "Checkout session successfully created, follow redirection",
+            headers((
+                "Location" = String,
+                description = "Stripe checkout URL the user's browser should be redirected to"
+            ))
+        ),
+    )
+))]
 #[get("/start")]
 #[cfg_attr(
     not(coverage),
