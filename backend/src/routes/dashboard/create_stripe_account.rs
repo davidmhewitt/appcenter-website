@@ -1,9 +1,15 @@
 use actix_web::{post, HttpResponse};
 use diesel::ExpressionMethods;
-use diesel_async::{pooled_connection::bb8::{PooledConnection, Pool}, AsyncPgConnection, RunQueryDsl};
-use stripe::{Account, AccountId, Client, CreateAccount, StripeError};
+use diesel_async::{
+    pooled_connection::bb8::{Pool, PooledConnection},
+    AsyncPgConnection, RunQueryDsl,
+};
+use stripe::{Account, AccountId, AccountType, Client, CreateAccount, StripeError};
 
-use crate::{extractors::AuthedUser, types::{ErrorResponse, ErrorTranslationKey}};
+use crate::{
+    extractors::AuthedUser,
+    types::{ErrorResponse, ErrorTranslationKey},
+};
 
 #[post("/create_stripe_account")]
 #[cfg_attr(
@@ -48,6 +54,7 @@ async fn create_stripe_account(
 ) -> Result<Account, StripeError> {
     let account = CreateAccount {
         email: Some(email),
+        type_: Some(AccountType::Standard),
         ..Default::default()
     };
 

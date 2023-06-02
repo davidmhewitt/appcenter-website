@@ -15,7 +15,7 @@ use super::link_stripe_account::get_stripe_account_id_for_user;
     not(coverage),
     tracing::instrument(name = "Enabling payments for app", skip(user))
 )]
-#[post("/enable_app_payments?id={app_id}")]
+#[post("/enable_app_payments/{app_id}")]
 pub async fn enable_app_payments(
     user: AuthedUser,
     app_id: actix_web::web::Path<(String,)>,
