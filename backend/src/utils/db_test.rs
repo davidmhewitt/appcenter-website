@@ -45,6 +45,7 @@ pub async fn create_user(con: &mut AsyncPgConnection, active: bool) -> anyhow::R
 pub async fn create_app(
     con: &mut AsyncPgConnection,
     owner: Option<&uuid::Uuid>,
+    stripe_account: Option<&str>,
 ) -> anyhow::Result<String> {
     use common::schema::app_owners::dsl::*;
     use common::schema::apps::dsl::*;
@@ -59,6 +60,7 @@ pub async fn create_app(
         .values((
             id.eq(&random_id),
             repository.eq(format!("https://github.com/apps/{}", &random_id)),
+            stripe_connect_id.eq(stripe_account),
         ))
         .on_conflict_do_nothing()
         .execute(con)

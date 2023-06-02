@@ -33,7 +33,7 @@ interface Component {
   description: TranslatableString
   icons: Icon[]
   screenshots: Screenshot[]
-  metadata: { readonly [key: string]: string | undefined }
+  metadata: { readonly [key: string]: string | undefined } | undefined
 }
 
 async function getData(id: string): Promise<Component | undefined> {
@@ -87,7 +87,11 @@ export default async function Page({
             </div>
             <PayWhatYouWantButton
               appId={id}
-              suggestedPrice={appdata.metadata['x-appcenter-suggested-price']}
+              suggestedPrice={
+                appdata.metadata &&
+                appdata.metadata['x-appcenter-suggested-price']
+              }
+              appName={appdata.name[lang] ?? appdata.name['C']}
             />
           </div>
           <div id="custom-carousel" className="bg-gray-300">

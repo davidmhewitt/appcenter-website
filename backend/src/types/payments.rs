@@ -14,9 +14,4 @@ pub struct AppPaymentRequest {
     pub app_id: String,
     #[cfg_attr(feature = "openapi", schema(example = 300))]
     pub amount: u32,
-    #[cfg_attr(
-        feature = "openapi",
-        schema(example = "pk_live_Uhb96elhovWNRGkq07m2FRO9008Ia8OtVa")
-    )]
-    pub stripe_connect_id: String,
 }

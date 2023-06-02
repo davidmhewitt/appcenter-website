@@ -109,7 +109,7 @@ mod tests {
         con.begin_test_transaction().await?;
 
         let user = create_user(&mut con, true).await?;
-        let app = create_app(&mut con, Some(&user)).await?;
+        let app = create_app(&mut con, Some(&user), None).await?;
 
         set_stripe_token_on_app(&mut con, &app, &user, "acc_1234").await?;
 
