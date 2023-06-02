@@ -125,7 +125,8 @@ export default async function Page({
               <div
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(
-                    appdata.description[lang] ?? appdata.description['C']
+                    appdata.description[lang] ?? appdata.description['C'],
+                    { ALLOWED_TAGS: ['p', 'ol', 'ul', 'li', 'em', 'code'] }
                   ),
                 }}
               />
