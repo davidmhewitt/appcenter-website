@@ -3,6 +3,9 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 #[derive(Queryable, PartialEq, Debug, Clone)]
 pub struct User {
     pub id: Uuid,
@@ -31,6 +34,7 @@ pub struct NewProfile<'a> {
 }
 
 #[derive(Queryable, Insertable, PartialEq, Debug, Clone, Serialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct App {
     pub id: String,
     pub repository: String,
@@ -39,6 +43,7 @@ pub struct App {
     pub first_seen: Option<time::OffsetDateTime>,
     pub last_update: Option<time::OffsetDateTime>,
     pub is_published: bool,
+    pub stripe_connect_id: Option<String>,
 }
 
 #[derive(Insertable, Queryable, PartialEq, Debug, Clone)]

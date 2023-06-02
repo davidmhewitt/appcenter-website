@@ -1,5 +1,6 @@
 pub mod dashboard;
-mod general;
+pub mod general;
+pub mod payments;
 mod tokens;
 mod users;
 

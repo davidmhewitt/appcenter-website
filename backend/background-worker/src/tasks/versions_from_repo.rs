@@ -50,6 +50,7 @@ impl Runnable for VersionsFromRepo {
                 last_submitted_version: Some(f.1.version.to_owned()),
                 first_seen: Some(f.1.first),
                 last_update: Some(f.1.last),
+                stripe_connect_id: None,
             })
             .collect::<Vec<_>>();
 

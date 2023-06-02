@@ -29,6 +29,7 @@ use common::models::App;
                         first_seen: None,
                         last_update: None,
                         is_published: true,
+                        stripe_connect_id: Some("acct_1NCliJPBGjCwUDHc".into()),
                     },
                     App {
                         id: "io.elementary.photos".into(),
@@ -38,6 +39,7 @@ use common::models::App;
                         first_seen: None,
                         last_update: None,
                         is_published: true,
+                        stripe_connect_id: None,
                     }
                 ]
             )
@@ -83,6 +85,7 @@ pub async fn get_apps_from_db(
             first_seen,
             last_update,
             is_published,
+            stripe_connect_id,
         ))
         .filter(user_id.eq(uuid))
         .get_results::<App>(con)
@@ -92,6 +95,11 @@ pub async fn get_apps_from_db(
 #[cfg_attr(feature = "openapi", utoipa::path(
     path = "/dashboard/apps",
     request_body = CreateApp,
+    responses(
+        (status = 200, description = "App successfully added"),
+        (status = 400, body = ErrorResponse),
+        (status = 500, description = "Server error while adding app")
+    )
 ))]
 #[post("/apps")]
 #[cfg_attr(

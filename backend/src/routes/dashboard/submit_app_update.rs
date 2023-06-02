@@ -6,9 +6,16 @@ use crate::{extractors::AuthedUser, types::dashboard::AppUpdateSubmission};
 #[cfg_attr(feature = "openapi", utoipa::path(
     path = "/dashboard/submit_app_update",
     request_body = AppUpdateSubmission,
+    responses(
+        (status = 200, description = "App update submitted for processing"),
+        (status = 500, description = "Error occurred while submitting app for processing")
+    )
 ))]
 #[post("/submit_app_update")]
-#[cfg_attr(not(coverage), tracing::instrument(name = "Submitting app update", skip(user)))]
+#[cfg_attr(
+    not(coverage),
+    tracing::instrument(name = "Submitting app update", skip(user))
+)]
 pub async fn submit(user: AuthedUser, submission: Json<AppUpdateSubmission>) -> HttpResponse {
     let task = SubmitAppUpdate::new(
         submission.app_id.to_owned(),

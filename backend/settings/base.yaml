@@ -27,5 +27,8 @@ email:
   host_user: ""
   host_user_password: ""
 
+stripe:
+  secret_key: ""
+
 redis:
   uri: "redis://127.0.0.1"

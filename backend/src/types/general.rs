@@ -1,5 +1,12 @@
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 #[derive(Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+
 pub enum ErrorTranslationKey {
+    #[serde(rename = "generic.problem")]
+    GenericServerProblem,
     #[serde(rename = "confirmation.generic-problem")]
     GenericConfirmationProblem,
     #[serde(rename = "confirmation.token-used")]
@@ -24,9 +31,14 @@ pub enum ErrorTranslationKey {
     AddAppInvalidRepositoryUrl,
     #[serde(rename = "submit-app-update.unable-to-get-url")]
     SubmitAppUpdateCannotGetUrl,
+    #[serde(rename = "stripe-link.no-account")]
+    StripeLinkNoAccount,
+    #[serde(rename = "generic.app-not-found")]
+    AppNotFound,
 }
 
 #[derive(serde::Serialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct ErrorResponse {
     pub error: String,
     pub translation_key: ErrorTranslationKey,

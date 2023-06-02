@@ -68,7 +68,7 @@ APP_GITHUB__REVIEWS_URL=
 
 ### Database Migrations
 
-If you need to make any changes to the backend database schema, you will need to install `diesel` with `cargo install diesel`
+If you need to make any changes to the backend database schema, you will need to install `diesel` with `cargo install diesel_cli`
 
 ## Setting up a development environment (the manual way)
 

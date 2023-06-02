@@ -59,6 +59,10 @@ async fn run(
         .create_pool(Some(deadpool_redis::Runtime::Tokio1))
         .expect("Cannot create deadpool redis");
 
+    let stripe_client = actix_web::web::Data::new(stripe::Client::new(
+        settings.stripe.secret_key.expose_secret(),
+    ));
+
     let redis_pool_data = actix_web::web::Data::new(redis_pool);
 
     let secret_key = actix_web::cookie::Key::from(
@@ -96,9 +100,11 @@ async fn run(
             .configure(crate::routes::auth_routes_config)
             .configure(crate::routes::apps_routes_config)
             .configure(crate::routes::dashboard_routes_config)
+            .configure(crate::routes::payments_routes_config)
             .service(fs::Files::new("/static/apps", "_apps"))
             .app_data(pool.clone())
-            .app_data(redis_pool_data.clone());
+            .app_data(redis_pool_data.clone())
+            .app_data(stripe_client.clone());
 
         #[cfg(not(feature = "cors"))]
         actix_web::App::new()
@@ -117,9 +123,11 @@ async fn run(
             .configure(crate::routes::auth_routes_config)
             .configure(crate::routes::apps_routes_config)
             .configure(crate::routes::dashboard_routes_config)
+            .configure(crate::routes::payments_routes_config)
             .service(fs::Files::new("/static/apps", "_apps"))
             .app_data(pool.clone())
             .app_data(redis_pool_data.clone())
+            .app_data(stripe_client.clone());
     })
     .bind((settings.application.host, settings.application.port))?
     .run();

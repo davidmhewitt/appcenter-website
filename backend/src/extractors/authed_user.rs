@@ -11,6 +11,7 @@ use serde_json::json;
 
 pub struct AuthedUser {
     pub uuid: uuid::Uuid,
+    pub email: String,
 }
 
 impl FromRequest for AuthedUser {
@@ -25,7 +26,10 @@ impl FromRequest for AuthedUser {
             let session = req.get_session();
             if let Some(pool) = req.app_data::<Data<Pool<AsyncPgConnection>>>() {
                 if let Some(user) = crate::utils::auth::check_auth(session, pool).await {
-                    Ok(AuthedUser { uuid: user })
+                    Ok(AuthedUser {
+                        uuid: user.id,
+                        email: user.email,
+                    })
                 } else {
                     Err(ErrorUnauthorized(
                         json!({"error": "This request requires authorization"}),
