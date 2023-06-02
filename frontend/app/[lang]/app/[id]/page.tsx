@@ -1,7 +1,7 @@
 import { Inter } from 'next/font/google'
 import Image from 'next/image'
-import { ChevronDownIcon } from '@heroicons/react/24/solid'
-import ImageCarousel from '../../../../components/ImageCarousel'
+import PayWhatYouWantButton from '@/components/PayWhatYouWantButton'
+import ImageCarousel from '@/components/ImageCarousel'
 import createDOMPurify from 'dompurify'
 import { JSDOM } from 'jsdom'
 
@@ -33,6 +33,7 @@ interface Component {
   description: TranslatableString
   icons: Icon[]
   screenshots: Screenshot[]
+  metadata: { readonly [key: string]: string | undefined }
 }
 
 async function getData(id: string): Promise<Component | undefined> {
@@ -84,22 +85,10 @@ export default async function Page({
                 </div>
               </div>
             </div>
-            <div className="mt-5 flex items-stretch">
-              <span className="flex items-stretch">
-                <button
-                  type="button"
-                  className="inline-flex rounded-l-md bg-indigo-600 px-3 py-2 text-base font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                >
-                  $3.00
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex h-full place-items-center rounded-r-md bg-indigo-600 px-3 text-base font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                >
-                  <ChevronDownIcon className="h-4" />
-                </button>
-              </span>
-            </div>
+            <PayWhatYouWantButton
+              appId={id}
+              suggestedPrice={appdata.metadata['x-appcenter-suggested-price']}
+            />
           </div>
           <div id="custom-carousel" className="bg-gray-300">
             {appdata.screenshots.length > 1 && (

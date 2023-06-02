@@ -7,22 +7,11 @@ import { CheckBadgeIcon } from '@heroicons/react/24/outline'
 import { components } from '@/app/schema'
 
 import { useRouter } from 'next/navigation'
+import { fetcher } from '@/app/swrFetcher'
 import useSWR from 'swr'
 
 type App = components['schemas']['App']
 type StripeAccount = components['schemas']['StripeAccount']
-
-async function fetcher(url: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`, {
-    credentials: 'include',
-  })
-  if (res.status !== 200) {
-    throw new Error("Couldn't fetch")
-  }
-
-  const json = await res.json()
-  return json
-}
 
 export default function Dashboard({
   params: { lang },
