@@ -16,7 +16,7 @@ export default function PayWhatYouWantButton({
   appId,
   suggestedPrice,
 }: PayWhatYouWantButtonProps) {
-  const { data: app } = useSWR<App>(`/api/apps${encodeURI(appId)}`, fetcher)
+  const { data: app } = useSWR<App>(`/api/apps/${encodeURI(appId)}`, fetcher)
 
   return (
     <div className="mt-5 flex items-stretch">
@@ -25,7 +25,11 @@ export default function PayWhatYouWantButton({
           type="button"
           className="inline-flex rounded-l-md bg-indigo-600 px-3 py-2 text-base font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          {`$${suggestedPrice}.00` ?? 'Free'}
+          {app?.stripe_connect_id != null &&
+            (suggestedPrice != null ? `$${suggestedPrice}.00` : 'Free')}
+
+          {app?.stripe_connect_id == null &&
+            (suggestedPrice != null ? `Get it on AppCenter` : 'Free')}
         </button>
         <button
           type="button"
