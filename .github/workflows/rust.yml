@@ -5,7 +5,7 @@ on:
 
 jobs:
   production-build:
-    name: Tests and Coverage
+    name: Production Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -14,7 +14,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: "backend"
-          save-if: false
       - name: Build
         run: |
           cd backend && cargo build --no-default-features
