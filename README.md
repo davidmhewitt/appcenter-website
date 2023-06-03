@@ -66,6 +66,14 @@ APP_GITHUB__REVIEWS_URL=
 - `APP_GITHUB__ACCESS_TOKEN` is a PAT for the `APP_GITHUB__USERNAME` account. It should have `public_repo` scope as a minimum.
 - `APP_GITHUB__REVIEWS_URL` is the HTTPS url of the Git repository that will serve as the `appcenter-reviews` repository for submitting app PRs to. This can be a fork of https://github.com/elementary/appcenter-reviews for testing.
 
+### Stripe Integration
+
+If you want to test the Stripe integration, you will need to define the secret in the `backend/.env` file:
+
+```
+APP_STRIPE__SECRET_KEY=sk_test_abcdef123456789
+```
+
 ### Database Migrations
 
 If you need to make any changes to the backend database schema, you will need to install `diesel` with `cargo install diesel_cli`
@@ -89,4 +97,4 @@ APP_DATABASE__URL=postgresql://appcenter:appcenter@db/appcenter_website
 APP_REDIS__URI=redis://redis
 ```
 
-You may also want to configure the GitHub environment variables as described above.
+You may also want to configure the GitHub and Stripe environment variables as described above.

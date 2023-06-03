@@ -19,6 +19,7 @@ services:
       APP_GITHUB__USERNAME: "${APP_GITHUB__USERNAME}"
       APP_GITHUB__ACCESS_TOKEN: "${APP_GITHUB__ACCESS_TOKEN}"
       APP_GITHUB__REVIEWS_URL: "${APP_GITHUB__REVIEWS_URL}"
+      APP_STRIPE__SECRET_KEY: "${APP_STRIPE__SECRET_KEY}"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3100/health-check"]
       interval: 20s
