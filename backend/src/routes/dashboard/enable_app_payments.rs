@@ -11,6 +11,13 @@ use crate::extractors::AuthedUser;
 
 use super::link_stripe_account::get_stripe_account_id_for_user;
 
+#[cfg_attr(feature = "openapi", utoipa::path(
+    path = "/dashboard/enable_app_payments/{app_id}",
+    responses(
+        (status = 200, description = "Payments enabled for app"),
+        (status = 500, description = "Error occurred while enabling payments for app")
+    )
+))]
 #[cfg_attr(
     not(coverage),
     tracing::instrument(name = "Enabling payments for app", skip(user))

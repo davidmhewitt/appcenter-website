@@ -1,4 +1,8 @@
-use actix_web::HttpResponse;
+use actix_web::{
+    post,
+    web::{Data, Form},
+    HttpResponse,
+};
 use anyhow::Result;
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
@@ -8,17 +12,29 @@ use common::models::User;
 
 use crate::types::ErrorTranslationKey;
 
-#[derive(serde::Deserialize, Debug)]
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
+#[derive(serde::Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct LoginUser {
     email: String,
+    #[cfg_attr(feature = "openapi", schema(format = Password, value_type = String))]
     password: SecretString,
 }
 
+#[cfg_attr(feature = "openapi", utoipa::path(
+    path = "/users/login",
+    request_body(content = LoginUser, content_type = "application/x-www-form-urlencoded"),
+    responses(
+        (status = 303),
+    )
+))]
 #[cfg_attr(not(coverage), tracing::instrument(name = "Logging a user in", skip(pool, user, session), fields(user_email = %user.email)))]
-#[actix_web::post("/login")]
+#[post("/login")]
 async fn login_user(
-    pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
-    user: actix_web::web::Form<LoginUser>,
+    pool: Data<Pool<AsyncPgConnection>>,
+    user: Form<LoginUser>,
     session: actix_session::Session,
 ) -> actix_web::HttpResponse {
     let settings = common::settings::get_settings().expect("Failed to read settings.");
@@ -70,7 +86,10 @@ async fn login_user(
     }
 }
 
-#[cfg_attr(not(coverage), tracing::instrument(name = "Getting a user from DB.", skip(con)))]
+#[cfg_attr(
+    not(coverage),
+    tracing::instrument(name = "Getting a user from DB.", skip(con))
+)]
 pub(crate) async fn get_user_who_is_active_with_password(
     con: &mut AsyncPgConnection,
     user_email: &str,
@@ -87,7 +106,7 @@ pub(crate) async fn get_user_who_is_active_with_password(
 
 #[cfg(test)]
 mod tests {
-    use diesel::{PgConnection, Connection};
+    use diesel::{Connection, PgConnection};
     use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncConnection};
     use diesel_migrations::MigrationHarness;
 

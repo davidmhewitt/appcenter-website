@@ -13,6 +13,20 @@ use crate::{
     types::{ErrorResponse, ErrorTranslationKey},
 };
 
+#[cfg_attr(feature = "openapi", utoipa::path(
+    path = "/dashboard/link_stripe_account",
+    responses(
+        (
+            status = 303,
+            description = "Stripe account successfully linked, follow redirect for Stripe setup",
+            headers((
+                "Location" = String,
+                description = "Stripe URL the user's browser should be redirected to"
+            ))
+        ),
+        (status = 500, description = "Error occurred while linking stripe account")
+    )
+))]
 #[get("/link_stripe_account")]
 #[cfg_attr(
     not(coverage),

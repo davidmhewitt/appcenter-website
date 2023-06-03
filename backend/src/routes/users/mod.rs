@@ -1,8 +1,8 @@
-mod confirm_registration;
-mod github_callback;
-mod github_login;
-mod login;
-mod logout;
+pub mod confirm_registration;
+pub mod github_callback;
+pub mod github_login;
+pub mod login;
+pub mod logout;
 pub mod register;
 pub(crate) mod test_auth;
 

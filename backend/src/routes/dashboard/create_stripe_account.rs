@@ -11,6 +11,13 @@ use crate::{
     types::{ErrorResponse, ErrorTranslationKey},
 };
 
+#[cfg_attr(feature = "openapi", utoipa::path(
+    path = "/dashboard/create_stripe_account",
+    responses(
+        (status = 200, description = "Stripe account created"),
+        (status = 500, description = "Error occurred while creating stripe account")
+    )
+))]
 #[post("/create_stripe_account")]
 #[cfg_attr(
     not(coverage),

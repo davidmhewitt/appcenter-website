@@ -40,7 +40,9 @@ pub struct App {
     pub repository: String,
     pub is_verified: bool,
     pub last_submitted_version: Option<String>,
+    #[cfg_attr(feature = "openapi", schema(format = DateTime, value_type = String))]
     pub first_seen: Option<time::OffsetDateTime>,
+    #[cfg_attr(feature = "openapi", schema(format = DateTime, value_type = String))]
     pub last_update: Option<time::OffsetDateTime>,
     pub is_published: bool,
     pub stripe_connect_id: Option<String>,

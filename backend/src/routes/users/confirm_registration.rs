@@ -1,16 +1,33 @@
+use actix_web::get;
 use anyhow::Result;
 use diesel::ExpressionMethods;
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection, RunQueryDsl};
 
 use crate::types::ErrorTranslationKey;
 
+#[cfg(feature = "openapi")]
+use utoipa::IntoParams;
+
 #[derive(serde::Deserialize)]
+#[cfg_attr(feature = "openapi", derive(IntoParams))]
+
 pub struct Parameters {
+    // The PASETO confirmation token emailed to the user
     token: String,
 }
 
-#[cfg_attr(not(coverage), tracing::instrument(name = "Activating a new user", skip(pool, parameters, redis_pool)))]
-#[actix_web::get("/register/confirm")]
+#[cfg_attr(feature = "openapi", utoipa::path(
+    path = "/users/register/confirm",
+    params(Parameters),
+    responses(
+        (status = 303),
+    )
+))]
+#[cfg_attr(
+    not(coverage),
+    tracing::instrument(name = "Activating a new user", skip(pool, parameters, redis_pool))
+)]
+#[get("/register/confirm")]
 pub async fn confirm(
     parameters: actix_web::web::Query<Parameters>,
     pool: actix_web::web::Data<Pool<AsyncPgConnection>>,

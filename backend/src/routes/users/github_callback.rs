@@ -1,4 +1,5 @@
 use actix_session::Session;
+use actix_web::get;
 use actix_web::http::header::{ACCEPT, USER_AGENT};
 use actix_web::web;
 use anyhow::Result;
@@ -20,8 +21,13 @@ use crate::routes::users::register::insert_user_into_db;
 use crate::types::ErrorTranslationKey;
 use common::models::{NewGithubAuth, NewUser, User};
 
-#[derive(Debug, Deserialize)]
+#[cfg(feature = "openapi")]
+use utoipa::IntoParams;
+
+#[derive(serde::Deserialize)]
+#[cfg_attr(feature = "openapi", derive(IntoParams))]
 pub struct CodeResponse {
+    #[cfg_attr(feature = "openapi", param(value_type = String))]
     code: SecretString,
     state: String,
 }
@@ -39,8 +45,18 @@ pub struct GithubUser {
     id: Number,
 }
 
-#[cfg_attr(not(coverage), tracing::instrument(name = "Github Callback", skip(session, response)))]
-#[actix_web::get("/github/callback")]
+#[cfg_attr(feature = "openapi", utoipa::path(
+    path = "/users/github/callback",
+    params(CodeResponse),
+    responses(
+        (status = 303),
+    )
+))]
+#[cfg_attr(
+    not(coverage),
+    tracing::instrument(name = "Github Callback", skip(session, response))
+)]
+#[get("/github/callback")]
 pub async fn github_callback(
     pool: actix_web::web::Data<Pool<AsyncPgConnection>>,
     session: Session,
@@ -274,7 +290,10 @@ fn error_redirect(
         .finish()
 }
 
-#[cfg_attr(not(coverage), tracing::instrument(name = "Getting a user from DB.", skip(con)))]
+#[cfg_attr(
+    not(coverage),
+    tracing::instrument(name = "Getting a user from DB.", skip(con))
+)]
 pub(crate) async fn get_user_who_is_active(
     con: &mut AsyncPgConnection,
     user_email: &str,

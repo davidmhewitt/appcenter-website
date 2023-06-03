@@ -1461,6 +1461,72 @@
         }
       }
     },
+    "/dashboard/create_stripe_account": {
+      "post": {
+        "tags": [
+          "dashboard::create_stripe_account"
+        ],
+        "operationId": "create",
+        "responses": {
+          "200": {
+            "description": "Stripe account created"
+          },
+          "500": {
+            "description": "Error occurred while creating stripe account"
+          }
+        }
+      }
+    },
+    "/dashboard/enable_app_payments/{app_id}": {
+      "post": {
+        "tags": [
+          "dashboard::enable_app_payments"
+        ],
+        "operationId": "enable_app_payments",
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payments enabled for app"
+          },
+          "500": {
+            "description": "Error occurred while enabling payments for app"
+          }
+        }
+      }
+    },
+    "/dashboard/link_stripe_account": {
+      "get": {
+        "tags": [
+          "dashboard::link_stripe_account"
+        ],
+        "operationId": "link",
+        "responses": {
+          "303": {
+            "description": "Stripe account successfully linked, follow redirect for Stripe setup",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stripe URL the user's browser should be redirected to"
+              }
+            }
+          },
+          "500": {
+            "description": "Error occurred while linking stripe account"
+          }
+        }
+      }
+    },
     "/dashboard/stripe_account": {
       "get": {
         "tags": [
@@ -1561,6 +1627,96 @@
         }
       }
     },
+    "/users/github/callback": {
+      "get": {
+        "tags": [
+          "users::github_callback"
+        ],
+        "operationId": "github_callback",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/users/github/login": {
+      "get": {
+        "tags": [
+          "users::github_login"
+        ],
+        "operationId": "github_login",
+        "responses": {
+          "303": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": [
+          "users::login"
+        ],
+        "operationId": "login_user",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginUser"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "303": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/users/register/confirm": {
+      "get": {
+        "tags": [
+          "users::confirm_registration"
+        ],
+        "operationId": "confirm",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/users/test_auth": {
       "get": {
         "tags": [
@@ -1586,16 +1742,14 @@
           "id",
           "repository",
           "is_verified",
+          "first_seen",
+          "last_update",
           "is_published"
         ],
         "properties": {
           "first_seen": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/time.OffsetDateTime"
-              }
-            ],
-            "nullable": true
+            "type": "string",
+            "format": "date-time"
           },
           "id": {
             "type": "string"
@@ -1611,12 +1765,8 @@
             "nullable": true
           },
           "last_update": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/time.OffsetDateTime"
-              }
-            ],
-            "nullable": true
+            "type": "string",
+            "format": "date-time"
           },
           "repository": {
             "type": "string"
@@ -1750,6 +1900,22 @@
             "example": 64,
             "nullable": true,
             "minimum": 0.0
+          }
+        }
+      },
+      "LoginUser": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
           }
         }
       },

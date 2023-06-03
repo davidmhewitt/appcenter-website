@@ -22,9 +22,16 @@ pub use users::auth_routes_config;
             apps::recently_updated::recently_updated,
             dashboard::apps::add_app,
             dashboard::apps::get_apps,
+            dashboard::create_stripe_account::create,
+            dashboard::enable_app_payments::enable_app_payments,
+            dashboard::link_stripe_account::link,
             dashboard::stripe_account::get_stripe_account,
             dashboard::submit_app_update::submit,
             payments::start::start,
+            users::confirm_registration::confirm,
+            users::github_callback::github_callback,
+            users::github_login::github_login,
+            users::login::login_user,
         ),
         components(schemas(
             common::models::App,
@@ -36,6 +43,7 @@ pub use users::auth_routes_config;
             crate::types::general::ErrorTranslationKey,
             crate::types::dashboard::CreateApp,
             crate::types::dashboard::AppUpdateSubmission,
+            users::login::LoginUser,
         ))
     )
 )]
