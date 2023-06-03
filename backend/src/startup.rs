@@ -127,7 +127,7 @@ async fn run(
             .service(fs::Files::new("/static/apps", "_apps"))
             .app_data(pool.clone())
             .app_data(redis_pool_data.clone())
-            .app_data(stripe_client.clone());
+            .app_data(stripe_client.clone())
     })
     .bind((settings.application.host, settings.application.port))?
     .run();

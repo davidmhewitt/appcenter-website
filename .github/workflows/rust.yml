@@ -4,7 +4,22 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  production-build:
+    name: Tests and Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install stable rust
+        run: rustup toolchain install stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "backend"
+          save-if: false
+      - name: Build
+        run: |
+          cd backend && cargo build --no-default-features
+
+  test-coverage:
     services:
       postgres:
         image: postgres
@@ -25,7 +40,7 @@ jobs:
         ports:
           - 12111:12111
 
-    name: Rust build
+    name: Tests and Coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -39,8 +54,6 @@ jobs:
           git config --global user.name "David Hewitt"
           git config --global user.email "davidmhewitt@gmail.com"
           git config --global init.defaultBranch main
-          cd backend
-          cargo build --workspace --all-features
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Generate code coverage
@@ -52,5 +65,4 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           files: backend/lcov.info
