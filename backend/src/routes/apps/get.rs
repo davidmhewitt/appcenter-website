@@ -6,8 +6,33 @@ use diesel_async::{
     AsyncPgConnection, RunQueryDsl,
 };
 
+use time::macros::datetime;
+
 use crate::types::{ErrorResponse, ErrorTranslationKey};
 
+#[cfg_attr(feature = "openapi", utoipa::path(
+    path = "/apps/{id}",
+    responses((
+            status = 200,
+            description = "",
+            body = App,
+            example = json!(App {
+                id: "com.github.davidmhewitt.torrential".into(),
+                repository: "https://github.com/davidmhewitt/torrential".into(),
+                is_verified: true,
+                last_submitted_version: Some("3.0.0".into()),
+                first_seen: Some(datetime!(2020-01-01 0:00 UTC)),
+                last_update: Some(datetime!(2023-03-27 17:22 UTC)),
+                is_published: true,
+                stripe_connect_id: Some("acct_1NEYZOPEvkLnkEch".into())
+            })
+        ),
+    )
+))]
+#[cfg_attr(
+    not(coverage),
+    tracing::instrument(name = "Getting app info", skip(pool))
+)]
 #[get("/{id}")]
 pub async fn get(
     path: actix_web::web::Path<(String,)>,

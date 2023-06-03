@@ -1342,6 +1342,46 @@
         }
       }
     },
+    "/apps/{id}": {
+      "get": {
+        "tags": [
+          "apps::get"
+        ],
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/App"
+                },
+                "example": {
+                  "first_seen": "2020-01-01 00:00:00.0 +00:00:00",
+                  "id": "com.github.davidmhewitt.torrential",
+                  "is_published": true,
+                  "is_verified": true,
+                  "last_submitted_version": "3.0.0",
+                  "last_update": "2023-03-27 17:22:00.0 +00:00:00",
+                  "repository": "https://github.com/davidmhewitt/torrential",
+                  "stripe_connect_id": "acct_1NEYZOPEvkLnkEch"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/dashboard/apps": {
       "get": {
         "tags": [

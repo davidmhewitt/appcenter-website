@@ -17,6 +17,7 @@ pub use users::auth_routes_config;
         paths(
             users::test_auth::test_auth,
             apps::all_ids::all_ids,
+            apps::get::get,
             apps::recently_added::recently_added,
             apps::recently_updated::recently_updated,
             dashboard::apps::add_app,
