@@ -13,7 +13,7 @@ name = "background-worker"
 [dependencies]
 appstream-worker = { path = "../crates/appstream-worker" }
 common = { path = "../common" }
-ctrlc = { version = "3.3", features = ["termination"] }
+ctrlc = { version = "3.4", features = ["termination"] }
 diesel = { version = "2.1", features = ["r2d2"] }
 diesel_migrations = { version = "2.1", features = ["postgres"] }
 fang = "0.10"
