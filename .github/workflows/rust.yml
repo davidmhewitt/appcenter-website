@@ -49,6 +49,8 @@ jobs:
         with:
           workspaces: "backend"
       - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://appcenter:appcenter@localhost/appcenter_website
         run: |
           cargo install diesel_cli
           cd backend
