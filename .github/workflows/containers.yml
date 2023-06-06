@@ -6,7 +6,9 @@ on:
 
 jobs:
   push-backend:
-    concurrency: backend-container
+    concurrency: 
+      group: backend-container
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -35,7 +37,9 @@ jobs:
           cache-to: type=gha,mode=max
 
   push-frontend:
-    concurrency: frontend-container
+    concurrency: 
+      group: frontend-container
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     permissions:
       packages: write
