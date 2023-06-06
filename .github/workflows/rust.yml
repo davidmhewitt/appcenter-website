@@ -48,6 +48,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: "backend"
+      - name: Run database migrations
+        run: |
+          cargo install diesel_cli
+          cd backend
+          diesel migration run
       - name: Build
         run: |
           git config --global user.name "David Hewitt"
