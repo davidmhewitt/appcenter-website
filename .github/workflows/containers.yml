@@ -51,5 +51,5 @@ jobs:
 
       - name: 'Build Frontend Container'
         run: |
-          docker build frontend --tag ghcr.io/davidmhewitt}/appcenter-website/frontend:latest
+          docker build frontend --tag ghcr.io/davidmhewitt/appcenter-website/frontend:latest
           docker push ghcr.io/davidmhewitt/appcenter-website/frontend:latest
