@@ -1550,9 +1550,9 @@ dependencies = [
 
 [[package]]
 name = "ghost"
-version = "0.1.9"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e77ac7b51b8e6313251737fcef4b1c01a2ea102bde68415b62c0ee9268fec357"
+checksum = "55f62cab8c48c54b8aba6588bd75fd00cdfe8517e79797c3662c5ed0c011d257"
 dependencies = [
  "proc-macro2",
  "quote",
