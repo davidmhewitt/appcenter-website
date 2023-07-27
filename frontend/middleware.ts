@@ -28,15 +28,17 @@ export default function middleware(req: NextRequest) {
     )
   }
 
-  if (req.headers.has('referer')) {
-    const refererUrl = new URL(req.headers.get('referer')!)
+  const response = NextResponse.next()
+
+  const refererString = req.headers.get('referer')
+  if (refererString) {
+    const refererUrl = new URL(refererString)
     const lngInReferer = locales.find((l) =>
       refererUrl.pathname.startsWith(`/${l}`)
     )
-    const response = NextResponse.next()
     if (lngInReferer) response.cookies.set(cookieName, lngInReferer)
     return response
   }
 
-  return NextResponse.next()
+  return response
 }

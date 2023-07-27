@@ -1,4 +1,4 @@
-import { useTranslation } from '@/app/i18n'
+import { setupTranslations } from '@/app/i18n'
 import TextBox from '@/components/TextBox'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -10,7 +10,7 @@ export default async function Login({
 }: {
   params: { lang: string }
 }) {
-  const { t } = await useTranslation('login', lang)
+  const { t } = await setupTranslations('login', lang)
 
   return (
     <>

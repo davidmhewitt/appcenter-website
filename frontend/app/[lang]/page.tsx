@@ -1,4 +1,4 @@
-import { useTranslation } from '../i18n'
+import { setupTranslations } from '../i18n'
 import AppSummaryButton from '../../components/AppSummaryButton'
 
 interface Icon {
@@ -57,7 +57,7 @@ export default async function Page({
 }: {
   params: { lang: string }
 }) {
-  const { t } = await useTranslation(['common'], lang)
+  const { t } = await setupTranslations(['common'], lang)
   const added = getRecentlyAdded()
   const updated = getRecentlyUpdated()
 
