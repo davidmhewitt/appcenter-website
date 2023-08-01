@@ -31,7 +31,7 @@ i18next
 export function useTranslation(
   ns: string | string[],
   lng: string,
-  options: UseTranslationOptions | undefined = undefined
+  options: UseTranslationOptions<undefined> | undefined = undefined
 ) {
   if (i18next.resolvedLanguage !== lng) i18next.changeLanguage(lng)
   return useTranslationOrg(ns, options)
