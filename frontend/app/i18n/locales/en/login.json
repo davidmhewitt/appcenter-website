@@ -5,7 +5,7 @@
     "password": "Password",
     "sign-in-button": "Sign in"
   },
+  "github-login": "Login with GitHub",
   "no-account": "Don't have an account?",
-  "register-action": "Register",
-  "github-login": "Login with GitHub"
+  "register-action": "Register"
 }
