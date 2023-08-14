@@ -25,6 +25,6 @@ tracing-subscriber = { version = "0.3", features = [
 time = { version = "0.3", features = ["serde"] }
 uuid = "1.4"
 tracing = "0.1"
-utoipa = {version = "3.3", optional = true }
+utoipa = {version = "3.4", optional = true }
 serde_json = "1.0"
 appstream = "0.2"
