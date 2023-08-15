@@ -2,7 +2,7 @@ use crate::redis_utils;
 use common::APP_SUMMARIES_REDIS_KEY;
 
 use appstream::{enums::Bundle, Collection, Component};
-use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
+use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache, HttpCacheOptions};
 use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use std::{
@@ -32,7 +32,7 @@ impl AppstreamWorker {
                 .with(Cache(HttpCache {
                     mode: CacheMode::Default,
                     manager: CACacheManager::default(),
-                    options: None,
+                    options: HttpCacheOptions::default(),
                 }))
                 .build(),
         }
@@ -298,7 +298,7 @@ mod tests {
             .with(Cache(HttpCache {
                 mode: CacheMode::Default,
                 manager: CACacheManager::default(),
-                options: None,
+                options: HttpCacheOptions::default(),
             }))
             .build();
 
