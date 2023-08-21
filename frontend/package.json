@@ -48,7 +48,7 @@
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "eslint-config-prettier": "^8.9.0",
     "husky": "^8.0.3",
-    "i18next-parser": "^8.3.0",
+    "i18next-parser": "^8.6.0",
     "lint-staged": "^13.2.3",
     "openapi-typescript": "^6.4.0",
     "prettier": "^3.0.0"
