@@ -8,7 +8,7 @@ jobs:
     name: Production Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install stable rust
         run: rustup toolchain install stable
       - uses: Swatinem/rust-cache@v2
@@ -42,7 +42,7 @@ jobs:
     name: Tests and Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install stable rust
         run: rustup toolchain install stable
       - uses: Swatinem/rust-cache@v2
