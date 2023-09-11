@@ -50,7 +50,7 @@
     "husky": "^8.0.3",
     "i18next-parser": "^8.3.0",
     "lint-staged": "^13.2.3",
-    "openapi-typescript": "^6.4.0",
+    "openapi-typescript": "^6.5.5",
     "prettier": "^3.0.0"
   }
 }
