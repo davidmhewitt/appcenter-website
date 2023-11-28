@@ -67,7 +67,7 @@ dependencies = [
  "actix-rt",
  "actix-service",
  "actix-utils",
- "ahash 0.8.3",
+ "ahash",
  "base64 0.21.5",
  "bitflags 2.3.1",
  "brotli",
@@ -186,9 +186,9 @@ dependencies = [
 
 [[package]]
 name = "actix-web"
-version = "4.3.1"
+version = "4.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd3cb42f9566ab176e1ef0b8b3a896529062b4efc6be0123046095914c4c1c96"
+checksum = "0e4a5b5e29603ca8c94a77c65cf874718ceb60292c5a5c3e5f4ace041af462b9"
 dependencies = [
  "actix-codec",
  "actix-http",
@@ -199,7 +199,7 @@ dependencies = [
  "actix-service",
  "actix-utils",
  "actix-web-codegen",
- "ahash 0.7.7",
+ "ahash",
  "bytes",
  "bytestring",
  "cfg-if",
@@ -208,7 +208,6 @@ dependencies = [
  "encoding_rs",
  "futures-core",
  "futures-util",
- "http",
  "itoa",
  "language-tags",
  "log",
@@ -220,7 +219,7 @@ dependencies = [
  "serde_json",
  "serde_urlencoded",
  "smallvec",
- "socket2 0.4.9",
+ "socket2 0.5.3",
  "time 0.3.20",
  "url",
 ]
@@ -285,17 +284,6 @@ dependencies = [
  "ctr",
  "ghash",
  "subtle",
-]
-
-[[package]]
-name = "ahash"
-version = "0.7.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a824f2aa7e75a0c98c5a504fceb80649e9c35265d44525b5f94de4771a395cd"
-dependencies = [
- "getrandom 0.2.9",
- "once_cell",
- "version_check",
 ]
 
 [[package]]
@@ -1529,7 +1517,7 @@ version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f93e7192158dbcda357bdec5fb5788eebf8bbac027f3f33e719d29135ae84156"
 dependencies = [
- "ahash 0.8.3",
+ "ahash",
  "allocator-api2",
 ]
 
