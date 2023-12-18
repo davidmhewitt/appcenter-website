@@ -376,7 +376,7 @@ dependencies = [
  "appstream",
  "common",
  "http-cache-reqwest",
- "redis",
+ "redis 0.24.0",
  "reqwest",
  "reqwest-middleware",
  "serde",
@@ -967,7 +967,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f1760f60ffc6653b4afd924c5792098d8c00d9a3deb6b3d989eac17949dc422"
 dependencies = [
  "deadpool",
- "redis",
+ "redis 0.23.3",
 ]
 
 [[package]]
@@ -2797,10 +2797,23 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "ryu",
- "sha1_smol",
- "socket2 0.4.9",
  "tokio",
  "tokio-util",
+ "url",
+]
+
+[[package]]
+name = "redis"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c580d9cbbe1d1b479e8d67cf9daf6a62c957e6846048408b80b43ac3f6af84cd"
+dependencies = [
+ "combine",
+ "itoa",
+ "percent-encoding",
+ "ryu",
+ "sha1_smol",
+ "socket2 0.4.9",
  "url",
 ]
 
