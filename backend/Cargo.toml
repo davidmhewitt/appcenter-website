@@ -47,7 +47,7 @@ base64 = "0.21"
 common = { path = "common" }
 deadpool-redis = "0.12"
 diesel = { version = "2.1", features = ["postgres", "uuid", "time"] }
-diesel-async = { version = "0.3", features = ["postgres", "bb8"] }
+diesel-async = { version = "0.4", features = ["postgres", "bb8"] }
 diesel_migrations = { version = "2.1", features = ["postgres"] }
 github-utils = { path = "crates/github-utils" }
 hex = "0.4"
