@@ -43,7 +43,7 @@ async-stripe = { version = "0.25.2", features = [
     "connect",
 ], default-features = false }
 background-worker = { path = "background-worker" }
-base64 = "0.21"
+base64 = "0.22"
 common = { path = "common" }
 deadpool-redis = "0.12"
 diesel = { version = "2.1", features = ["postgres", "uuid", "time"] }
